@@ -1,1 +1,35 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"tvoberwil-b9e3b","appId":"1:1062038376839:android:731053965f42b2bc6ec322","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"tvoberwil-b9e3b","configurations":{"android":"1:1062038376839:android:731053965f42b2bc6ec322","ios":"1:1062038376839:ios:6f5e55d282d8fa8f6ec322","macos":"1:1062038376839:ios:6f5e55d282d8fa8f6ec322","web":"1:1062038376839:web:5e31b190604aa4c86ec322","windows":"1:1062038376839:web:eccb7228c5abbb4b6ec322"}}}}}}
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "tvoberwil-b9e3b",
+          "appId": "1:1062038376839:android:731053965f42b2bc6ec322",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "tvoberwil-b9e3b",
+          "configurations": {
+            "android": "1:1062038376839:android:731053965f42b2bc6ec322",
+            "ios": "1:1062038376839:ios:6f5e55d282d8fa8f6ec322",
+            "macos": "1:1062038376839:ios:6f5e55d282d8fa8f6ec322",
+            "web": "1:1062038376839:web:5e31b190604aa4c86ec322",
+            "windows": "1:1062038376839:web:eccb7228c5abbb4b6ec322"
+          }
+        }
+      }
+    }
+  },
+  "emulators": {
+    "singleProjectMode": true,
+    "auth": {
+      "port": 9099
+    },
+    "ui": {
+      "enabled": true,
+      "port": 0
+    }
+  }
+}
