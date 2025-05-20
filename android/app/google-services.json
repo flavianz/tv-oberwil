@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1062038376839",
+    "project_id": "tvoberwil-b9e3b",
+    "storage_bucket": "tvoberwil-b9e3b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1062038376839:android:731053965f42b2bc6ec322",
+        "android_client_info": {
+          "package_name": "ch.flavianz.tv_oberwil"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB2lq6-RxQ3bIzQVFS1OUpd6Ac1qQKi-ME"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
