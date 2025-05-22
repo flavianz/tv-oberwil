@@ -30,6 +30,10 @@
     "ui": {
       "enabled": true,
       "port": 0
+    },
+    "firestore": {
+      "port": 9101,
+      "rules": "firestore.rules"
     }
   }
 }

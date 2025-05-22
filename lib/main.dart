@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_ui_auth/firebase_ui_auth.dart';
@@ -9,9 +10,10 @@ import 'package:tv_oberwil/screens/home.dart';
 import 'package:tv_oberwil/screens/presence.dart';
 
 Future<void> main() async {
+  bool EMULATOR = true;
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  await FirebaseAuth.instance.useAuthEmulator('localhost', 9099);
+
   FirebaseAuth.instance.authStateChanges().listen((User? user) {
     if (user == null) {
       print('User is currently signed out!');
@@ -26,6 +28,11 @@ Future<void> main() async {
     ),
     EmailAuthProvider(),
   ]);
+
+  if (EMULATOR) {
+    await FirebaseAuth.instance.useAuthEmulator('localhost', 9099);
+    FirebaseFirestore.instance.useFirestoreEmulator("localhost", 9101);
+  }
 
   runApp(MyApp());
 }
@@ -52,6 +59,26 @@ class _MyAppState extends State<MyApp> {
               appBar: AppBar(title: const Text('My App')),
               bottomNavigationBar: MyBottomNavBar(),
               body: child,
+              floatingActionButton: FloatingActionButton(
+                onPressed: () {
+                  // Create a new user with a first and last name
+                  final user = <String, dynamic>{
+                    "first": "Alan",
+                    "middle": "Mathison",
+                    "last": "Turing",
+                    "born": 1912,
+                  };
+
+                  // Add a new document with a generated ID
+                  FirebaseFirestore.instance
+                      .collection("users")
+                      .add(user)
+                      .then(
+                        (DocumentReference doc) =>
+                            print('DocumentSnapshot added with ID: ${doc.id}'),
+                      );
+                },
+              ),
             );
           },
           routes: [
@@ -76,13 +103,21 @@ class _MyAppState extends State<MyApp> {
               actions: [
                 AuthStateChangeAction<UserCreated>((context, state) {
                   // Put any new user logic here
-                  context.push('/verify-email');
+                  print(state.credential.credential?.providerId);
+                  if (state.credential.credential?.providerId == "password") {
+                    context.push('/verify-email');
+                  } else {
+                    context.go("/");
+                  }
                 }),
                 AuthStateChangeAction<SignedIn>((context, state) {
+                  if (state.user == null) {
+                    return;
+                  }
                   if (!state.user!.emailVerified) {
                     context.push('/verify-email');
                   } else {
-                    context.pushReplacement('/');
+                    context.go('/');
                   }
                 }),
               ],
@@ -95,11 +130,11 @@ class _MyAppState extends State<MyApp> {
               (context, state) => EmailVerificationScreen(
                 actions: [
                   EmailVerifiedAction(() {
-                    context.pushReplacement('/');
+                    context.go('/');
                   }),
                   AuthCancelledAction((context) {
                     FirebaseUIAuth.signOut(context: context);
-                    context.pushReplacement('/');
+                    context.go('/');
                   }),
                 ],
               ),
