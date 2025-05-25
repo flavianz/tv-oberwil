@@ -37,111 +37,105 @@ Future<void> main() async {
   runApp(MyApp());
 }
 
-class MyApp extends StatefulWidget {
-  const MyApp({super.key});
+class MyApp extends StatelessWidget {
+  MyApp({super.key});
 
-  @override
-  State<MyApp> createState() => _MyAppState();
-}
+  final router = GoRouter(
+    initialLocation:
+        FirebaseAuth.instance.currentUser == null ? '/sign-in' : '/',
+    routes: [
+      ShellRoute(
+        builder: (context, state, child) {
+          return Scaffold(
+            appBar: AppBar(title: const Text('My App')),
+            bottomNavigationBar: MyBottomNavBar(),
+            body: child,
+            floatingActionButton: FloatingActionButton(
+              onPressed: () {
+                // Create a new user with a first and last name
+                final user = <String, dynamic>{
+                  "first": "Alan",
+                  "middle": "Mathison",
+                  "last": "Turing",
+                  "born": 1912,
+                };
 
-class _MyAppState extends State<MyApp> {
-  int count = 0;
+                // Add a new document with a generated ID
+                FirebaseFirestore.instance
+                    .collection("users")
+                    .add(user)
+                    .then(
+                      (DocumentReference doc) =>
+                          print('DocumentSnapshot added with ID: ${doc.id}'),
+                    );
+              },
+            ),
+          );
+        },
+        routes: [
+          GoRoute(path: '/', builder: (context, state) => HomeScreen()),
+          GoRoute(
+            path: '/settings',
+            builder: (context, state) => PresenceScreen(),
+          ),
+        ],
+      ),
+      GoRoute(
+        path: "/sign-in",
+        builder: (context, state) {
+          return SignInScreen(
+            providers: [
+              EmailAuthProvider(),
+              GoogleProvider(
+                clientId:
+                    "1062038376839-recum2ohkiio87nqmdp81lpm8njvmr1m.apps.googleusercontent.com",
+              ),
+            ],
+            actions: [
+              AuthStateChangeAction<UserCreated>((context, state) {
+                // Put any new user logic here
+                print(state.credential.additionalUserInfo?.providerId);
+                if (state.credential.additionalUserInfo?.providerId ==
+                    "password") {
+                  context.push('/verify-email');
+                } else {
+                  context.go("/");
+                }
+              }),
+              AuthStateChangeAction<SignedIn>((context, state) {
+                if (state.user == null) {
+                  return;
+                }
+                if (!state.user!.emailVerified) {
+                  context.push('/verify-email');
+                } else {
+                  context.go('/');
+                }
+              }),
+            ],
+          );
+        },
+      ),
+      GoRoute(
+        path: "/verify-email",
+        builder:
+            (context, state) => EmailVerificationScreen(
+              actions: [
+                EmailVerifiedAction(() {
+                  context.go('/');
+                }),
+                AuthCancelledAction((context) {
+                  FirebaseUIAuth.signOut(context: context);
+                  context.go('/');
+                }),
+              ],
+            ),
+      ),
+    ],
+  );
 
   @override
   Widget build(BuildContext context) {
-    final router = GoRouter(
-      initialLocation:
-          FirebaseAuth.instance.currentUser == null ? '/sign-in' : '/',
-      routes: [
-        ShellRoute(
-          builder: (context, state, child) {
-            return Scaffold(
-              appBar: AppBar(title: const Text('My App')),
-              bottomNavigationBar: MyBottomNavBar(),
-              body: child,
-              floatingActionButton: FloatingActionButton(
-                onPressed: () {
-                  // Create a new user with a first and last name
-                  final user = <String, dynamic>{
-                    "first": "Alan",
-                    "middle": "Mathison",
-                    "last": "Turing",
-                    "born": 1912,
-                  };
-
-                  // Add a new document with a generated ID
-                  FirebaseFirestore.instance
-                      .collection("users")
-                      .add(user)
-                      .then(
-                        (DocumentReference doc) =>
-                            print('DocumentSnapshot added with ID: ${doc.id}'),
-                      );
-                },
-              ),
-            );
-          },
-          routes: [
-            GoRoute(path: '/', builder: (context, state) => HomeScreen()),
-            GoRoute(
-              path: '/settings',
-              builder: (context, state) => PresenceScreen(),
-            ),
-          ],
-        ),
-        GoRoute(
-          path: "/sign-in",
-          builder: (context, state) {
-            return SignInScreen(
-              providers: [
-                EmailAuthProvider(),
-                GoogleProvider(
-                  clientId:
-                      "1062038376839-recum2ohkiio87nqmdp81lpm8njvmr1m.apps.googleusercontent.com",
-                ),
-              ],
-              actions: [
-                AuthStateChangeAction<UserCreated>((context, state) {
-                  // Put any new user logic here
-                  print(state.credential.credential?.providerId);
-                  if (state.credential.credential?.providerId == "password") {
-                    context.push('/verify-email');
-                  } else {
-                    context.go("/");
-                  }
-                }),
-                AuthStateChangeAction<SignedIn>((context, state) {
-                  if (state.user == null) {
-                    return;
-                  }
-                  if (!state.user!.emailVerified) {
-                    context.push('/verify-email');
-                  } else {
-                    context.go('/');
-                  }
-                }),
-              ],
-            );
-          },
-        ),
-        GoRoute(
-          path: "/verify-email",
-          builder:
-              (context, state) => EmailVerificationScreen(
-                actions: [
-                  EmailVerifiedAction(() {
-                    context.go('/');
-                  }),
-                  AuthCancelledAction((context) {
-                    FirebaseUIAuth.signOut(context: context);
-                    context.go('/');
-                  }),
-                ],
-              ),
-        ),
-      ],
-    );
-
     return MaterialApp.router(routerConfig: router);
   }
 }
