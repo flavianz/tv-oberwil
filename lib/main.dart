@@ -10,7 +10,7 @@ import 'package:tv_oberwil/screens/home.dart';
 import 'package:tv_oberwil/screens/presence.dart';
 
 Future<void> main() async {
-  bool EMULATOR = true;
+  bool EMULATOR = false;
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
@@ -41,8 +41,6 @@ class MyApp extends StatelessWidget {
   MyApp({super.key});
 
   final router = GoRouter(
-    initialLocation:
-        FirebaseAuth.instance.currentUser == null ? '/sign-in' : '/',
     routes: [
       ShellRoute(
         builder: (context, state, child) {
@@ -93,9 +91,7 @@ class MyApp extends StatelessWidget {
             ],
             actions: [
               AuthStateChangeAction<UserCreated>((context, state) {
-                // Put any new user logic here
-                print(state.credential.additionalUserInfo?.providerId);
-                if (state.credential.additionalUserInfo?.providerId ==
+                if (state.credential.user?.providerData[0].providerId ==
                     "password") {
                   context.push('/verify-email');
                 } else {
@@ -126,7 +122,7 @@ class MyApp extends StatelessWidget {
                 }),
                 AuthCancelledAction((context) {
                   FirebaseUIAuth.signOut(context: context);
-                  context.go('/');
+                  context.go('/sign-in');
                 }),
               ],
             ),
@@ -136,6 +132,13 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    FirebaseAuth.instance.authStateChanges().listen((User? user) {
+      if (user == null) {
+        router.go("/sign-in");
+      } else {
+        router.go("/");
+      }
+    });
     return MaterialApp.router(routerConfig: router);
   }
 }
