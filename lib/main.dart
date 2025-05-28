@@ -5,9 +5,10 @@ import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 import 'package:firebase_ui_oauth_google/firebase_ui_oauth_google.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:tv_oberwil/components/web_shell.dart';
 import 'package:tv_oberwil/firebase_options.dart';
-import 'package:tv_oberwil/screens/home.dart';
-import 'package:tv_oberwil/screens/presence.dart';
+import 'package:tv_oberwil/screens/home_screen.dart';
+import 'package:tv_oberwil/screens/members_screen.dart';
 
 Future<void> main() async {
   bool EMULATOR = false;
@@ -44,37 +45,13 @@ class MyApp extends StatelessWidget {
     routes: [
       ShellRoute(
         builder: (context, state, child) {
-          return Scaffold(
-            appBar: AppBar(title: const Text('My App')),
-            bottomNavigationBar: MyBottomNavBar(),
-            body: child,
-            floatingActionButton: FloatingActionButton(
-              onPressed: () {
-                // Create a new user with a first and last name
-                final user = <String, dynamic>{
-                  "first": "Alan",
-                  "middle": "Mathison",
-                  "last": "Turing",
-                  "born": 1912,
-                };
-
-                // Add a new document with a generated ID
-                FirebaseFirestore.instance
-                    .collection("users")
-                    .add(user)
-                    .then(
-                      (DocumentReference doc) =>
-                          print('DocumentSnapshot added with ID: ${doc.id}'),
-                    );
-              },
-            ),
-          );
+          return WebShell(child: child);
         },
         routes: [
           GoRoute(path: '/', builder: (context, state) => HomeScreen()),
           GoRoute(
-            path: '/settings',
-            builder: (context, state) => PresenceScreen(),
+            path: '/members',
+            builder: (context, state) => MembersScreen(),
           ),
         ],
       ),
