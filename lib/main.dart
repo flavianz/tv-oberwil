@@ -68,22 +68,13 @@ class MyApp extends StatelessWidget {
             ],
             actions: [
               AuthStateChangeAction<UserCreated>((context, state) {
-                if (state.credential.user?.providerData[0].providerId ==
-                    "password") {
-                  context.push('/verify-email');
-                } else {
-                  context.go("/");
+                if (FirebaseAuth.instance.currentUser != null && !FirebaseAuth.instance.currentUser!.emailVerified) {
+                  FirebaseAuth.instance.currentUser!.sendEmailVerification();
                 }
+                context.go('/');
               }),
               AuthStateChangeAction<SignedIn>((context, state) {
-                if (state.user == null) {
-                  return;
-                }
-                if (!state.user!.emailVerified) {
-                  context.push('/verify-email');
-                } else {
-                  context.go('/');
-                }
+                context.go('/');
               }),
             ],
           );
