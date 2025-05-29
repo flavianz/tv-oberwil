@@ -13,5 +13,10 @@ exports.setupUser = functions.region("europe-west3").auth.user().onCreate(async 
     await db.doc("/users/" + user.uid).create({
         roles: []
     });
-    logger.log("User doc {} created", user.uid);
+    logger.log("Created user doc with id ", user.uid);
+})
+
+exports.deleteUser = functions.region("europe-west3").auth.user().onDelete(async (user) => {
+    await db.doc("/users/" + user.uid).delete();
+    logger.log("Deleted user doc with id ", user.uid);
 })
