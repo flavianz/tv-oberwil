@@ -69,64 +69,70 @@ class _AppState extends ConsumerState<App> {
 
     final isTablet = MediaQuery.of(context).size.aspectRatio > 1;
 
-    return SafeArea(
-      child: Scaffold(
-        body:
-            isTablet
-                ? Row(
-                  spacing: 5,
-                  children: [
-                    NavigationRail(
-                      destinations:
-                          destinations.map((element) {
-                            return NavigationRailDestination(
-                              icon: element["icon"],
-                              label: Text(element["label"]),
-                            );
-                          }).toList(),
-                      selectedIndex: selectedIndex,
-                      elevation: 5,
-                      extended: true,
-                      trailing: FilledButton(
-                        onPressed: () {
-                          FirebaseAuth.instance.signOut();
-                        },
-                        child: Text("Sign Out"),
-                      ),
-                      onDestinationSelected: (i) {
-                        setState(() {
-                          selectedIndex = i;
-                          context.pushReplacement(destinations[i]["url"]);
-                        });
-                      },
-                      leading: Image.asset("assets/tvo.png", height: 75),
+    return Stack(
+      children: [
+        Container(color: Theme.of(context).scaffoldBackgroundColor),
+        SafeArea(
+          bottom: false,
+          child: Scaffold(
+            body:
+                isTablet
+                    ? Row(
+                      spacing: 5,
+                      children: [
+                        NavigationRail(
+                          destinations:
+                              destinations.map((element) {
+                                return NavigationRailDestination(
+                                  icon: element["icon"],
+                                  label: Text(element["label"]),
+                                );
+                              }).toList(),
+                          selectedIndex: selectedIndex,
+                          elevation: 5,
+                          extended: true,
+                          trailing: FilledButton(
+                            onPressed: () {
+                              FirebaseAuth.instance.signOut();
+                            },
+                            child: Text("Sign Out"),
+                          ),
+                          onDestinationSelected: (i) {
+                            setState(() {
+                              selectedIndex = i;
+                              context.pushReplacement(destinations[i]["url"]);
+                            });
+                          },
+                          leading: Image.asset("assets/tvo.png", height: 75),
+                        ),
+                        Expanded(child: widget.child),
+                      ],
+                    )
+                    : Column(
+                      children: [
+                        Expanded(child: widget.child),
+                        NavigationBar(
+                          destinations:
+                              destinations.map((element) {
+                                return NavigationDestination(
+                                  icon: element["icon"],
+                                  label: element["label"],
+                                );
+                              }).toList(),
+                          selectedIndex: selectedIndex,
+                          onDestinationSelected: (i) {
+                            setState(() {
+                              selectedIndex = i;
+                              context.pushReplacement(destinations[i]["url"]);
+                            });
+                          },
+                          elevation: 5,
+                        ),
+                      ],
                     ),
-                    Expanded(child: widget.child),
-                  ],
-                )
-                : Column(
-                  children: [
-                    Expanded(child: widget.child),
-                    NavigationBar(
-                      destinations:
-                          destinations.map((element) {
-                            return NavigationDestination(
-                              icon: element["icon"],
-                              label: element["label"],
-                            );
-                          }).toList(),
-                      selectedIndex: selectedIndex,
-                      onDestinationSelected: (i) {
-                        setState(() {
-                          selectedIndex = i;
-                          context.pushReplacement(destinations[i]["url"]);
-                        });
-                      },
-                      elevation: 5,
-                    ),
-                  ],
-                ),
-      ),
+          ),
+        ),
+      ],
     );
   }
 }
