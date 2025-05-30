@@ -87,6 +87,10 @@ class FirestoreInfiniteScrollPage extends ConsumerStatefulWidget {
       _FirestoreInfiniteScrollPageState();
 }
 
+final textControllerProvider = Provider<TextEditingController>((ref) {
+  return TextEditingController();
+});
+
 class _FirestoreInfiniteScrollPageState
     extends ConsumerState<FirestoreInfiniteScrollPage> {
   final ScrollController _scrollController = ScrollController();
@@ -114,76 +118,124 @@ class _FirestoreInfiniteScrollPageState
     final asyncDocs = ref.watch(userListControllerProvider);
     final query = ref.watch(searchQueryProvider);
 
-    return Scaffold(
-      appBar: AppBar(
-        actionsPadding: EdgeInsets.all(12),
-        title: Text("Mitglieder"),
-        actions: [
-          FilledButton.icon(
-            onPressed: () {},
-            icon: Icon(Icons.add),
-            label: Text("Mitglied hinzufügen"),
-            style: FilledButton.styleFrom(minimumSize: Size(10, 55)),
-          ),
-        ],
+    final searchController = ref.watch(textControllerProvider);
+
+    void handleSearchSubmit(String value) {
+      ref.read(searchQueryProvider.notifier).state = value;
+      ref.read(userListControllerProvider.notifier).fetchInitial();
+    }
+
+    final isTablet = MediaQuery.of(context).size.aspectRatio > 1;
+
+    return Padding(
+      padding: EdgeInsets.symmetric(
+        horizontal: isTablet ? 35 : 0,
+        vertical: 15,
       ),
-      body: Padding(
-        padding: EdgeInsets.all(12),
-        child: Column(
-          children: [
-            TextField(
-              decoration: InputDecoration(
-                labelText: 'Suche nach Namen...',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                suffixIcon: const Icon(Icons.search),
-              ),
-              onSubmitted: (value) {
-                ref.read(searchQueryProvider.notifier).state = value;
-                ref.read(userListControllerProvider.notifier).fetchInitial();
-              },
-            ),
-            Expanded(
-              child: asyncDocs.when(
-                data: (docs) {
-                  if (docs.isEmpty) {
-                    return const Center(child: Text('No users found.'));
-                  }
-
-                  final controller = ref.read(
-                    userListControllerProvider.notifier,
-                  );
-                  final hasMore = controller.hasMore;
-
-                  return ListView.builder(
-                    controller: _scrollController,
-                    itemCount: docs.length + 1,
-                    itemBuilder: (context, index) {
-                      if (index == docs.length) {
-                        return hasMore
-                            ? const Padding(
-                              padding: EdgeInsets.all(16),
-                              child: Center(child: CircularProgressIndicator()),
-                            )
-                            : Container();
-                      }
-
-                      final data = docs[index].data() as Map<String, dynamic>;
-                      return Row(
-                        children: [
-                          Expanded(child: Text(data['first'] ?? '')),
-                          Expanded(child: Text(data['last'] ?? '')),
-                        ],
-                      );
-                    },
-                  );
-                },
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (e, _) => Center(child: Text('Error: $e')),
-              ),
+      child: Scaffold(
+        appBar: AppBar(
+          actionsPadding: EdgeInsets.all(12),
+          title: Text("Mitglieder"),
+          actions: [
+            FilledButton.icon(
+              onPressed: () {},
+              icon: Icon(Icons.add),
+              label: Text("Mitglied hinzufügen"),
+              style: FilledButton.styleFrom(minimumSize: Size(10, 55)),
             ),
           ],
+        ),
+        body: Padding(
+          padding: EdgeInsets.all(12),
+          child: Column(
+            children: [
+              TextField(
+                controller: searchController,
+                decoration: InputDecoration(
+                  labelText: 'Suche nach Mitgliedern',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  prefixIcon: Padding(
+                    padding: const EdgeInsets.only(left: 16, right: 8),
+                    child: const Icon(Icons.search),
+                  ),
+                  prefixIconConstraints: BoxConstraints(),
+                  suffixIconConstraints: BoxConstraints(),
+                  suffixIcon: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: TextButton.icon(
+                      iconAlignment: IconAlignment.end,
+                      onPressed: () {
+                        handleSearchSubmit(searchController.text);
+                      },
+                      icon: Icon(Icons.arrow_forward),
+                      label: Text("Suchen"),
+                    ),
+                  ),
+                ),
+                onSubmitted: handleSearchSubmit,
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top: 25, bottom: 7),
+                child: Row(
+                  children: [
+                    Expanded(child: Text("Name")),
+                    Expanded(child: Text("Vorname")),
+                  ],
+                ),
+              ),
+              Divider(thickness: 2, color: Theme.of(context).primaryColor),
+              Expanded(
+                child: asyncDocs.when(
+                  data: (docs) {
+                    if (docs.isEmpty) {
+                      return const Center(child: Text('No users found.'));
+                    }
+
+                    final controller = ref.read(
+                      userListControllerProvider.notifier,
+                    );
+                    final hasMore = controller.hasMore;
+
+                    return ListView.separated(
+                      controller: _scrollController,
+                      itemCount: docs.length + 1,
+                      itemBuilder: (context, index) {
+                        if (index == docs.length) {
+                          return hasMore
+                              ? const Padding(
+                                padding: EdgeInsets.all(16),
+                                child: Center(
+                                  child: CircularProgressIndicator(),
+                                ),
+                              )
+                              : Container();
+                        }
+
+                        final data = docs[index].data() as Map<String, dynamic>;
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 5),
+                          child: Row(
+                            children: [
+                              Expanded(child: Text(data['first'] ?? '')),
+                              Expanded(child: Text(data['last'] ?? '')),
+                            ],
+                          ),
+                        );
+                      },
+                      separatorBuilder: (BuildContext context, int index) {
+                        return Divider();
+                      },
+                    );
+                  },
+                  loading:
+                      () => const Center(child: CircularProgressIndicator()),
+                  error: (e, _) => Center(child: Text('Error: $e')),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
