@@ -54,7 +54,6 @@ class _FirestoreInfiniteScrollPageState extends ConsumerState<MembersScreen> {
   @override
   Widget build(BuildContext context) {
     final asyncDocs = ref.watch(userListControllerProvider);
-    final query = ref.watch(searchQueryProvider);
 
     final searchController = ref.watch(textControllerProvider);
 
