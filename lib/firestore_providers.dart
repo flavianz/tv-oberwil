@@ -20,21 +20,24 @@ class UserListController
     fetchInitial();
   }
 
+  final int querySizeLimit = 10;
+
   Future<void> fetchInitial() async {
     _lastDoc = null;
     _hasMore = true;
     _allDocs = [];
+    _isLoading = true;
     state = const AsyncLoading();
 
     final query = ref.read(searchQueryProvider).trim();
     final snapshot = await _fetchQuery(query, null);
-    print("Fetched ${snapshot.docs.length} docs");
 
     _allDocs = snapshot.docs;
     _lastDoc = snapshot.docs.isNotEmpty ? snapshot.docs.last : null;
-    _hasMore = snapshot.docs.length == 10;
+    _hasMore = snapshot.size == querySizeLimit;
 
     state = AsyncData(_allDocs);
+    _isLoading = false;
   }
 
   Future<void> fetchMore() async {
@@ -60,7 +63,6 @@ class UserListController
     String query,
     DocumentSnapshot? startAfter,
   ) {
-    print("Querying with search '$query' after $startAfter, '${query}zz'");
     Query<Map<String, dynamic>> firestoreQuery = FirebaseFirestore.instance
         .collection('members')
         .where(
@@ -75,7 +77,9 @@ class UserListController
             ),
           ),
         )
-        .limit(10);
+        .orderBy("search_last")
+        .orderBy("search_first")
+        .limit(querySizeLimit);
 
     if (startAfter != null) {
       firestoreQuery = firestoreQuery.startAfterDocument(startAfter);
@@ -83,6 +87,8 @@ class UserListController
 
     return firestoreQuery.get();
   }
+
+  bool get isLoading => _isLoading;
 
   bool get hasMore => _hasMore;
 }

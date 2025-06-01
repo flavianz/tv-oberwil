@@ -4,6 +4,7 @@ import 'package:firebase_ui_oauth_google/firebase_ui_oauth_google.dart';
 import 'package:go_router/go_router.dart';
 import 'package:tv_oberwil/components/app.dart';
 import 'package:tv_oberwil/screens/home_screen.dart';
+import 'package:tv_oberwil/screens/member_details_screen.dart';
 import 'package:tv_oberwil/screens/members_screen.dart';
 
 final router = GoRouter(
@@ -14,7 +15,14 @@ final router = GoRouter(
       },
       routes: [
         GoRoute(path: '/', builder: (context, state) => HomeScreen()),
-        GoRoute(path: '/members', builder: (context, state) => FirestoreInfiniteScrollPage()),
+        GoRoute(path: '/members', builder: (context, state) => MembersScreen()),
+        GoRoute(
+          path: '/member/:uid',
+          builder: (context, state) {
+            final userId = state.pathParameters['uid']!;
+            return MemberDetailsScreen(uid: userId);
+          },
+        ),
       ],
     ),
     GoRoute(

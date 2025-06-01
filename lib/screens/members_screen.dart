@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../firestore_providers.dart';
 
@@ -17,73 +18,11 @@ final membersProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
   return snapshot.docs.map((doc) => doc.data()).toList();
 });
 
-class MembersScreen extends ConsumerWidget {
+class MembersScreen extends ConsumerStatefulWidget {
   const MembersScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final data = ref.watch(usersStreamProvider);
-
-    if (data.isLoading) {
-      return Center(child: CircularProgressIndicator());
-    }
-    if (data.hasError) {
-      return Center(child: Text("An error has occurred"));
-    }
-
-    return Container(
-      padding: EdgeInsets.all(10),
-      child: Column(
-        children: [
-          AppBar(
-            title: Text("Mitglieder"),
-            actions: [
-              FilledButton.icon(
-                onPressed: () {},
-                icon: Icon(Icons.add),
-                label: Text("Mitglied hinzufügen"),
-                style: FilledButton.styleFrom(minimumSize: Size(10, 55)),
-              ),
-            ],
-          ),
-          Expanded(
-            child: DataTable(
-              rows:
-                  data.value!.map((member) {
-                    return DataRow(
-                      cells: [
-                        DataCell(Text("${member["first"]} ${member["last"]}")),
-                        DataCell(
-                          Row(
-                            children:
-                                (member["roles"] as List).cast<String>().map((
-                                  role,
-                                ) {
-                                  return Text(role);
-                                }).toList(),
-                          ),
-                        ),
-                      ],
-                    );
-                  }).toList(),
-              columns: [
-                DataColumn(label: Text("Name")),
-                DataColumn(label: Text("Rollen")),
-              ],
-              dataRowMaxHeight: double.infinity,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class FirestoreInfiniteScrollPage extends ConsumerStatefulWidget {
-  const FirestoreInfiniteScrollPage({super.key});
-
-  @override
-  ConsumerState<FirestoreInfiniteScrollPage> createState() =>
+  ConsumerState<MembersScreen> createState() =>
       _FirestoreInfiniteScrollPageState();
 }
 
@@ -91,8 +30,7 @@ final textControllerProvider = Provider<TextEditingController>((ref) {
   return TextEditingController();
 });
 
-class _FirestoreInfiniteScrollPageState
-    extends ConsumerState<FirestoreInfiniteScrollPage> {
+class _FirestoreInfiniteScrollPageState extends ConsumerState<MembersScreen> {
   final ScrollController _scrollController = ScrollController();
 
   @override
@@ -196,32 +134,46 @@ class _FirestoreInfiniteScrollPageState
                     final controller = ref.read(
                       userListControllerProvider.notifier,
                     );
-                    final hasMore = controller.hasMore;
 
                     return ListView.separated(
                       controller: _scrollController,
                       itemCount: docs.length + 1,
                       itemBuilder: (context, index) {
                         if (index == docs.length) {
-                          return hasMore
+                          return controller.isLoading
                               ? const Padding(
                                 padding: EdgeInsets.all(16),
                                 child: Center(
                                   child: CircularProgressIndicator(),
                                 ),
                               )
+                              : controller.hasMore
+                              ? FilledButton.icon(
+                                onPressed: () {
+                                  ref
+                                      .read(userListControllerProvider.notifier)
+                                      .fetchMore();
+                                },
+                                label: Text("Mehr laden"),
+                                icon: Icon(Icons.add),
+                              )
                               : Container();
                         }
 
                         final data = docs[index].data() as Map<String, dynamic>;
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 5),
-                          child: Row(
-                            children: [
-                              Expanded(child: Text(data['first'] ?? '')),
-                              Expanded(child: Text(data['last'] ?? '')),
-                            ],
+                        return GestureDetector(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            child: Row(
+                              children: [
+                                Expanded(child: Text(data['last'] ?? '')),
+                                Expanded(child: Text(data['first'] ?? '')),
+                              ],
+                            ),
                           ),
+                          onTap: () {
+                            context.push("/member/${docs[index].id}");
+                          },
                         );
                       },
                       separatorBuilder: (BuildContext context, int index) {
