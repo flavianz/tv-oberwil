@@ -52,10 +52,9 @@ class UserListController
       _lastDoc = newDocs.last;
       _allDocs.addAll(newDocs);
       state = AsyncData([..._allDocs]);
-    } else {
-      _hasMore = false;
     }
 
+    _hasMore = newDocs.length == querySizeLimit;
     _isLoading = false;
   }
 

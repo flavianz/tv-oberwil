@@ -22,27 +22,27 @@ class MembersScreen extends ConsumerStatefulWidget {
   const MembersScreen({super.key});
 
   @override
-  ConsumerState<MembersScreen> createState() =>
-      _FirestoreInfiniteScrollPageState();
+  ConsumerState<MembersScreen> createState() => MembersScreenState();
 }
 
 final textControllerProvider = Provider<TextEditingController>((ref) {
   return TextEditingController();
 });
 
-class _FirestoreInfiniteScrollPageState extends ConsumerState<MembersScreen> {
+class MembersScreenState extends ConsumerState<MembersScreen> {
   final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
 
-    _scrollController.addListener(() {
+    // auto-fetching more
+    /*_scrollController.addListener(() {
       if (_scrollController.position.pixels >=
           _scrollController.position.maxScrollExtent - 100) {
         ref.read(userListControllerProvider.notifier).fetchMore();
       }
-    });
+    });*/
   }
 
   @override
@@ -62,23 +62,42 @@ class _FirestoreInfiniteScrollPageState extends ConsumerState<MembersScreen> {
       ref.read(userListControllerProvider.notifier).fetchInitial();
     }
 
-    final isTablet = MediaQuery.of(context).size.aspectRatio > 1;
+    final isScreenWide = MediaQuery.of(context).size.aspectRatio > 1;
 
     return Padding(
       padding: EdgeInsets.symmetric(
-        horizontal: isTablet ? 35 : 0,
+        horizontal: isScreenWide ? 35 : 0,
         vertical: 15,
       ),
       child: Scaffold(
         appBar: AppBar(
-          actionsPadding: EdgeInsets.all(12),
+          actionsPadding: EdgeInsets.symmetric(horizontal: 12),
           title: Text("Mitglieder"),
           actions: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: IconButton(
+                onPressed: () {
+                  ref.read(userListControllerProvider.notifier).fetchInitial();
+                },
+                icon: Icon(Icons.refresh),
+              ),
+            ),
             FilledButton.icon(
-              onPressed: () {},
+              onPressed: () {
+                FirebaseFirestore.instance.collection("members").add({
+                  "first": "Franz",
+                  "last": "Triebe",
+                  "search_first": "franz",
+                  "search_last": "triebe",
+                  "birthdate": Timestamp.now(),
+                  "teams": {
+                    "teamid": {"name": "Junioren Bla", "role": "Spieler"},
+                  },
+                });
+              },
               icon: Icon(Icons.add),
               label: Text("Mitglied hinzufügen"),
-              style: FilledButton.styleFrom(minimumSize: Size(10, 55)),
             ),
           ],
         ),
@@ -86,32 +105,70 @@ class _FirestoreInfiniteScrollPageState extends ConsumerState<MembersScreen> {
           padding: EdgeInsets.all(12),
           child: Column(
             children: [
-              TextField(
-                controller: searchController,
-                decoration: InputDecoration(
-                  labelText: 'Suche nach Mitgliedern',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  prefixIcon: Padding(
-                    padding: const EdgeInsets.only(left: 16, right: 8),
-                    child: const Icon(Icons.search),
-                  ),
-                  prefixIconConstraints: BoxConstraints(),
-                  suffixIconConstraints: BoxConstraints(),
-                  suffixIcon: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    child: TextButton.icon(
-                      iconAlignment: IconAlignment.end,
-                      onPressed: () {
-                        handleSearchSubmit(searchController.text);
-                      },
-                      icon: Icon(Icons.arrow_forward),
-                      label: Text("Suchen"),
+              Row(
+                spacing: 10,
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: searchController,
+                      decoration: InputDecoration(
+                        labelText: 'Suche nach Mitgliedern',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        prefixIcon: Padding(
+                          padding: const EdgeInsets.only(left: 16, right: 8),
+                          child: const Icon(Icons.search),
+                        ),
+                        prefixIconConstraints: BoxConstraints(),
+                        suffixIconConstraints: BoxConstraints(),
+                        suffixIcon: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          child: TextButton.icon(
+                            iconAlignment: IconAlignment.end,
+                            onPressed: () {
+                              handleSearchSubmit(searchController.text);
+                            },
+                            icon: Icon(Icons.arrow_forward),
+                            label: Text("Suchen"),
+                          ),
+                        ),
+                      ),
+                      onSubmitted: handleSearchSubmit,
                     ),
                   ),
-                ),
-                onSubmitted: handleSearchSubmit,
+                  TextButton.icon(
+                    onPressed: () {
+                      if (isScreenWide) {
+                        showDialog<String>(
+                          context: context,
+                          builder:
+                              (BuildContext context) => Dialog(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      const Text('This is a typical dialog.'),
+                                      const SizedBox(height: 15),
+                                      TextButton(
+                                        onPressed: () {
+                                          context.pop();
+                                        },
+                                        child: const Text('Close'),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                        );
+                      }
+                    },
+                    label: Text("Filter"),
+                    icon: Icon(Icons.filter_list),
+                  ),
+                ],
               ),
               Padding(
                 padding: const EdgeInsets.only(top: 25, bottom: 7),
@@ -160,19 +217,22 @@ class _FirestoreInfiniteScrollPageState extends ConsumerState<MembersScreen> {
                         }
 
                         final data = docs[index].data() as Map<String, dynamic>;
-                        return GestureDetector(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 10),
-                            child: Row(
-                              children: [
-                                Expanded(child: Text(data['last'] ?? '')),
-                                Expanded(child: Text(data['first'] ?? '')),
-                              ],
+                        return MouseRegion(
+                          cursor: SystemMouseCursors.click,
+                          child: GestureDetector(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 10),
+                              child: Row(
+                                children: [
+                                  Expanded(child: Text(data['last'] ?? '')),
+                                  Expanded(child: Text(data['first'] ?? '')),
+                                ],
+                              ),
                             ),
+                            onTap: () {
+                              context.push("/member/${docs[index].id}");
+                            },
                           ),
-                          onTap: () {
-                            context.push("/member/${docs[index].id}");
-                          },
                         );
                       },
                       separatorBuilder: (BuildContext context, int index) {
