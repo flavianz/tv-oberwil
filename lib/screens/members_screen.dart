@@ -20,6 +20,15 @@ final membersProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
   return snapshot.docs.map((doc) => doc.data()).toList();
 });
 
+final textControllerProvider = Provider<TextEditingController>((ref) {
+  return TextEditingController();
+});
+
+final memberSummaryProvider = StreamProvider<Map?>((ref) {
+  var docRef = FirebaseFirestore.instance.collection('teams').doc("summary");
+  return docRef.snapshots().map((doc) => doc.data());
+});
+
 class MembersScreen extends ConsumerStatefulWidget {
   final bool refresh;
 
@@ -29,12 +38,9 @@ class MembersScreen extends ConsumerStatefulWidget {
   ConsumerState<MembersScreen> createState() => MembersScreenState();
 }
 
-final textControllerProvider = Provider<TextEditingController>((ref) {
-  return TextEditingController();
-});
-
 class MembersScreenState extends ConsumerState<MembersScreen> {
   final ScrollController _scrollController = ScrollController();
+  List<String> notSelectedTeams = [];
 
   @override
   void dispose() {
@@ -63,6 +69,21 @@ class MembersScreenState extends ConsumerState<MembersScreen> {
         }
       }).then((_) {});
     }
+
+    final memberSummary = ref.watch(memberSummaryProvider);
+    if (memberSummary.isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (memberSummary.hasError) {
+      return const Center(child: Text("An error occurred"));
+    }
+
+    final allTeams =
+        (memberSummary.value?["names"] as LinkedHashMap<String, dynamic>)
+            .entries
+            .map((entry) => entry.key)
+            .toList();
 
     return Padding(
       padding: EdgeInsets.symmetric(
@@ -144,14 +165,21 @@ class MembersScreenState extends ConsumerState<MembersScreen> {
                         showDialog<String>(
                           context: context,
                           builder:
-                              (BuildContext context) =>
-                                  Dialog(child: FilterDialog()),
+                              (BuildContext context) => Dialog(
+                                child: FilterDialog(
+                                  allTeams: allTeams,
+                                  notSelectedTeams: notSelectedTeams,
+                                ),
+                              ),
                         );
                       } else {
                         showModalBottomSheet(
                           context: context,
                           builder: (BuildContext context) {
-                            return FilterDialog();
+                            return FilterDialog(
+                              allTeams: allTeams,
+                              notSelectedTeams: notSelectedTeams,
+                            );
                           },
                         );
                       }
@@ -167,6 +195,7 @@ class MembersScreenState extends ConsumerState<MembersScreen> {
                   children: [
                     Expanded(child: Text("Name")),
                     Expanded(child: Text("Vorname")),
+                    Expanded(child: Text("Teams")),
                   ],
                 ),
               ),
@@ -217,6 +246,24 @@ class MembersScreenState extends ConsumerState<MembersScreen> {
                                 children: [
                                   Expanded(child: Text(data['last'] ?? '')),
                                   Expanded(child: Text(data['first'] ?? '')),
+                                  Expanded(
+                                    child: Row(
+                                      spacing: 5,
+                                      children:
+                                          (List.from(data['teams'] ?? [])).map((
+                                            teamId,
+                                          ) {
+                                            return Text(
+                                              (memberSummary.value?["names"]
+                                                      as LinkedHashMap<
+                                                        String,
+                                                        dynamic
+                                                      >)[teamId] ??
+                                                  "Unknown",
+                                            );
+                                          }).toList(),
+                                    ),
+                                  ),
                                 ],
                               ),
                             ),
@@ -244,21 +291,21 @@ class MembersScreenState extends ConsumerState<MembersScreen> {
   }
 }
 
-final memberSummaryProvider = StreamProvider<Map?>((ref) {
-  var docRef = FirebaseFirestore.instance.collection('teams').doc("summary");
-  return docRef.snapshots().map((doc) => doc.data());
-});
-
 class FilterDialog extends ConsumerStatefulWidget {
-  const FilterDialog({super.key});
+  final List<String> allTeams;
+  final List<String> notSelectedTeams;
+
+  const FilterDialog({
+    super.key,
+    required this.allTeams,
+    required this.notSelectedTeams,
+  });
 
   @override
   _FilterDialogState createState() => _FilterDialogState();
 }
 
 class _FilterDialogState extends ConsumerState<FilterDialog> {
-  List<String> notSelectedTeams = [];
-
   @override
   Widget build(BuildContext context) {
     final userData = ref.watch(memberSummaryProvider);
@@ -303,13 +350,14 @@ class _FilterDialogState extends ConsumerState<FilterDialog> {
                       onSelected: (isNowActive) {
                         setState(() {
                           if (isNowActive) {
-                            notSelectedTeams.clear();
+                            widget.notSelectedTeams.clear();
                           } else {
-                            notSelectedTeams = allTeams;
+                            widget.notSelectedTeams.clear();
+                            widget.notSelectedTeams.addAll(allTeams);
                           }
                         });
                       },
-                      selected: notSelectedTeams.isEmpty,
+                      selected: widget.notSelectedTeams.isEmpty,
                     ),
                     ...(userData.value?["names"]
                             as LinkedHashMap<String, dynamic>)
@@ -320,13 +368,14 @@ class _FilterDialogState extends ConsumerState<FilterDialog> {
                             onSelected: (isNowActive) {
                               setState(() {
                                 if (isNowActive) {
-                                  notSelectedTeams.remove(entry.key);
+                                  widget.notSelectedTeams.remove(entry.key);
                                 } else {
-                                  notSelectedTeams.add(entry.key);
+                                  widget.notSelectedTeams.add(entry.key);
                                 }
                               });
                             },
-                            selected: !notSelectedTeams.contains(entry.key),
+                            selected:
+                                !widget.notSelectedTeams.contains(entry.key),
                           );
                         }),
                   ],
@@ -348,13 +397,8 @@ class _FilterDialogState extends ConsumerState<FilterDialog> {
                     context.pop();
                     ref.read(teamsFilterProvider.notifier).state =
                         allTeams.where((id) {
-                          return !notSelectedTeams.contains(id);
+                          return !widget.notSelectedTeams.contains(id);
                         }).toList();
-                    print(
-                      allTeams.where((id) {
-                        return !notSelectedTeams.contains(id);
-                      }).toList(),
-                    );
                     ref
                         .read(userListControllerProvider.notifier)
                         .fetchInitial();
