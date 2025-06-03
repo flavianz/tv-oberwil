@@ -37,16 +37,13 @@ class MemberDetailsScreen extends ConsumerWidget {
       ),
       child: Scaffold(
         appBar: AppBar(
-          actionsPadding: EdgeInsets.all(12),
+          actionsPadding: EdgeInsets.symmetric(horizontal: 12),
           title: Text(
             "${memberData.value?["last"]}, ${memberData.value!["first"]}",
           ),
           actions: [
-            FilledButton.icon(
-              onPressed: () {},
-              label: Text("Bearbeiten"),
-              icon: Icon(Icons.edit),
-            ),
+            IconButton(onPressed: () {}, icon: Icon(Icons.edit)),
+            IconButton(onPressed: () {}, icon: Icon(Icons.delete)),
           ],
         ),
         body: Column(

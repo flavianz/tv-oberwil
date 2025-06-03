@@ -99,7 +99,7 @@ class MembersScreenState extends ConsumerState<MembersScreen> {
                 });
               },
               icon: Icon(Icons.add),
-              label: Text("Mitglied hinzufügen"),
+              label: Text("Neu"),
             ),
           ],
         ),
@@ -147,6 +147,13 @@ class MembersScreenState extends ConsumerState<MembersScreen> {
                           builder:
                               (BuildContext context) =>
                                   Dialog(child: FilterDialog()),
+                        );
+                      } else {
+                        showModalBottomSheet(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return FilterDialog();
+                          },
                         );
                       }
                     },
@@ -264,92 +271,89 @@ class _FilterDialogState extends ConsumerState<FilterDialog> {
       return const Center(child: Text("An error occurred"));
     }
 
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(32),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: const [
-                  Icon(Icons.people_alt),
-                  SizedBox(width: 16),
-                  Text("Teams"),
-                ],
-              ),
-              Divider(color: Theme.of(context).dividerColor),
-              Wrap(
-                spacing: 8,
-                children: [
-                  FilterChip(
-                    label: Text("Alle"),
-                    onSelected: (isNowActive) {
-                      setState(() {
-                        if (isNowActive) {
-                          notSelectedTeams.clear();
-                        } else {
-                          notSelectedTeams =
-                              (userData.value?["names"]
-                                      as LinkedHashMap<String, dynamic>)
-                                  .entries
-                                  .map((entry) {
-                                    return entry.key;
-                                  })
-                                  .toList();
-                        }
-                      });
-                    },
-                    selected: notSelectedTeams.isEmpty,
-                  ),
-                  ...(userData.value?["names"]
-                          as LinkedHashMap<String, dynamic>)
-                      .entries
-                      .map((entry) {
-                        return FilterChip(
-                          label: Text(entry.value),
-                          onSelected: (isNowActive) {
-                            setState(() {
-                              if (isNowActive) {
-                                notSelectedTeams.remove(entry.key);
-                              } else {
-                                notSelectedTeams.add(entry.key);
-                              }
-                            });
-                          },
-                          selected: !notSelectedTeams.contains(entry.key),
-                        );
-                      }),
-                ],
-              ),
-              SizedBox(height: 30),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                mainAxisSize: MainAxisSize.max,
-                children: [
-                  TextButton.icon(
-                    onPressed: () {
-                      context.pop();
-                    },
-                    label: const Text('Abbrechen'),
-                    icon: Icon(Icons.close),
-                  ),
-                  FilledButton.icon(
-                    onPressed: () {
-                      context.pop();
-                    },
-                    label: const Text('Anwenden'),
-                    icon: Icon(Icons.check),
-                  ),
-                ],
-              ),
-            ],
-          ),
+    return ConstrainedBox(
+      constraints: BoxConstraints(maxWidth: 800),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  children: const [
+                    Icon(Icons.people_alt),
+                    SizedBox(width: 16),
+                    Text("Teams"),
+                  ],
+                ),
+                Divider(color: Theme.of(context).dividerColor),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    FilterChip(
+                      label: Text("Alle"),
+                      onSelected: (isNowActive) {
+                        setState(() {
+                          if (isNowActive) {
+                            notSelectedTeams.clear();
+                          } else {
+                            notSelectedTeams =
+                                (userData.value?["names"]
+                                        as LinkedHashMap<String, dynamic>)
+                                    .entries
+                                    .map((entry) => entry.key)
+                                    .toList();
+                          }
+                        });
+                      },
+                      selected: notSelectedTeams.isEmpty,
+                    ),
+                    ...(userData.value?["names"]
+                            as LinkedHashMap<String, dynamic>)
+                        .entries
+                        .map((entry) {
+                          return FilterChip(
+                            label: Text(entry.value),
+                            onSelected: (isNowActive) {
+                              setState(() {
+                                if (isNowActive) {
+                                  notSelectedTeams.remove(entry.key);
+                                } else {
+                                  notSelectedTeams.add(entry.key);
+                                }
+                              });
+                            },
+                            selected: !notSelectedTeams.contains(entry.key),
+                          );
+                        }),
+                  ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 30),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton.icon(
+                  onPressed: () => context.pop(),
+                  icon: Icon(Icons.close),
+                  label: const Text('Abbrechen'),
+                ),
+                const SizedBox(width: 16),
+                FilledButton.icon(
+                  onPressed: () => context.pop(),
+                  icon: Icon(Icons.check),
+                  label: const Text('Anwenden'),
+                ),
+              ],
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }
