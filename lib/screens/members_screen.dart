@@ -21,7 +21,9 @@ final membersProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
 });
 
 class MembersScreen extends ConsumerStatefulWidget {
-  const MembersScreen({super.key});
+  final bool refresh;
+
+  const MembersScreen({super.key, required this.refresh});
 
   @override
   ConsumerState<MembersScreen> createState() => MembersScreenState();
@@ -33,19 +35,6 @@ final textControllerProvider = Provider<TextEditingController>((ref) {
 
 class MembersScreenState extends ConsumerState<MembersScreen> {
   final ScrollController _scrollController = ScrollController();
-
-  @override
-  void initState() {
-    super.initState();
-
-    // auto-fetching more
-    /*_scrollController.addListener(() {
-      if (_scrollController.position.pixels >=
-          _scrollController.position.maxScrollExtent - 100) {
-        ref.read(userListControllerProvider.notifier).fetchMore();
-      }
-    });*/
-  }
 
   @override
   void dispose() {
@@ -65,6 +54,15 @@ class MembersScreenState extends ConsumerState<MembersScreen> {
     }
 
     final isScreenWide = MediaQuery.of(context).size.aspectRatio > 1;
+
+    if (widget.refresh) {
+      Future(() {
+        ref.read(userListControllerProvider.notifier).fetchInitial();
+        if (context.mounted) {
+          context.go("/members");
+        }
+      }).then((_) {});
+    }
 
     return Padding(
       padding: EdgeInsets.symmetric(
@@ -97,6 +95,7 @@ class MembersScreenState extends ConsumerState<MembersScreen> {
                     "teamid": {"name": "Junioren Bla", "role": "Spieler"},
                   },
                 });
+                ref.read(userListControllerProvider.notifier).fetchInitial();
               },
               icon: Icon(Icons.add),
               label: Text("Neu"),
@@ -271,6 +270,11 @@ class _FilterDialogState extends ConsumerState<FilterDialog> {
       return const Center(child: Text("An error occurred"));
     }
 
+    final allTeams =
+        (userData.value?["names"] as LinkedHashMap<String, dynamic>).entries
+            .map((entry) => entry.key)
+            .toList();
+
     return ConstrainedBox(
       constraints: BoxConstraints(maxWidth: 800),
       child: SingleChildScrollView(
@@ -301,12 +305,7 @@ class _FilterDialogState extends ConsumerState<FilterDialog> {
                           if (isNowActive) {
                             notSelectedTeams.clear();
                           } else {
-                            notSelectedTeams =
-                                (userData.value?["names"]
-                                        as LinkedHashMap<String, dynamic>)
-                                    .entries
-                                    .map((entry) => entry.key)
-                                    .toList();
+                            notSelectedTeams = allTeams;
                           }
                         });
                       },
@@ -345,7 +344,21 @@ class _FilterDialogState extends ConsumerState<FilterDialog> {
                 ),
                 const SizedBox(width: 16),
                 FilledButton.icon(
-                  onPressed: () => context.pop(),
+                  onPressed: () {
+                    context.pop();
+                    ref.read(teamsFilterProvider.notifier).state =
+                        allTeams.where((id) {
+                          return !notSelectedTeams.contains(id);
+                        }).toList();
+                    print(
+                      allTeams.where((id) {
+                        return !notSelectedTeams.contains(id);
+                      }).toList(),
+                    );
+                    ref
+                        .read(userListControllerProvider.notifier)
+                        .fetchInitial();
+                  },
                   icon: Icon(Icons.check),
                   label: const Text('Anwenden'),
                 ),

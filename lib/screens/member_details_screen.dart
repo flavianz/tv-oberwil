@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 final userStreamProvider = StreamProvider.family<
   DocumentSnapshot<Map<String, dynamic>>,
@@ -43,7 +44,47 @@ class MemberDetailsScreen extends ConsumerWidget {
           ),
           actions: [
             IconButton(onPressed: () {}, icon: Icon(Icons.edit)),
-            IconButton(onPressed: () {}, icon: Icon(Icons.delete)),
+            IconButton(
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (context) {
+                    return AlertDialog(
+                      title: const Text('Spieler löschen?'),
+                      content: const SingleChildScrollView(
+                        child: ListBody(
+                          children: <Widget>[
+                            Text(
+                              'Das Löschen kann nicht rückgängig gemacht werden.',
+                            ),
+                          ],
+                        ),
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () {
+                            context.pop();
+                          },
+                          child: Text("Abbrechen"),
+                        ),
+                        FilledButton.icon(
+                          onPressed: () {
+                            FirebaseFirestore.instance
+                                .doc("members/${memberData.value?.id}")
+                                .delete();
+                            context.pop();
+                            context.go("/members?r=true");
+                          },
+                          label: Text("Löschen"),
+                          icon: Icon(Icons.delete),
+                        ),
+                      ],
+                    );
+                  },
+                );
+              },
+              icon: Icon(Icons.delete),
+            ),
           ],
         ),
         body: Column(

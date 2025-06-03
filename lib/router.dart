@@ -15,7 +15,14 @@ final router = GoRouter(
       },
       routes: [
         GoRoute(path: '/', builder: (context, state) => HomeScreen()),
-        GoRoute(path: '/members', builder: (context, state) => MembersScreen()),
+        GoRoute(
+          path: '/members',
+          builder: (context, state) {
+            return MembersScreen(
+              refresh: (state.uri.queryParameters["r"] ?? "false") == "true",
+            );
+          },
+        ),
         GoRoute(
           path: '/member/:uid',
           builder: (context, state) {

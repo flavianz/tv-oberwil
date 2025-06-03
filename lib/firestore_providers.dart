@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 final searchQueryProvider = StateProvider<String>((ref) => '');
+final teamsFilterProvider = StateProvider<List<String>>((ref) => []);
 
 final userListControllerProvider = StateNotifierProvider<
   UserListController,
@@ -30,7 +31,11 @@ class UserListController
     state = const AsyncLoading();
 
     final query = ref.read(searchQueryProvider).trim();
-    final snapshot = await _fetchQuery(query, null);
+    final snapshot = await _fetchQuery(
+      query,
+      ref.read(teamsFilterProvider),
+      null,
+    );
 
     _allDocs = snapshot.docs;
     _lastDoc = snapshot.docs.isNotEmpty ? snapshot.docs.last : null;
@@ -45,7 +50,11 @@ class UserListController
 
     _isLoading = true;
     final query = ref.read(searchQueryProvider).trim();
-    final snapshot = await _fetchQuery(query, _lastDoc);
+    final snapshot = await _fetchQuery(
+      query,
+      ref.read(teamsFilterProvider),
+      _lastDoc,
+    );
     final newDocs = snapshot.docs;
 
     if (newDocs.isNotEmpty) {
@@ -60,6 +69,7 @@ class UserListController
 
   Future<QuerySnapshot<Map<String, dynamic>>> _fetchQuery(
     String query,
+    List<String> teams,
     DocumentSnapshot? startAfter,
   ) {
     Query<Map<String, dynamic>> firestoreQuery = FirebaseFirestore.instance
@@ -79,6 +89,10 @@ class UserListController
         .orderBy("search_last")
         .orderBy("search_first")
         .limit(querySizeLimit);
+    print(teams);
+    if (teams.isNotEmpty) {
+      firestoreQuery = firestoreQuery.where("teams", arrayContainsAny: teams);
+    }
 
     if (startAfter != null) {
       firestoreQuery = firestoreQuery.startAfterDocument(startAfter);
