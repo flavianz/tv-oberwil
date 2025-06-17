@@ -24,7 +24,10 @@ class _MemberDetailsScreenState extends ConsumerState<MemberDetailsScreen> {
   final _firstNameController = TextEditingController();
   final _middleNameController = TextEditingController();
   final _lastNameController = TextEditingController();
-  DateTime? _birthdate;
+  DateTime _birthdate = DateTime.now();
+  bool isEditMode = false;
+  bool _inputsInitialized = false;
+  bool _isSaving = false;
 
   @override
   void dispose() {
@@ -32,6 +35,15 @@ class _MemberDetailsScreenState extends ConsumerState<MemberDetailsScreen> {
     _middleNameController.dispose();
     _lastNameController.dispose();
     super.dispose();
+  }
+
+  void resetInputs(Map<String, dynamic> data) {
+    _firstNameController.text = data["first"] ?? "";
+    _middleNameController.text = data["middle"] ?? "";
+    _lastNameController.text = data["last"] ?? "";
+    _birthdate = DateTime.fromMillisecondsSinceEpoch(
+      (data["birthdate"] as Timestamp).millisecondsSinceEpoch,
+    );
   }
 
   @override
@@ -47,23 +59,43 @@ class _MemberDetailsScreenState extends ConsumerState<MemberDetailsScreen> {
     }
 
     final data = memberData.value?.data() ?? {};
-    _firstNameController.text = data["first"] ?? "";
-    _middleNameController.text = data["middle"] ?? "";
-    _lastNameController.text = data["last"] ?? "";
-    _birthdate = DateTime.fromMillisecondsSinceEpoch(
-      (data["birthdate"] as Timestamp).millisecondsSinceEpoch,
-    );
+
+    if (!memberData.isLoading &&
+        memberData.value != null &&
+        !_inputsInitialized) {
+      final data = memberData.value!.data();
+      if (data != null) {
+        resetInputs(data);
+        _inputsInitialized = true;
+      }
+    }
 
     final personalInfoBoxes = [
-      TextInputBox(controller: _firstNameController, title: "Vorname"),
-      TextInputBox(controller: _middleNameController, title: "Zwischenname"),
-      TextInputBox(controller: _lastNameController, title: "Name"),
+      TextInputBox(
+        controller: _firstNameController,
+        title: "Vorname",
+        isEditMode: isEditMode,
+      ),
+      TextInputBox(
+        controller: _middleNameController,
+        title: "Zwischenname",
+        isEditMode: isEditMode,
+      ),
+      TextInputBox(
+        controller: _lastNameController,
+        title: "Name",
+        isEditMode: isEditMode,
+      ),
       DateInputBox(
         title: "Geburtsdatum",
         onDateSelected: (date) {
-          print(date);
+          setState(() {
+            print(date);
+            _birthdate = date;
+          });
         },
-        defaultDate: _birthdate ?? DateTime.now(),
+        defaultDate: _birthdate,
+        isEditMode: isEditMode,
       ),
     ];
 
@@ -77,7 +109,70 @@ class _MemberDetailsScreenState extends ConsumerState<MemberDetailsScreen> {
           actionsPadding: const EdgeInsets.symmetric(horizontal: 12),
           title: Text("${data["last"]}, ${data["first"]}"),
           actions: [
-            IconButton(onPressed: () {}, icon: const Icon(Icons.edit)),
+            (isEditMode
+                ? Row(
+                  children: [
+                    TextButton.icon(
+                      onPressed: () {
+                        setState(() {
+                          resetInputs(data);
+                          isEditMode = false;
+                          _inputsInitialized = true;
+                        });
+                      },
+                      label: Text("Abbrechen"),
+                      icon: Icon(Icons.close),
+                    ),
+                    FilledButton.icon(
+                      onPressed: () async {
+                        setState(() {
+                          _isSaving = true;
+                        });
+                        Map<String, dynamic> changedData = {};
+                        final Map<String, dynamic> inputs = {
+                          "first": _firstNameController.text,
+                          "middle": _middleNameController.text,
+                          "last": _lastNameController.text,
+                          "birthdate": Timestamp.fromMillisecondsSinceEpoch(
+                            _birthdate.millisecondsSinceEpoch,
+                          ),
+                        };
+                        for (final entry in inputs.entries) {
+                          if (data[entry.key] != entry.value) {
+                            changedData[entry.key] = entry.value;
+                          }
+                        }
+                        if (changedData.isNotEmpty) {
+                          await FirebaseFirestore.instance
+                              .doc("members/${widget.uid}")
+                              .update(changedData);
+                        }
+                        setState(() {
+                          _isSaving = false;
+                          isEditMode = false;
+                        });
+                      },
+                      label: Text("Speichern"),
+                      icon:
+                          _isSaving
+                              ? Transform.scale(
+                                scale: 0.5,
+                                child: CircularProgressIndicator(
+                                  color: Theme.of(context).canvasColor,
+                                ),
+                              )
+                              : Icon(Icons.check),
+                    ),
+                  ],
+                )
+                : IconButton(
+                  onPressed: () {
+                    setState(() {
+                      isEditMode = true;
+                    });
+                  },
+                  icon: const Icon(Icons.edit),
+                )),
             IconButton(
               onPressed: () {
                 showDialog(
@@ -166,11 +261,13 @@ class _MemberDetailsScreenState extends ConsumerState<MemberDetailsScreen> {
 class TextInputBox extends StatelessWidget {
   final TextEditingController controller;
   final String title;
+  final bool isEditMode;
 
   const TextInputBox({
     super.key,
     required this.controller,
     required this.title,
+    required this.isEditMode,
   });
 
   @override
@@ -180,7 +277,7 @@ class TextInputBox extends StatelessWidget {
         decoration: InputDecoration(
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         ),
-        readOnly: true,
+        readOnly: !isEditMode,
         controller: controller,
       ),
       title: title,
@@ -190,37 +287,44 @@ class TextInputBox extends StatelessWidget {
 
 class DateInputBox extends StatelessWidget {
   final String title;
-  final Function onDateSelected;
+  final Function(DateTime) onDateSelected;
   final DateTime defaultDate;
+  final bool isEditMode;
 
   const DateInputBox({
     super.key,
     required this.title,
     required this.onDateSelected,
     required this.defaultDate,
+    required this.isEditMode,
   });
 
   @override
   Widget build(BuildContext context) {
+    final formattedDate =
+        "${defaultDate.day}. ${defaultDate.month}. ${defaultDate.year}";
     return InputBox(
       inputWidget: TextField(
         decoration: InputDecoration(
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+          hintText: formattedDate,
+          prefixIcon: Icon(Icons.date_range),
         ),
         readOnly: true,
         onTap: () async {
-          onDateSelected(
-            await showDatePicker(
+          if (isEditMode) {
+            DateTime? newDate = await showDatePicker(
               context: context,
               initialDate: defaultDate,
               firstDate: DateTime(1900),
               lastDate: DateTime(2200),
-            ),
-          );
+            );
+
+            if (newDate != null) {
+              onDateSelected(newDate);
+            }
+          }
         },
-        controller: TextEditingController(
-          text: "${defaultDate.day}. ${defaultDate.month}. ${defaultDate.year}",
-        ),
       ),
       title: title,
     );
