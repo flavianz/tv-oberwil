@@ -112,9 +112,7 @@ class MembersScreenState extends ConsumerState<MembersScreen> {
                   "search_first": "franz",
                   "search_last": "triebe",
                   "birthdate": Timestamp.now(),
-                  "teams": {
-                    "teamid": {"name": "Junioren Bla", "role": "Spieler"},
-                  },
+                  "teams": ["EtznIsLhB920gYEoSRce"],
                 });
                 ref.read(userListControllerProvider.notifier).fetchInitial();
               },
