@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import 'firestore_tools.dart';
+
 final searchQueryProvider = StateProvider<String>((ref) => '');
 final teamsFilterProvider = StateProvider<List<String>>((ref) => []);
 
@@ -89,7 +91,6 @@ class UserListController
         .orderBy("search_last")
         .orderBy("search_first")
         .limit(querySizeLimit);
-    print(teams);
     if (teams.isNotEmpty) {
       firestoreQuery = firestoreQuery.where("teams", arrayContainsAny: teams);
     }
@@ -104,12 +105,4 @@ class UserListController
   bool get isLoading => _isLoading;
 
   bool get hasMore => _hasMore;
-}
-
-String searchify(String str) {
-  return str
-      .toLowerCase()
-      .replaceAll("ö", "oe")
-      .replaceAll("ä", "ae")
-      .replaceAll("ü", "ue");
 }
