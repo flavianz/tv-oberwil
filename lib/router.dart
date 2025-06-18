@@ -6,6 +6,7 @@ import 'package:tv_oberwil/components/app.dart';
 import 'package:tv_oberwil/screens/home_screen.dart';
 import 'package:tv_oberwil/screens/member_details_screen.dart';
 import 'package:tv_oberwil/screens/members_screen.dart';
+import 'package:tv_oberwil/screens/teams_screen.dart';
 
 final router = GoRouter(
   routes: [
@@ -19,6 +20,14 @@ final router = GoRouter(
           path: '/members',
           builder: (context, state) {
             return MembersScreen(
+              refresh: (state.uri.queryParameters["r"] ?? "false") == "true",
+            );
+          },
+        ),
+        GoRoute(
+          path: '/teams',
+          builder: (context, state) {
+            return TeamsScreen(
               refresh: (state.uri.queryParameters["r"] ?? "false") == "true",
             );
           },

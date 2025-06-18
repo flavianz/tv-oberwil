@@ -5,18 +5,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../firestore_providers/members_provider.dart';
+import '../firestore_providers/teams_provider.dart';
 
 final usersStreamProvider = StreamProvider<List<dynamic>>((ref) {
-  return FirebaseFirestore.instance.collection('members').snapshots().map((
+  return FirebaseFirestore.instance.collection('teams').snapshots().map((
     snapshot,
   ) {
     return snapshot.docs.map((doc) => doc.data()).toList();
   });
 });
 
-final membersProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
-  final snapshot = await FirebaseFirestore.instance.collection('members').get();
+final teamsProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
+  final snapshot = await FirebaseFirestore.instance.collection('teams').get();
   return snapshot.docs.map((doc) => doc.data()).toList();
 });
 
@@ -24,21 +24,21 @@ final textControllerProvider = Provider<TextEditingController>((ref) {
   return TextEditingController();
 });
 
-final memberSummaryProvider = StreamProvider<Map?>((ref) {
+final teamSummaryProvider = StreamProvider<Map?>((ref) {
   var docRef = FirebaseFirestore.instance.collection('teams').doc("summary");
   return docRef.snapshots().map((doc) => doc.data());
 });
 
-class MembersScreen extends ConsumerStatefulWidget {
+class TeamsScreen extends ConsumerStatefulWidget {
   final bool refresh;
 
-  const MembersScreen({super.key, required this.refresh});
+  const TeamsScreen({super.key, required this.refresh});
 
   @override
-  ConsumerState<MembersScreen> createState() => MembersScreenState();
+  ConsumerState<TeamsScreen> createState() => TeamsScreenState();
 }
 
-class MembersScreenState extends ConsumerState<MembersScreen> {
+class TeamsScreenState extends ConsumerState<TeamsScreen> {
   final ScrollController _scrollController = ScrollController();
   List<String> notSelectedTeams = [];
 
@@ -65,23 +65,22 @@ class MembersScreenState extends ConsumerState<MembersScreen> {
       Future(() {
         ref.read(userListControllerProvider.notifier).fetchInitial();
         if (context.mounted) {
-          context.go("/members");
+          context.go("/teams");
         }
       }).then((_) {});
     }
 
-    final memberSummary = ref.watch(memberSummaryProvider);
-    if (memberSummary.isLoading) {
+    final teamSummary = ref.watch(teamSummaryProvider);
+    if (teamSummary.isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
 
-    if (memberSummary.hasError) {
+    if (teamSummary.hasError) {
       return const Center(child: Text("An error occurred"));
     }
 
     final allTeams =
-        (memberSummary.value?["names"] as LinkedHashMap<String, dynamic>)
-            .entries
+        (teamSummary.value?["names"] as LinkedHashMap<String, dynamic>).entries
             .map((entry) => entry.key)
             .toList();
 
@@ -93,7 +92,7 @@ class MembersScreenState extends ConsumerState<MembersScreen> {
       child: Scaffold(
         appBar: AppBar(
           actionsPadding: EdgeInsets.symmetric(horizontal: 12),
-          title: Text("Mitglieder"),
+          title: Text("Teams"),
           actions: [
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -106,7 +105,7 @@ class MembersScreenState extends ConsumerState<MembersScreen> {
             ),
             FilledButton.icon(
               onPressed: () {
-                FirebaseFirestore.instance.collection("members").add({
+                FirebaseFirestore.instance.collection("teams").add({
                   "first": "Franz",
                   "last": "Triebe",
                   "search_first": "franz",
@@ -132,7 +131,7 @@ class MembersScreenState extends ConsumerState<MembersScreen> {
                     child: TextField(
                       controller: searchController,
                       decoration: InputDecoration(
-                        labelText: 'Suche nach Mitgliedern',
+                        labelText: 'Suche nach Teams',
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -192,8 +191,8 @@ class MembersScreenState extends ConsumerState<MembersScreen> {
                 child: Row(
                   children: [
                     Expanded(child: Text("Name")),
-                    Expanded(child: Text("Vorname")),
-                    Expanded(child: Text("Teams")),
+                    Expanded(child: Text("Art")),
+                    Expanded(child: Text("Grösse")),
                   ],
                 ),
               ),
@@ -202,9 +201,7 @@ class MembersScreenState extends ConsumerState<MembersScreen> {
                 child: asyncDocs.when(
                   data: (docs) {
                     if (docs.isEmpty) {
-                      return const Center(
-                        child: Text('Keine Mitglieder gefunden'),
-                      );
+                      return const Center(child: Text('Keine Teams gefunden'));
                     }
 
                     final controller = ref.read(
@@ -244,31 +241,21 @@ class MembersScreenState extends ConsumerState<MembersScreen> {
                               padding: const EdgeInsets.symmetric(vertical: 10),
                               child: Row(
                                 children: [
-                                  Expanded(child: Text(data['last'] ?? '')),
-                                  Expanded(child: Text(data['first'] ?? '')),
+                                  Expanded(child: Text(data['name'] ?? '')),
+                                  Expanded(child: Text(data['type'] ?? '')),
                                   Expanded(
-                                    child: Row(
-                                      spacing: 5,
-                                      children:
-                                          (List.from(data['teams'] ?? [])).map((
-                                            teamId,
-                                          ) {
-                                            return Text(
-                                              (memberSummary.value?["names"]
-                                                      as LinkedHashMap<
-                                                        String,
-                                                        dynamic
-                                                      >)[teamId] ??
-                                                  "Unknown",
-                                            );
-                                          }).toList(),
+                                    child: Text(
+                                      ((data["players"] ?? {})
+                                              as Map<String, dynamic>)
+                                          .length
+                                          .toString(),
                                     ),
                                   ),
                                 ],
                               ),
                             ),
                             onTap: () {
-                              context.push("/member/${docs[index].id}");
+                              context.push("/team/${docs[index].id}");
                             },
                           ),
                         );
@@ -308,7 +295,7 @@ class FilterDialog extends ConsumerStatefulWidget {
 class _FilterDialogState extends ConsumerState<FilterDialog> {
   @override
   Widget build(BuildContext context) {
-    final userData = ref.watch(memberSummaryProvider);
+    final userData = ref.watch(teamSummaryProvider);
     if (userData.isLoading) {
       return const Center(child: CircularProgressIndicator());
     }

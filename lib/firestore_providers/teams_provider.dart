@@ -82,8 +82,7 @@ class UserListController
             Filter('search_name', isLessThan: searchify('${query}zz')),
           ),
         )
-        .orderBy("search_last")
-        .orderBy("search_first")
+        .orderBy("search_name")
         .limit(querySizeLimit);
     if (teams.isNotEmpty) {
       firestoreQuery = firestoreQuery.where("teams", arrayContainsAny: teams);
