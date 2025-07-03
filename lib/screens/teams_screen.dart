@@ -245,8 +245,7 @@ class TeamsScreenState extends ConsumerState<TeamsScreen> {
                                   Expanded(child: Text(data['type'] ?? '')),
                                   Expanded(
                                     child: Text(
-                                      ((data["players"] ?? {})
-                                              as Map<String, dynamic>)
+                                      ((data["players"] ?? {}) as List<dynamic>)
                                           .length
                                           .toString(),
                                     ),

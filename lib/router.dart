@@ -6,6 +6,7 @@ import 'package:tv_oberwil/components/app.dart';
 import 'package:tv_oberwil/screens/home_screen.dart';
 import 'package:tv_oberwil/screens/member_details_screen.dart';
 import 'package:tv_oberwil/screens/members_screen.dart';
+import 'package:tv_oberwil/screens/team_details_screen.dart';
 import 'package:tv_oberwil/screens/teams_screen.dart';
 
 final router = GoRouter(
@@ -37,6 +38,13 @@ final router = GoRouter(
           builder: (context, state) {
             final userId = state.pathParameters['uid']!;
             return MemberDetailsScreen(uid: userId);
+          },
+        ),
+        GoRoute(
+          path: '/team/:uid',
+          builder: (context, state) {
+            final teamId = state.pathParameters['uid']!;
+            return TeamDetailsScreen(uid: teamId);
           },
         ),
       ],
