@@ -21,6 +21,7 @@ class TeamDetailsScreen extends ConsumerStatefulWidget {
 
 class _TeamDetailsScreenState extends ConsumerState<TeamDetailsScreen> {
   final _teamNameController = TextEditingController();
+  String teamType = "active";
   bool isEditMode = false;
   bool _inputsInitialized = false;
   bool _isSaving = false;
@@ -33,6 +34,7 @@ class _TeamDetailsScreenState extends ConsumerState<TeamDetailsScreen> {
 
   void resetInputs(Map<String, dynamic> data) {
     _teamNameController.text = data["name"] ?? "";
+    teamType = data["type"] ?? "active";
   }
 
   @override
@@ -62,6 +64,17 @@ class _TeamDetailsScreenState extends ConsumerState<TeamDetailsScreen> {
         controller: _teamNameController,
         title: "Teamname",
         isEditMode: isEditMode,
+      ),
+      SelectionInputBox(
+        title: "Teamart",
+        isEditMode: isEditMode,
+        options: {"juniors": "Junioren", "active": "Aktive", "fun": "Plausch"},
+        selected: teamType,
+        onSelected: (s) {
+          setState(() {
+            teamType = s;
+          });
+        },
       ),
     ];
 
@@ -106,6 +119,7 @@ class _TeamDetailsScreenState extends ConsumerState<TeamDetailsScreen> {
                           Map<String, dynamic> changedData = {};
                           final Map<String, dynamic> inputs = {
                             "name": _teamNameController.text,
+                            "type": teamType,
                           };
                           for (final entry in inputs.entries) {
                             if (data[entry.key] != entry.value) {
@@ -115,7 +129,18 @@ class _TeamDetailsScreenState extends ConsumerState<TeamDetailsScreen> {
                           if (changedData.isNotEmpty) {
                             await FirebaseFirestore.instance
                                 .doc("teams/${widget.uid}")
-                                .update(changedData);
+                                .update(changedData)
+                                .whenComplete(() {
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          'Daten wurden aktualisiert!',
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                });
                           }
                           setState(() {
                             _isSaving = false;
@@ -251,6 +276,53 @@ class TextInputBox extends StatelessWidget {
         ),
         readOnly: !isEditMode,
         controller: controller,
+      ),
+      title: title,
+    );
+  }
+}
+
+class SelectionInputBox extends StatelessWidget {
+  final String title;
+  final bool isEditMode;
+  final Map<String, String> options;
+  final String selected;
+  final Function(String) onSelected;
+
+  const SelectionInputBox({
+    super.key,
+    required this.title,
+    required this.isEditMode,
+    required this.options,
+    required this.selected,
+    required this.onSelected,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InputBox(
+      inputWidget: DropdownButtonFormField(
+        decoration: InputDecoration(
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+        items:
+            options.entries.map((entry) {
+              return DropdownMenuItem(
+                value: entry.key,
+                child: Text(entry.value),
+              );
+            }).toList(),
+        onChanged:
+            isEditMode
+                ? (String? s) {
+                  onSelected(s ?? selected);
+                }
+                : null,
+        value: isEditMode ? selected : null,
+        disabledHint: Text(
+          options[selected] ?? "None",
+          style: TextStyle(color: Colors.black),
+        ),
       ),
       title: title,
     );
