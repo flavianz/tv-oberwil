@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:tv_oberwil/firestore_providers/firestore_tools.dart';
 
 final userStreamProvider = StreamProvider.family<
   DocumentSnapshot<Map<String, dynamic>>,
@@ -12,8 +13,9 @@ final userStreamProvider = StreamProvider.family<
 
 class TeamDetailsScreen extends ConsumerStatefulWidget {
   final String uid;
+  final bool created;
 
-  const TeamDetailsScreen({super.key, required this.uid});
+  const TeamDetailsScreen({super.key, required this.uid, this.created = false});
 
   @override
   ConsumerState<TeamDetailsScreen> createState() => _TeamDetailsScreenState();
@@ -22,9 +24,13 @@ class TeamDetailsScreen extends ConsumerStatefulWidget {
 class _TeamDetailsScreenState extends ConsumerState<TeamDetailsScreen> {
   final _teamNameController = TextEditingController();
   String teamType = "active";
+  int playerCount = 0;
+  int coachCount = 0;
+  String sportType = "none";
   bool isEditMode = false;
   bool _inputsInitialized = false;
   bool _isSaving = false;
+  bool isFirstRender = true;
 
   @override
   void dispose() {
@@ -35,10 +41,19 @@ class _TeamDetailsScreenState extends ConsumerState<TeamDetailsScreen> {
   void resetInputs(Map<String, dynamic> data) {
     _teamNameController.text = data["name"] ?? "";
     teamType = data["type"] ?? "active";
+    playerCount = ((data["players"] as List<dynamic>?) ?? []).length;
+    coachCount =
+        ((data["assistant_coaches"] as List<dynamic>?) ?? []).length + 1;
+    sportType = data["sport_type"] ?? "none";
   }
 
   @override
   Widget build(BuildContext context) {
+    if (isFirstRender) {
+      isEditMode = widget.created;
+      isFirstRender = false;
+    }
+
     final isTablet = MediaQuery.of(context).size.aspectRatio > 1;
     final teamData = ref.watch(userStreamProvider(widget.uid));
 
@@ -76,7 +91,42 @@ class _TeamDetailsScreenState extends ConsumerState<TeamDetailsScreen> {
           });
         },
       ),
+      SelectionInputBox(
+        title: "Sportart",
+        isEditMode: isEditMode,
+        options: {
+          "floorball": "Unihockey",
+          "volleyball": "Volleyball",
+          "riege": "Riege",
+          "none": "Keine",
+        },
+        selected: sportType,
+        onSelected: (s) {
+          setState(() {
+            sportType = s;
+          });
+        },
+      ),
+      TextInputBox(
+        controller: TextEditingController(text: playerCount.toString()),
+        title: "Anzahl Spieler",
+        isEditMode: false,
+      ),
+      TextInputBox(
+        controller: TextEditingController(text: coachCount.toString()),
+        title: "Anzahl Trainer",
+        isEditMode: false,
+      ),
     ];
+
+    final tabletInfoBoxes =
+        personalInfoBoxes
+            .map(
+              (w) => Expanded(
+                child: Padding(padding: EdgeInsets.only(right: 15), child: w),
+              ),
+            )
+            .toList();
 
     return Padding(
       padding: EdgeInsets.symmetric(
@@ -106,6 +156,9 @@ class _TeamDetailsScreenState extends ConsumerState<TeamDetailsScreen> {
                             resetInputs(data);
                             isEditMode = false;
                             _inputsInitialized = true;
+                            if (widget.created) {
+                              context.go("/teams");
+                            }
                           });
                         },
                         label: Text("Abbrechen"),
@@ -119,32 +172,55 @@ class _TeamDetailsScreenState extends ConsumerState<TeamDetailsScreen> {
                           Map<String, dynamic> changedData = {};
                           final Map<String, dynamic> inputs = {
                             "name": _teamNameController.text,
+                            "search_name": searchify(_teamNameController.text),
                             "type": teamType,
+                            "sport_type": sportType,
                           };
-                          for (final entry in inputs.entries) {
-                            if (data[entry.key] != entry.value) {
-                              changedData[entry.key] = entry.value;
-                            }
-                          }
-                          if (changedData.isNotEmpty) {
-                            await FirebaseFirestore.instance
+                          if (widget.created) {
+                            FirebaseFirestore.instance
                                 .doc("teams/${widget.uid}")
-                                .update(changedData)
+                                .set(inputs)
                                 .whenComplete(() {
                                   if (context.mounted) {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
-                                        content: Text(
-                                          'Daten wurden aktualisiert!',
-                                        ),
+                                        content: Text('Team wurde erstellt!'),
                                       ),
                                     );
                                   }
                                 });
+                          } else {
+                            for (final entry in inputs.entries) {
+                              if (data[entry.key] != entry.value) {
+                                changedData[entry.key] = entry.value;
+                              }
+                            }
+                            if (changedData.isNotEmpty) {
+                              await FirebaseFirestore.instance
+                                  .doc("teams/${widget.uid}")
+                                  .update(changedData)
+                                  .whenComplete(() {
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            'Daten wurden aktualisiert!',
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                  });
+                            }
                           }
+
                           setState(() {
                             _isSaving = false;
                             isEditMode = false;
+                            if (widget.created) {
+                              context.go("/teams");
+                            }
                           });
                         },
                         label: Text("Speichern"),
@@ -217,18 +293,11 @@ class _TeamDetailsScreenState extends ConsumerState<TeamDetailsScreen> {
                   children: [
                     const SizedBox(height: 30),
                     isTablet
-                        ? Row(
-                          children:
-                              personalInfoBoxes
-                                  .map(
-                                    (w) => Expanded(
-                                      child: Padding(
-                                        padding: EdgeInsets.only(right: 15),
-                                        child: w,
-                                      ),
-                                    ),
-                                  )
-                                  .toList(),
+                        ? Column(
+                          children: [
+                            Row(children: tabletInfoBoxes.sublist(0, 3)),
+                            Row(children: tabletInfoBoxes.sublist(3)),
+                          ],
                         )
                         : Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,

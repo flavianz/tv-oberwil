@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../firestore_providers/teams_provider.dart';
+import '../utils/util_functions.dart';
 
 final usersStreamProvider = StreamProvider<List<dynamic>>((ref) {
   return FirebaseFirestore.instance.collection('teams').snapshots().map((
@@ -105,15 +106,7 @@ class TeamsScreenState extends ConsumerState<TeamsScreen> {
             ),
             FilledButton.icon(
               onPressed: () {
-                FirebaseFirestore.instance.collection("teams").add({
-                  "first": "Franz",
-                  "last": "Triebe",
-                  "search_first": "franz",
-                  "search_last": "triebe",
-                  "birthdate": Timestamp.now(),
-                  "teams": ["EtznIsLhB920gYEoSRce"],
-                });
-                ref.read(userListControllerProvider.notifier).fetchInitial();
+                context.go("/team/${generateFirestoreKey()}?create=true");
               },
               icon: Icon(Icons.add),
               label: Text("Neu"),
@@ -245,7 +238,7 @@ class TeamsScreenState extends ConsumerState<TeamsScreen> {
                                   Expanded(child: Text(data['type'] ?? '')),
                                   Expanded(
                                     child: Text(
-                                      ((data["players"] ?? {}) as List<dynamic>)
+                                      ((data["players"] ?? []) as List<dynamic>)
                                           .length
                                           .toString(),
                                     ),

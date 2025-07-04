@@ -37,14 +37,22 @@ final router = GoRouter(
           path: '/member/:uid',
           builder: (context, state) {
             final userId = state.pathParameters['uid']!;
-            return MemberDetailsScreen(uid: userId);
+            return MemberDetailsScreen(
+              uid: userId,
+              created:
+                  (state.uri.queryParameters["create"] ?? "false") == "true",
+            );
           },
         ),
         GoRoute(
           path: '/team/:uid',
           builder: (context, state) {
             final teamId = state.pathParameters['uid']!;
-            return TeamDetailsScreen(uid: teamId);
+            return TeamDetailsScreen(
+              uid: teamId,
+              created:
+                  (state.uri.queryParameters["create"] ?? "false") == "true",
+            );
           },
         ),
       ],

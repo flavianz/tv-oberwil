@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:tv_oberwil/firestore_providers/firestore_tools.dart';
 
 final userStreamProvider = StreamProvider.family<
   DocumentSnapshot<Map<String, dynamic>>,
@@ -12,8 +13,13 @@ final userStreamProvider = StreamProvider.family<
 
 class MemberDetailsScreen extends ConsumerStatefulWidget {
   final String uid;
+  final bool created;
 
-  const MemberDetailsScreen({super.key, required this.uid});
+  const MemberDetailsScreen({
+    super.key,
+    required this.uid,
+    this.created = false,
+  });
 
   @override
   ConsumerState<MemberDetailsScreen> createState() =>
@@ -28,6 +34,7 @@ class _MemberDetailsScreenState extends ConsumerState<MemberDetailsScreen> {
   bool isEditMode = false;
   bool _inputsInitialized = false;
   bool _isSaving = false;
+  bool isFirstRender = true;
 
   @override
   void dispose() {
@@ -42,12 +49,17 @@ class _MemberDetailsScreenState extends ConsumerState<MemberDetailsScreen> {
     _middleNameController.text = data["middle"] ?? "";
     _lastNameController.text = data["last"] ?? "";
     _birthdate = DateTime.fromMillisecondsSinceEpoch(
-      (data["birthdate"] as Timestamp).millisecondsSinceEpoch,
+      ((data["birthdate"] ?? Timestamp.now()) as Timestamp)
+          .millisecondsSinceEpoch,
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    if (isFirstRender) {
+      isEditMode = widget.created;
+      isFirstRender = false;
+    }
     final isTablet = MediaQuery.of(context).size.aspectRatio > 1;
     final memberData = ref.watch(userStreamProvider(widget.uid));
 
@@ -107,7 +119,11 @@ class _MemberDetailsScreenState extends ConsumerState<MemberDetailsScreen> {
       child: Scaffold(
         appBar: AppBar(
           actionsPadding: const EdgeInsets.symmetric(horizontal: 12),
-          title: Text("${data["last"]}, ${data["first"]}"),
+          title: Text(
+            widget.created
+                ? "Neues Mitglied"
+                : "${_lastNameController.text}, ${_firstNameController.text}",
+          ),
           actions: [
             (isEditMode
                 ? Row(
@@ -118,6 +134,9 @@ class _MemberDetailsScreenState extends ConsumerState<MemberDetailsScreen> {
                           resetInputs(data);
                           isEditMode = false;
                           _inputsInitialized = true;
+                          if (widget.created) {
+                            context.go("/members");
+                          }
                         });
                       },
                       label: Text("Abbrechen"),
@@ -131,25 +150,56 @@ class _MemberDetailsScreenState extends ConsumerState<MemberDetailsScreen> {
                         Map<String, dynamic> changedData = {};
                         final Map<String, dynamic> inputs = {
                           "first": _firstNameController.text,
+                          "search_first": searchify(_firstNameController.text),
                           "middle": _middleNameController.text,
                           "last": _lastNameController.text,
+                          "search_last": searchify(_lastNameController.text),
                           "birthdate": Timestamp.fromMillisecondsSinceEpoch(
                             _birthdate.millisecondsSinceEpoch,
                           ),
                         };
-                        for (final entry in inputs.entries) {
-                          if (data[entry.key] != entry.value) {
-                            changedData[entry.key] = entry.value;
-                          }
-                        }
-                        if (changedData.isNotEmpty) {
-                          await FirebaseFirestore.instance
+                        if (widget.created) {
+                          FirebaseFirestore.instance
                               .doc("members/${widget.uid}")
-                              .update(changedData);
+                              .set(inputs)
+                              .whenComplete(() {
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('Mitglied wurde erstellt!'),
+                                    ),
+                                  );
+                                }
+                              });
+                        } else {
+                          for (final entry in inputs.entries) {
+                            if (data[entry.key] != entry.value) {
+                              changedData[entry.key] = entry.value;
+                            }
+                          }
+                          if (changedData.isNotEmpty) {
+                            await FirebaseFirestore.instance
+                                .doc("members/${widget.uid}")
+                                .update(changedData)
+                                .whenComplete(() {
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          'Daten wurden aktualisiert!',
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                });
+                          }
                         }
                         setState(() {
                           _isSaving = false;
                           isEditMode = false;
+                          if (widget.created) {
+                            context.go("/members");
+                          }
                         });
                       },
                       label: Text("Speichern"),
@@ -191,7 +241,7 @@ class _MemberDetailsScreenState extends ConsumerState<MemberDetailsScreen> {
                         ),
                         actions: [
                           TextButton(
-                            onPressed: () => context.pop(),
+                            onPressed: () => context.go("members"),
                             child: const Text("Abbrechen"),
                           ),
                           FilledButton.icon(
