@@ -5,13 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:tv_oberwil/firestore_providers/firestore_tools.dart';
 
 import '../components/input_boxes.dart';
-
-final userStreamProvider = StreamProvider.family<
-  DocumentSnapshot<Map<String, dynamic>>,
-  String
->((ref, uid) {
-  return FirebaseFirestore.instance.collection('teams').doc(uid).snapshots();
-});
+import '../firestore_providers/basic_providers.dart';
 
 class TeamDetailsScreen extends ConsumerStatefulWidget {
   final String uid;
@@ -60,7 +54,7 @@ class _TeamDetailsScreenState extends ConsumerState<TeamDetailsScreen> {
     }
 
     final isTablet = MediaQuery.of(context).size.aspectRatio > 1;
-    final teamData = ref.watch(userStreamProvider(widget.uid));
+    final teamData = ref.watch(realtimeDocProvider("teams/${widget.uid}"));
 
     if (teamData.isLoading) {
       return const Center(child: CircularProgressIndicator());

@@ -1,34 +1,12 @@
 import 'dart:collection';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../firestore_providers/basic_providers.dart';
 import '../firestore_providers/teams_provider.dart';
 import '../utils.dart';
-
-final usersStreamProvider = StreamProvider<List<dynamic>>((ref) {
-  return FirebaseFirestore.instance.collection('teams').snapshots().map((
-    snapshot,
-  ) {
-    return snapshot.docs.map((doc) => doc.data()).toList();
-  });
-});
-
-final teamsProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
-  final snapshot = await FirebaseFirestore.instance.collection('teams').get();
-  return snapshot.docs.map((doc) => doc.data()).toList();
-});
-
-final textControllerProvider = Provider<TextEditingController>((ref) {
-  return TextEditingController();
-});
-
-final teamSummaryProvider = StreamProvider<Map?>((ref) {
-  var docRef = FirebaseFirestore.instance.collection('teams').doc("summary");
-  return docRef.snapshots().map((doc) => doc.data());
-});
 
 class TeamsScreen extends ConsumerStatefulWidget {
   final bool refresh;
@@ -71,7 +49,7 @@ class TeamsScreenState extends ConsumerState<TeamsScreen> {
       }).then((_) {});
     }
 
-    final teamSummary = ref.watch(teamSummaryProvider);
+    final teamSummary = ref.watch(realtimeDocProvider("teams/summary"));
     if (teamSummary.isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -287,7 +265,7 @@ class FilterDialog extends ConsumerStatefulWidget {
 class _FilterDialogState extends ConsumerState<FilterDialog> {
   @override
   Widget build(BuildContext context) {
-    final userData = ref.watch(teamSummaryProvider);
+    final userData = ref.watch(realtimeDocProvider("teams/summary"));
     if (userData.isLoading) {
       return const Center(child: CircularProgressIndicator());
     }

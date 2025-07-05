@@ -1,4 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class InputBox extends StatelessWidget {
   final Widget inputWidget;
@@ -138,6 +140,50 @@ class SelectionInputBox<T> extends StatelessWidget {
           options[selected] ?? "None",
           style: TextStyle(color: Colors.black),
         ),
+      ),
+      title: title,
+    );
+  }
+}
+
+class MemberInputBox extends StatelessWidget {
+  final String title;
+  final Function(DateTime) onDateSelected;
+  final DateTime defaultDate;
+  final bool isEditMode;
+
+  const MemberInputBox({
+    super.key,
+    required this.title,
+    required this.onDateSelected,
+    required this.defaultDate,
+    required this.isEditMode,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InputBox(
+      inputWidget: TextField(
+        decoration: InputDecoration(
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+          hintText: "formattedDate",
+          prefixIcon: Icon(Icons.date_range),
+        ),
+        readOnly: true,
+        onTap: () async {
+          if (isEditMode) {
+            DateTime? newDate = await showDatePicker(
+              context: context,
+              initialDate: defaultDate,
+              firstDate: DateTime(1900),
+              lastDate: DateTime(2200),
+            );
+
+            if (newDate != null) {
+              onDateSelected(newDate);
+            }
+          }
+        },
       ),
       title: title,
     );
