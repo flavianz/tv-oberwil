@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:tv_oberwil/firestore_providers/firestore_tools.dart';
 
+import '../components/input_boxes.dart';
+
 final userStreamProvider = StreamProvider.family<
   DocumentSnapshot<Map<String, dynamic>>,
   String
@@ -318,109 +320,14 @@ class _TeamDetailsScreenState extends ConsumerState<TeamDetailsScreen> {
                   ],
                 ),
               ),
-              Center(),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 15),
+                child: Column(children: [Row(), ListView()]),
+              ),
               Center(),
             ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-class TextInputBox extends StatelessWidget {
-  final TextEditingController controller;
-  final String title;
-  final bool isEditMode;
-
-  const TextInputBox({
-    super.key,
-    required this.controller,
-    required this.title,
-    required this.isEditMode,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return InputBox(
-      inputWidget: TextField(
-        decoration: InputDecoration(
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-        ),
-        readOnly: !isEditMode,
-        controller: controller,
-      ),
-      title: title,
-    );
-  }
-}
-
-class SelectionInputBox<T> extends StatelessWidget {
-  final String title;
-  final bool isEditMode;
-  final Map<T, String> options;
-  final T selected;
-  final Function(T) onSelected;
-
-  const SelectionInputBox({
-    super.key,
-    required this.title,
-    required this.isEditMode,
-    required this.options,
-    required this.selected,
-    required this.onSelected,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return InputBox(
-      inputWidget: DropdownButtonFormField(
-        decoration: InputDecoration(
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-        ),
-        items:
-            options.entries.map((entry) {
-              return DropdownMenuItem(
-                value: entry.key,
-                child: Text(entry.value),
-              );
-            }).toList(),
-        onChanged:
-            isEditMode
-                ? (T? s) {
-                  onSelected(s ?? selected);
-                }
-                : null,
-        value: isEditMode ? selected : null,
-        disabledHint: Text(
-          options[selected] ?? "None",
-          style: TextStyle(color: Colors.black),
-        ),
-      ),
-      title: title,
-    );
-  }
-}
-
-class InputBox extends StatelessWidget {
-  final Widget inputWidget;
-  final String title;
-
-  const InputBox({super.key, required this.inputWidget, required this.title});
-
-  @override
-  Widget build(BuildContext context) {
-    return ConstrainedBox(
-      constraints: BoxConstraints(maxWidth: 300),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: EdgeInsets.all(12),
-            child: Text(title, style: TextStyle(fontWeight: FontWeight.w600)),
-          ),
-          inputWidget,
-        ],
       ),
     );
   }

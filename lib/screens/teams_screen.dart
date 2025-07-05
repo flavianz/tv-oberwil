@@ -6,7 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../firestore_providers/teams_provider.dart';
-import '../utils/util_functions.dart';
+import '../utils.dart';
 
 final usersStreamProvider = StreamProvider<List<dynamic>>((ref) {
   return FirebaseFirestore.instance.collection('teams').snapshots().map((
