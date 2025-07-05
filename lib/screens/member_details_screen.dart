@@ -198,7 +198,7 @@ class _MemberDetailsScreenState extends ConsumerState<MemberDetailsScreen> {
                           _isSaving = false;
                           isEditMode = false;
                           if (widget.created) {
-                            context.go("/members");
+                            context.go("/members?r=true");
                           }
                         });
                       },

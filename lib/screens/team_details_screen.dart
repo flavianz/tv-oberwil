@@ -27,6 +27,8 @@ class _TeamDetailsScreenState extends ConsumerState<TeamDetailsScreen> {
   int playerCount = 0;
   int coachCount = 0;
   String sportType = "none";
+  bool playsInLeague = true;
+
   bool isEditMode = false;
   bool _inputsInitialized = false;
   bool _isSaving = false;
@@ -45,6 +47,7 @@ class _TeamDetailsScreenState extends ConsumerState<TeamDetailsScreen> {
     coachCount =
         ((data["assistant_coaches"] as List<dynamic>?) ?? []).length + 1;
     sportType = data["sport_type"] ?? "none";
+    playsInLeague = data["plays_in_league"] ?? true;
   }
 
   @override
@@ -81,17 +84,6 @@ class _TeamDetailsScreenState extends ConsumerState<TeamDetailsScreen> {
         isEditMode: isEditMode,
       ),
       SelectionInputBox(
-        title: "Teamart",
-        isEditMode: isEditMode,
-        options: {"juniors": "Junioren", "active": "Aktive", "fun": "Plausch"},
-        selected: teamType,
-        onSelected: (s) {
-          setState(() {
-            teamType = s;
-          });
-        },
-      ),
-      SelectionInputBox(
         title: "Sportart",
         isEditMode: isEditMode,
         options: {
@@ -107,15 +99,27 @@ class _TeamDetailsScreenState extends ConsumerState<TeamDetailsScreen> {
           });
         },
       ),
-      TextInputBox(
-        controller: TextEditingController(text: playerCount.toString()),
-        title: "Anzahl Spieler",
-        isEditMode: false,
+      SelectionInputBox(
+        title: "Teamart",
+        isEditMode: isEditMode,
+        options: {"juniors": "Junioren", "active": "Aktive", "fun": "Plausch"},
+        selected: teamType,
+        onSelected: (s) {
+          setState(() {
+            teamType = s;
+          });
+        },
       ),
-      TextInputBox(
-        controller: TextEditingController(text: coachCount.toString()),
-        title: "Anzahl Trainer",
-        isEditMode: false,
+      SelectionInputBox(
+        title: "Spielt in Liga",
+        isEditMode: isEditMode,
+        options: {true: "Ja", false: "Nein"},
+        selected: playsInLeague,
+        onSelected: (s) {
+          setState(() {
+            playsInLeague = s;
+          });
+        },
       ),
     ];
 
@@ -175,6 +179,7 @@ class _TeamDetailsScreenState extends ConsumerState<TeamDetailsScreen> {
                             "search_name": searchify(_teamNameController.text),
                             "type": teamType,
                             "sport_type": sportType,
+                            "plays_in_league": playsInLeague,
                           };
                           if (widget.created) {
                             FirebaseFirestore.instance
@@ -219,7 +224,7 @@ class _TeamDetailsScreenState extends ConsumerState<TeamDetailsScreen> {
                             _isSaving = false;
                             isEditMode = false;
                             if (widget.created) {
-                              context.go("/teams");
+                              context.go("/teams?r=true");
                             }
                           });
                         },
@@ -288,15 +293,14 @@ class _TeamDetailsScreenState extends ConsumerState<TeamDetailsScreen> {
             children: [
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 15),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                child: ListView(
                   children: [
                     const SizedBox(height: 30),
                     isTablet
                         ? Column(
                           children: [
-                            Row(children: tabletInfoBoxes.sublist(0, 3)),
-                            Row(children: tabletInfoBoxes.sublist(3)),
+                            Row(children: tabletInfoBoxes.sublist(0, 2)),
+                            Row(children: tabletInfoBoxes.sublist(2)),
                           ],
                         )
                         : Column(
@@ -351,12 +355,12 @@ class TextInputBox extends StatelessWidget {
   }
 }
 
-class SelectionInputBox extends StatelessWidget {
+class SelectionInputBox<T> extends StatelessWidget {
   final String title;
   final bool isEditMode;
-  final Map<String, String> options;
-  final String selected;
-  final Function(String) onSelected;
+  final Map<T, String> options;
+  final T selected;
+  final Function(T) onSelected;
 
   const SelectionInputBox({
     super.key,
@@ -383,7 +387,7 @@ class SelectionInputBox extends StatelessWidget {
             }).toList(),
         onChanged:
             isEditMode
-                ? (String? s) {
+                ? (T? s) {
                   onSelected(s ?? selected);
                 }
                 : null,
