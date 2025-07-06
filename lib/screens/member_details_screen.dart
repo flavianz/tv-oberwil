@@ -27,7 +27,7 @@ class _MemberDetailsScreenState extends ConsumerState<MemberDetailsScreen> {
   final _middleNameController = TextEditingController();
   final _lastNameController = TextEditingController();
   DateTime _birthdate = DateTime.now();
-  List<String> teams = [];
+  List<dynamic> teams = [];
 
   bool isEditMode = false;
   bool _inputsInitialized = false;
@@ -50,7 +50,7 @@ class _MemberDetailsScreenState extends ConsumerState<MemberDetailsScreen> {
       ((data["birthdate"] ?? Timestamp.now()) as Timestamp)
           .millisecondsSinceEpoch,
     );
-    teams = (data["teams"] ?? []) as List<String>;
+    teams = (data["teams"] ?? []) as List<dynamic>;
   }
 
   @override

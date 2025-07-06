@@ -20,6 +20,20 @@ final userDataProvider = StreamProvider<Map?>((ref) {
     return Stream.empty();
   }
 });
+final memberDataProvider = StreamProvider<Map?>((ref) {
+  final userDataStream = ref.watch(userDataProvider);
+
+  var userData = userDataStream.value;
+
+  if (userData != null && userData["member"] != null) {
+    var docRef = FirebaseFirestore.instance
+        .collection('members')
+        .doc(userData["member"]);
+    return docRef.snapshots().map((doc) => doc.data());
+  } else {
+    return Stream.empty();
+  }
+});
 
 class App extends ConsumerStatefulWidget {
   final Widget child;
@@ -35,18 +49,18 @@ class _AppState extends ConsumerState<App> {
 
   @override
   Widget build(BuildContext context) {
-    final userData = ref.watch(userDataProvider);
+    final memberData = ref.watch(memberDataProvider);
 
-    if (userData.isLoading) {
+    if (memberData.isLoading) {
       return Center(child: CircularProgressIndicator());
     }
 
-    if (userData.hasError) {
+    if (memberData.hasError) {
       return Center(child: Text("An error occurred loading your data."));
     }
 
     final List<String> roles = List<String>.from(
-      userData.value?["roles"] ?? [],
+      memberData.value?["roles"] ?? [],
     );
 
     final List<Map<String, dynamic>> destinations = [
