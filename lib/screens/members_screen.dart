@@ -1,5 +1,6 @@
 import 'dart:collection';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -292,6 +293,7 @@ class _FilterDialogState extends ConsumerState<FilterDialog> {
         (userData.value?["names"] as LinkedHashMap<String, dynamic>).entries
             .map((entry) => entry.key)
             .toList();
+    allTeams.add("none");
 
     return ConstrainedBox(
       constraints: BoxConstraints(maxWidth: 800),
@@ -324,11 +326,25 @@ class _FilterDialogState extends ConsumerState<FilterDialog> {
                             widget.notSelectedTeams.clear();
                           } else {
                             widget.notSelectedTeams.clear();
+                            widget.notSelectedTeams.add("none");
                             widget.notSelectedTeams.addAll(allTeams);
                           }
                         });
                       },
                       selected: widget.notSelectedTeams.isEmpty,
+                    ),
+                    FilterChip(
+                      label: Text("Ohne Team"),
+                      onSelected: (isNowActive) {
+                        setState(() {
+                          if (isNowActive) {
+                            widget.notSelectedTeams.remove("none");
+                          } else {
+                            widget.notSelectedTeams.add("none");
+                          }
+                        });
+                      },
+                      selected: !widget.notSelectedTeams.contains("none"),
                     ),
                     ...(userData.value?["names"]
                             as LinkedHashMap<String, dynamic>)

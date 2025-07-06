@@ -27,6 +27,8 @@ class _MemberDetailsScreenState extends ConsumerState<MemberDetailsScreen> {
   final _middleNameController = TextEditingController();
   final _lastNameController = TextEditingController();
   DateTime _birthdate = DateTime.now();
+  List<String> teams = [];
+
   bool isEditMode = false;
   bool _inputsInitialized = false;
   bool _isSaving = false;
@@ -48,6 +50,7 @@ class _MemberDetailsScreenState extends ConsumerState<MemberDetailsScreen> {
       ((data["birthdate"] ?? Timestamp.now()) as Timestamp)
           .millisecondsSinceEpoch,
     );
+    teams = (data["teams"] ?? []) as List<String>;
   }
 
   @override
@@ -153,6 +156,7 @@ class _MemberDetailsScreenState extends ConsumerState<MemberDetailsScreen> {
                           "birthdate": Timestamp.fromMillisecondsSinceEpoch(
                             _birthdate.millisecondsSinceEpoch,
                           ),
+                          "teams": teams,
                         };
                         if (widget.created) {
                           FirebaseFirestore.instance

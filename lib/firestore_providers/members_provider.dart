@@ -91,8 +91,19 @@ class UserListController
         .orderBy("search_last")
         .orderBy("search_first")
         .limit(querySizeLimit);
+    print(teams);
     if (teams.isNotEmpty) {
-      firestoreQuery = firestoreQuery.where("teams", arrayContainsAny: teams);
+      if (teams.contains("none")) {
+        print("as");
+        firestoreQuery = firestoreQuery.where(
+          Filter.or(
+            Filter("teams", arrayContainsAny: teams),
+            Filter("teams", isEqualTo: []),
+          ),
+        );
+      } else {
+        firestoreQuery = firestoreQuery.where("teams", arrayContainsAny: teams);
+      }
     }
 
     if (startAfter != null) {
