@@ -46,6 +46,7 @@ class App extends ConsumerStatefulWidget {
 
 class _AppState extends ConsumerState<App> {
   int selectedIndex = 0;
+  String? selectedRole;
 
   @override
   Widget build(BuildContext context) {
@@ -63,30 +64,27 @@ class _AppState extends ConsumerState<App> {
       memberData.value?["roles"] ?? [],
     );
 
+    selectedRole = roles[0];
+
     final List<Map<String, dynamic>> destinations = [
       {"icon": Icon(Icons.home), "label": "Übersicht", "url": "/"},
     ];
 
-    if (roles.contains("admin")) {
-      destinations.add({
-        "icon": Icon(Icons.people_alt),
-        "label": "Mitglieder",
-        "url": "/members",
-      });
+    if (selectedRole == "admin") {
+      destinations.addAll([
+        {
+          "icon": Icon(Icons.people_alt),
+          "label": "Mitglieder",
+          "url": "/members",
+        },
+        {"icon": Icon(Icons.diversity_3), "label": "Teams", "url": "/teams"},
+        {
+          "icon": Icon(Icons.settings),
+          "label": "Einstellungen",
+          "url": "/settings",
+        },
+      ]);
     }
-
-    destinations.add({
-      "icon": Icon(Icons.diversity_3),
-      "label": "Teams",
-      "url": "/teams",
-    });
-
-    destinations.add({
-      "icon": Icon(Icons.settings),
-      "label": "Einstellungen",
-      "url": "/settings",
-    });
-
     final isTablet = MediaQuery.of(context).size.aspectRatio > 1;
 
     return Stack(
@@ -123,7 +121,29 @@ class _AppState extends ConsumerState<App> {
                               context.pushReplacement(destinations[i]["url"]);
                             });
                           },
-                          leading: Image.asset("assets/tvo.png", height: 75),
+                          leading:
+                              roles.length > 1
+                                  ? Column(
+                                    children: [
+                                      Image.asset("assets/tvo.png", height: 75),
+                                      DropdownButton(
+                                        items:
+                                            roles.map((role) {
+                                              return DropdownMenuItem(
+                                                value: role,
+                                                child: Text(role),
+                                              );
+                                            }).toList(),
+                                        onChanged: (selectedRole) {
+                                          setState(() {
+                                            this.selectedRole = selectedRole;
+                                          });
+                                        },
+                                        value: selectedRole,
+                                      ),
+                                    ],
+                                  )
+                                  : Image.asset("assets/tvo.png", height: 75),
                         ),
                         Expanded(child: widget.child),
                       ],
