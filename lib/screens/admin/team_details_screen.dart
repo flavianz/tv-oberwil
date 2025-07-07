@@ -4,8 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:tv_oberwil/firestore_providers/firestore_tools.dart';
 
-import '../components/input_boxes.dart';
-import '../firestore_providers/basic_providers.dart';
+import '../../components/input_boxes.dart';
+import '../../firestore_providers/basic_providers.dart';
 
 class TeamDetailsScreen extends ConsumerStatefulWidget {
   final String uid;
@@ -157,7 +157,7 @@ class _TeamDetailsScreenState extends ConsumerState<TeamDetailsScreen> {
                             isEditMode = false;
                             _inputsInitialized = true;
                             if (widget.created) {
-                              context.go("/teams");
+                              context.go("/admin/teams");
                             }
                           });
                         },
@@ -220,7 +220,7 @@ class _TeamDetailsScreenState extends ConsumerState<TeamDetailsScreen> {
                             _isSaving = false;
                             isEditMode = false;
                             if (widget.created) {
-                              context.go("/teams?r=true");
+                              context.go("/admin/teams?r=true");
                             }
                           });
                         },
@@ -272,7 +272,7 @@ class _TeamDetailsScreenState extends ConsumerState<TeamDetailsScreen> {
                                     .doc("teams/${teamData.value?.id}")
                                     .delete();
                                 context.pop();
-                                context.go("/teams?r=true");
+                                context.go("/admin/teams?r=true");
                               },
                               label: const Text("Löschen"),
                               icon: const Icon(Icons.delete),

@@ -64,7 +64,7 @@ class _AppState extends ConsumerState<App> {
       memberData.value?["roles"] ?? [],
     );
 
-    selectedRole = roles[0];
+    selectedRole = selectedRole ?? roles[0];
 
     final List<Map<String, dynamic>> destinations = [
       {"icon": Icon(Icons.home), "label": "Übersicht", "url": "/"},
@@ -75,16 +75,29 @@ class _AppState extends ConsumerState<App> {
         {
           "icon": Icon(Icons.people_alt),
           "label": "Mitglieder",
-          "url": "/members",
+          "url": "/admin/members",
         },
-        {"icon": Icon(Icons.diversity_3), "label": "Teams", "url": "/teams"},
+        {
+          "icon": Icon(Icons.diversity_3),
+          "label": "Teams",
+          "url": "/admin/teams",
+        },
         {
           "icon": Icon(Icons.settings),
           "label": "Einstellungen",
-          "url": "/settings",
+          "url": "/admin/settings",
+        },
+      ]);
+    } else if (selectedRole == "player") {
+      destinations.addAll([
+        {
+          "icon": Icon(Icons.event),
+          "label": "Termine",
+          "url": "/player/events",
         },
       ]);
     }
+
     final isTablet = MediaQuery.of(context).size.aspectRatio > 1;
 
     return Stack(
@@ -137,6 +150,8 @@ class _AppState extends ConsumerState<App> {
                                         onChanged: (selectedRole) {
                                           setState(() {
                                             this.selectedRole = selectedRole;
+                                            context.go("/");
+                                            selectedIndex = 0;
                                           });
                                         },
                                         value: selectedRole,

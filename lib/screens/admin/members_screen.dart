@@ -5,8 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:tv_oberwil/utils.dart';
 
-import '../firestore_providers/basic_providers.dart';
-import '../firestore_providers/members_provider.dart';
+import '../../firestore_providers/basic_providers.dart';
+import '../../firestore_providers/members_provider.dart';
 
 class MembersScreen extends ConsumerStatefulWidget {
   final bool refresh;
@@ -18,14 +18,7 @@ class MembersScreen extends ConsumerStatefulWidget {
 }
 
 class MembersScreenState extends ConsumerState<MembersScreen> {
-  final ScrollController _scrollController = ScrollController();
   List<String> notSelectedTeams = [];
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +37,7 @@ class MembersScreenState extends ConsumerState<MembersScreen> {
       Future(() {
         ref.read(userListControllerProvider.notifier).fetchInitial();
         if (context.mounted) {
-          context.go("/members");
+          context.go("/admin/members");
         }
       }).then((_) {});
     }
@@ -85,7 +78,9 @@ class MembersScreenState extends ConsumerState<MembersScreen> {
             ),
             FilledButton.icon(
               onPressed: () {
-                context.go("/member/${generateFirestoreKey()}?create=true");
+                context.go(
+                  "/admin/member/${generateFirestoreKey()}?create=true",
+                );
               },
               icon: Icon(Icons.add),
               label: Text("Neu"),
@@ -183,7 +178,6 @@ class MembersScreenState extends ConsumerState<MembersScreen> {
                     );
 
                     return ListView.separated(
-                      controller: _scrollController,
                       itemCount: docs.length + 1,
                       itemBuilder: (context, index) {
                         if (index == docs.length) {
@@ -239,7 +233,7 @@ class MembersScreenState extends ConsumerState<MembersScreen> {
                               ),
                             ),
                             onTap: () {
-                              context.push("/member/${docs[index].id}");
+                              context.push("/admin/member/${docs[index].id}");
                             },
                           ),
                         );

@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../firestore_providers/basic_providers.dart';
-import '../firestore_providers/teams_provider.dart';
-import '../utils.dart';
+import '../../firestore_providers/basic_providers.dart';
+import '../../firestore_providers/teams_provider.dart';
+import '../../utils.dart';
 
 class TeamsScreen extends ConsumerStatefulWidget {
   final bool refresh;
@@ -44,7 +44,7 @@ class TeamsScreenState extends ConsumerState<TeamsScreen> {
       Future(() {
         ref.read(userListControllerProvider.notifier).fetchInitial();
         if (context.mounted) {
-          context.go("/teams");
+          context.go("/admin/teams");
         }
       }).then((_) {});
     }
@@ -84,7 +84,7 @@ class TeamsScreenState extends ConsumerState<TeamsScreen> {
             ),
             FilledButton.icon(
               onPressed: () {
-                context.go("/team/${generateFirestoreKey()}?create=true");
+                context.go("/admin/team/${generateFirestoreKey()}?create=true");
               },
               icon: Icon(Icons.add),
               label: Text("Neu"),
@@ -225,7 +225,7 @@ class TeamsScreenState extends ConsumerState<TeamsScreen> {
                               ),
                             ),
                             onTap: () {
-                              context.push("/team/${docs[index].id}");
+                              context.push("/admin/team/${docs[index].id}");
                             },
                           ),
                         );

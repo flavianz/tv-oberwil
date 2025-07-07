@@ -3,11 +3,12 @@ import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 import 'package:firebase_ui_oauth_google/firebase_ui_oauth_google.dart';
 import 'package:go_router/go_router.dart';
 import 'package:tv_oberwil/components/app.dart';
-import 'package:tv_oberwil/screens/home_screen.dart';
-import 'package:tv_oberwil/screens/member_details_screen.dart';
-import 'package:tv_oberwil/screens/members_screen.dart';
-import 'package:tv_oberwil/screens/team_details_screen.dart';
-import 'package:tv_oberwil/screens/teams_screen.dart';
+import 'package:tv_oberwil/screens/admin/home_screen.dart';
+import 'package:tv_oberwil/screens/admin/member_details_screen.dart';
+import 'package:tv_oberwil/screens/admin/members_screen.dart';
+import 'package:tv_oberwil/screens/admin/team_details_screen.dart';
+import 'package:tv_oberwil/screens/admin/teams_screen.dart';
+import 'package:tv_oberwil/screens/player/events.dart';
 
 final router = GoRouter(
   routes: [
@@ -18,7 +19,7 @@ final router = GoRouter(
       routes: [
         GoRoute(path: '/', builder: (context, state) => HomeScreen()),
         GoRoute(
-          path: '/members',
+          path: '/admin/members',
           builder: (context, state) {
             return MembersScreen(
               refresh: (state.uri.queryParameters["r"] ?? "false") == "true",
@@ -26,7 +27,7 @@ final router = GoRouter(
           },
         ),
         GoRoute(
-          path: '/teams',
+          path: '/admin/teams',
           builder: (context, state) {
             return TeamsScreen(
               refresh: (state.uri.queryParameters["r"] ?? "false") == "true",
@@ -34,7 +35,7 @@ final router = GoRouter(
           },
         ),
         GoRoute(
-          path: '/member/:uid',
+          path: '/admin/member/:uid',
           builder: (context, state) {
             final userId = state.pathParameters['uid']!;
             return MemberDetailsScreen(
@@ -45,7 +46,7 @@ final router = GoRouter(
           },
         ),
         GoRoute(
-          path: '/team/:uid',
+          path: '/admin/team/:uid',
           builder: (context, state) {
             final teamId = state.pathParameters['uid']!;
             return TeamDetailsScreen(
@@ -53,6 +54,12 @@ final router = GoRouter(
               created:
                   (state.uri.queryParameters["create"] ?? "false") == "true",
             );
+          },
+        ),
+        GoRoute(
+          path: '/player/events',
+          builder: (context, state) {
+            return PlayerEvents();
           },
         ),
       ],

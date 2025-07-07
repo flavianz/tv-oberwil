@@ -4,8 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:tv_oberwil/firestore_providers/firestore_tools.dart';
 
-import '../components/input_boxes.dart';
-import '../firestore_providers/basic_providers.dart';
+import '../../components/input_boxes.dart';
+import '../../firestore_providers/basic_providers.dart';
 
 class MemberDetailsScreen extends ConsumerStatefulWidget {
   final String uid;
@@ -134,7 +134,7 @@ class _MemberDetailsScreenState extends ConsumerState<MemberDetailsScreen> {
                           isEditMode = false;
                           _inputsInitialized = true;
                           if (widget.created) {
-                            context.go("/members");
+                            context.go("/admin/members");
                           }
                         });
                       },
@@ -198,7 +198,7 @@ class _MemberDetailsScreenState extends ConsumerState<MemberDetailsScreen> {
                           _isSaving = false;
                           isEditMode = false;
                           if (widget.created) {
-                            context.go("/members?r=true");
+                            context.go("/admin/members?r=true");
                           }
                         });
                       },
@@ -241,7 +241,7 @@ class _MemberDetailsScreenState extends ConsumerState<MemberDetailsScreen> {
                         ),
                         actions: [
                           TextButton(
-                            onPressed: () => context.go("members"),
+                            onPressed: () => context.go("/admin/members"),
                             child: const Text("Abbrechen"),
                           ),
                           FilledButton.icon(
@@ -250,7 +250,7 @@ class _MemberDetailsScreenState extends ConsumerState<MemberDetailsScreen> {
                                   .doc("members/${memberData.value?.id}")
                                   .delete();
                               context.pop();
-                              context.go("/members?r=true");
+                              context.go("/admin/members?r=true");
                             },
                             label: const Text("Löschen"),
                             icon: const Icon(Icons.delete),
