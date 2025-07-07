@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:tv_oberwil/components/paginated_list.dart';
 
 class PlayerEvents extends StatefulWidget {
@@ -12,15 +12,83 @@ class PlayerEvents extends StatefulWidget {
 class _PlayerEventsState extends State<PlayerEvents> {
   @override
   Widget build(BuildContext context) {
-    return PaginatedList(
-      builder: (doc) {
-        return Text(doc.get("name") ?? "");
-      },
-      collection: FirebaseFirestore.instance
-          .collection("teams")
-          .doc("BJKawVNV88EzhOIhOapX")
-          .collection("events"),
-      orderBy: "meet",
+    final isScreenWide = MediaQuery.of(context).size.aspectRatio > 1;
+    return Padding(
+      padding: EdgeInsets.symmetric(
+        horizontal: isScreenWide ? 35 : 0,
+        vertical: 15,
+      ),
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text("Termine"),
+          actions: [IconButton(onPressed: () {}, icon: Icon(Icons.refresh))],
+        ),
+        body: PaginatedList(
+          builder: (doc) {
+            final meetDate = getDateTime(doc.get("meet"));
+            final startDate = getDateTime(doc.get("start"));
+            final endDate = getDateTime(doc.get("end"));
+            return Card.outlined(
+              elevation: 1,
+              child: Padding(
+                padding: EdgeInsets.all(15),
+                child: Row(
+                  children: [
+                    Column(
+                      children: [
+                        Text(
+                          getWeekday(startDate.weekday),
+                          style: TextStyle(fontSize: 12),
+                        ),
+                        Text(
+                          "${startDate.day}.${startDate.month}.",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Text(doc.get("name") ?? ""),
+                  ],
+                ),
+              ),
+            );
+          },
+          collection: FirebaseFirestore.instance
+              .collection("teams")
+              .doc("BJKawVNV88EzhOIhOapX")
+              .collection("events"),
+          orderBy: "meet",
+        ),
+      ),
     );
   }
+}
+
+String getWeekday(int weekday) {
+  switch (weekday) {
+    case 1:
+      return "Montag";
+    case 2:
+      return "Dienstag";
+    case 3:
+      return "Mittwoch";
+    case 4:
+      return "Donnerstag";
+    case 5:
+      return "Freitag";
+    case 6:
+      return "Samstag";
+    case 7:
+      return "Sonntag";
+    case _:
+      return "Unbekannt";
+  }
+}
+
+DateTime getDateTime(dynamic timestamp) {
+  return DateTime.fromMillisecondsSinceEpoch(
+    ((timestamp ?? Timestamp.now()) as Timestamp).millisecondsSinceEpoch,
+  );
 }
