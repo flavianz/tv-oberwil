@@ -2,6 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:tv_oberwil/components/paginated_list.dart';
 
+import '../../utils.dart';
+
 class PlayerEvents extends StatefulWidget {
   const PlayerEvents({super.key});
 
@@ -32,25 +34,40 @@ class _PlayerEventsState extends State<PlayerEvents> {
               elevation: 1,
               child: Padding(
                 padding: EdgeInsets.all(15),
-                child: Row(
-                  children: [
-                    Column(
-                      children: [
-                        Text(
-                          getWeekday(startDate.weekday),
-                          style: TextStyle(fontSize: 12),
-                        ),
-                        Text(
-                          "${startDate.day}.${startDate.month}.",
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
+                child: IntrinsicHeight(
+                  child: Row(
+                    children: [
+                      Column(
+                        children: [
+                          Text(
+                            getWeekday(startDate.weekday),
+                            style: TextStyle(fontSize: 12),
                           ),
-                        ),
-                      ],
-                    ),
-                    Text(doc.get("name") ?? ""),
-                  ],
+                          Text(
+                            "${startDate.day}.${startDate.month}.",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                      VerticalDivider(width: 20),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            doc.get("name") ?? "",
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          Text(
+                            getTimeDistance(startDate),
+                            style: TextStyle(fontSize: 13),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             );
@@ -64,31 +81,4 @@ class _PlayerEventsState extends State<PlayerEvents> {
       ),
     );
   }
-}
-
-String getWeekday(int weekday) {
-  switch (weekday) {
-    case 1:
-      return "Montag";
-    case 2:
-      return "Dienstag";
-    case 3:
-      return "Mittwoch";
-    case 4:
-      return "Donnerstag";
-    case 5:
-      return "Freitag";
-    case 6:
-      return "Samstag";
-    case 7:
-      return "Sonntag";
-    case _:
-      return "Unbekannt";
-  }
-}
-
-DateTime getDateTime(dynamic timestamp) {
-  return DateTime.fromMillisecondsSinceEpoch(
-    ((timestamp ?? Timestamp.now()) as Timestamp).millisecondsSinceEpoch,
-  );
 }
