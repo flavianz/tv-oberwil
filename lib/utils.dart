@@ -68,3 +68,25 @@ String getTimeDistance(DateTime date) {
     return "In ${difference / (1000 * 3600 * 24 * 30)} Monaten";
   }
 }
+
+bool isSameDay(DateTime first, DateTime second) {
+  return first.day == second.day &&
+      first.month == second.month &&
+      first.year == second.year;
+}
+
+String? getNearbyTimeDifference(DateTime date) {
+  final now = DateTime.now();
+  if (isSameDay(now, date)) {
+    return "Heute";
+  }
+  if (isSameDay(
+    DateTime.fromMillisecondsSinceEpoch(
+      now.millisecondsSinceEpoch + 1000 * 3600 * 24,
+    ),
+    date,
+  )) {
+    return "Morgen";
+  }
+  return null;
+}
