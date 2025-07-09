@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_ui_auth/firebase_ui_auth.dart';
@@ -23,16 +25,24 @@ Future<void> main() async {
   runApp(ProviderScope(child: MyApp()));
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    FirebaseAuth.instance.authStateChanges().listen((User? user) {
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  final activeRouter = router;
+  late final StreamSubscription<User?> _authSub;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _authSub = FirebaseAuth.instance.authStateChanges().listen((User? user) {
       if (user == null) {
-        router.go("/sign-in");
-      } else {
-        router.go("/");
+        activeRouter.go("/sign-in");
       }
     });
 
@@ -42,15 +52,24 @@ class MyApp extends StatelessWidget {
         statusBarIconBrightness: Brightness.dark,
       ),
     );
+  }
 
+  @override
+  void dispose() {
+    _authSub.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return MaterialApp.router(
-      routerConfig: router,
+      routerConfig: activeRouter,
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.redAccent),
-        textTheme: TextTheme.of(
-          context,
-        ).copyWith(bodyMedium: TextStyle(fontSize: 17)),
+        textTheme: ThemeData.light().textTheme.copyWith(
+          bodyMedium: const TextStyle(fontSize: 17),
+        ),
       ),
     );
   }
