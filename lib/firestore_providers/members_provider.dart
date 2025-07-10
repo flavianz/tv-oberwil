@@ -91,10 +91,8 @@ class UserListController
         .orderBy("search_last")
         .orderBy("search_first")
         .limit(querySizeLimit);
-    print(teams);
     if (teams.isNotEmpty) {
       if (teams.contains("none")) {
-        print("as");
         firestoreQuery = firestoreQuery.where(
           Filter.or(
             Filter("teams", arrayContainsAny: teams),

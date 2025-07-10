@@ -1,21 +1,25 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:tv_oberwil/components/app.dart';
 import 'package:tv_oberwil/components/paginated_list.dart';
 
 import '../../utils.dart';
 
-class PlayerEvents extends StatefulWidget {
-  const PlayerEvents({super.key});
+class PlayerEvents extends ConsumerStatefulWidget {
+  final teamId;
+
+  const PlayerEvents({super.key, required this.teamId});
 
   @override
-  State<PlayerEvents> createState() => _PlayerEventsState();
+  ConsumerState<PlayerEvents> createState() => _PlayerEventsState();
 }
 
-class _PlayerEventsState extends State<PlayerEvents> {
+class _PlayerEventsState extends ConsumerState<PlayerEvents> {
   @override
   Widget build(BuildContext context) {
     final isScreenWide = MediaQuery.of(context).size.aspectRatio > 1;
+
     return Padding(
       padding: EdgeInsets.symmetric(
         horizontal: isScreenWide ? 35 : 0,
@@ -31,12 +35,19 @@ class _PlayerEventsState extends State<PlayerEvents> {
             final meetDate = getDateTime(doc.get("meet"));
             final startDate = getDateTime(doc.get("start"));
             final endDate = getDateTime(doc.get("end"));
+            final presence =
+                ((((doc.data() ?? {}) as Map<String, dynamic>)["presence"] ??
+                        <String, dynamic>{})
+                    as Map<String, dynamic>);
+            final localMemberUid = ref.read(userDataProvider).value?["member"];
             return Card.outlined(
               elevation: 1,
               child: Padding(
                 padding: EdgeInsets.all(15),
                 child: IntrinsicHeight(
                   child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       ConstrainedBox(
                         constraints: BoxConstraints(minWidth: 80),
@@ -160,9 +171,22 @@ class _PlayerEventsState extends State<PlayerEvents> {
                           spacing: 5,
                           children: [
                             FilledButton(
-                              onPressed: () {},
+                              onPressed: () async {
+                                await FirebaseFirestore.instance
+                                    .collection('teams')
+                                    .doc(widget.teamId)
+                                    .collection("events")
+                                    .doc(doc.id)
+                                    .update({
+                                      'presence.$localMemberUid': 'p',
+                                      // only this key inside the map is updated
+                                    });
+                              },
                               style: FilledButton.styleFrom(
-                                backgroundColor: Colors.green,
+                                backgroundColor:
+                                    presence[localMemberUid] == "p"
+                                        ? Colors.green
+                                        : Colors.grey,
                                 // set your desired color
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(
@@ -176,7 +200,10 @@ class _PlayerEventsState extends State<PlayerEvents> {
                                   children: [
                                     Text("Dabei"),
                                     Text(
-                                      "10",
+                                      presence.values
+                                          .where((value) => value == "p")
+                                          .length
+                                          .toString(),
                                       style: TextStyle(
                                         fontSize: 17,
                                         fontWeight: FontWeight.bold,
@@ -192,9 +219,22 @@ class _PlayerEventsState extends State<PlayerEvents> {
                                 crossAxisAlignment: CrossAxisAlignment.stretch,
                                 children: [
                                   FilledButton(
-                                    onPressed: () {},
+                                    onPressed: () async {
+                                      await FirebaseFirestore.instance
+                                          .collection('teams')
+                                          .doc(widget.teamId)
+                                          .collection("events")
+                                          .doc(doc.id)
+                                          .update({
+                                            'presence.$localMemberUid': 'u',
+                                            // only this key inside the map is updated
+                                          });
+                                    },
                                     style: FilledButton.styleFrom(
-                                      backgroundColor: Colors.amber,
+                                      backgroundColor:
+                                          presence[localMemberUid] == "u"
+                                              ? Colors.amber
+                                              : Colors.grey,
                                       // set your desired color
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(
@@ -209,7 +249,10 @@ class _PlayerEventsState extends State<PlayerEvents> {
                                       children: [
                                         Text("Unsicher"),
                                         Text(
-                                          "10",
+                                          presence.values
+                                              .where((value) => value == "u")
+                                              .length
+                                              .toString(),
                                           style: TextStyle(
                                             fontWeight: FontWeight.bold,
                                           ),
@@ -218,9 +261,22 @@ class _PlayerEventsState extends State<PlayerEvents> {
                                     ),
                                   ),
                                   FilledButton(
-                                    onPressed: () {},
+                                    onPressed: () async {
+                                      await FirebaseFirestore.instance
+                                          .collection('teams')
+                                          .doc(widget.teamId)
+                                          .collection("events")
+                                          .doc(doc.id)
+                                          .update({
+                                            'presence.$localMemberUid': 'a',
+                                            // only this key inside the map is updated
+                                          });
+                                    },
                                     style: FilledButton.styleFrom(
-                                      backgroundColor: Colors.redAccent,
+                                      backgroundColor:
+                                          presence[localMemberUid] == "a"
+                                              ? Colors.redAccent
+                                              : Colors.grey,
                                       // set your desired color
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(
@@ -230,13 +286,15 @@ class _PlayerEventsState extends State<PlayerEvents> {
                                     ),
                                     child: Row(
                                       spacing: 5,
-
                                       mainAxisAlignment:
                                           MainAxisAlignment.spaceBetween,
                                       children: [
                                         Text("Abwesend"),
                                         Text(
-                                          "17",
+                                          presence.values
+                                              .where((value) => value == "a")
+                                              .length
+                                              .toString(),
                                           style: TextStyle(
                                             fontWeight: FontWeight.bold,
                                           ),
@@ -258,7 +316,7 @@ class _PlayerEventsState extends State<PlayerEvents> {
           },
           collection: FirebaseFirestore.instance
               .collection("teams")
-              .doc("BJKawVNV88EzhOIhOapX")
+              .doc(widget.teamId)
               .collection("events"),
           orderBy: "meet",
         ),

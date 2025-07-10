@@ -60,11 +60,12 @@ class _AppState extends ConsumerState<App> {
       return Center(child: Text("An error occurred loading your data."));
     }
 
-    final List<String> roles = List<String>.from(
-      memberData.value?["roles"] ?? [],
-    );
+    final Map<String, Map<String, dynamic>> roles =
+        Map<String, Map<String, dynamic>>.from(
+          memberData.value?["roles"] ?? {},
+        );
 
-    selectedRole = selectedRole ?? roles[0];
+    selectedRole = selectedRole ?? roles.keys.first;
 
     final List<Map<String, dynamic>> destinations = [
       {"icon": Icon(Icons.home), "label": "Übersicht", "url": "/"},
@@ -93,7 +94,7 @@ class _AppState extends ConsumerState<App> {
         {
           "icon": Icon(Icons.event),
           "label": "Termine",
-          "url": "/player/events",
+          "url": "/player/events?team=${roles["player"]?["team"] ?? ""}",
         },
       ]);
     }
@@ -141,7 +142,7 @@ class _AppState extends ConsumerState<App> {
                                       Image.asset("assets/tvo.png", height: 75),
                                       DropdownButton(
                                         items:
-                                            roles.map((role) {
+                                            roles.keys.map((role) {
                                               return DropdownMenuItem(
                                                 value: role,
                                                 child: Text(role),
