@@ -7,7 +7,7 @@ import 'package:tv_oberwil/components/paginated_list.dart';
 import '../../utils.dart';
 
 class PlayerEvents extends ConsumerStatefulWidget {
-  final teamId;
+  final String teamId;
 
   const PlayerEvents({super.key, required this.teamId});
 

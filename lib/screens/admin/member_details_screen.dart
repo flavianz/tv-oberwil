@@ -101,7 +101,6 @@ class _MemberDetailsScreenState extends ConsumerState<MemberDetailsScreen> {
         title: "Geburtsdatum",
         onDateSelected: (date) {
           setState(() {
-            print(date);
             _birthdate = date;
           });
         },

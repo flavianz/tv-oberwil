@@ -38,7 +38,6 @@ class UserListController
     state = const AsyncLoading();
 
     final snapshot = await _fetchQuery(null);
-    print(snapshot.docs);
     _allDocs = snapshot.docs;
     _lastDoc = snapshot.docs.isNotEmpty ? snapshot.docs.last : null;
     _hasMore = snapshot.size == maxQuerySize;

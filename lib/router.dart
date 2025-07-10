@@ -59,7 +59,9 @@ final router = GoRouter(
         GoRoute(
           path: '/player/events',
           builder: (context, state) {
-            return PlayerEvents(teamId: state.uri.queryParameters["team"]);
+            return PlayerEvents(
+              teamId: state.uri.queryParameters["team"] ?? "",
+            );
           },
         ),
       ],
