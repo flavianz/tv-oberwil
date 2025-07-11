@@ -140,21 +140,27 @@ class _PlayerEventsState extends ConsumerState<PlayerEvents> {
                             Column(
                               children: [
                                 Text("Treffen", style: TextStyle(fontSize: 12)),
-                                Text("${meetDate.hour}:${meetDate.minute}"),
+                                Text(
+                                  "${meetDate.hour.toString().padLeft(2, '0')}:${meetDate.minute.toString().padLeft(2, '0')}",
+                                ),
                               ],
                             ),
                             VerticalDivider(thickness: 0.5, width: 30),
                             Column(
                               children: [
                                 Text("Start", style: TextStyle(fontSize: 12)),
-                                Text("${startDate.hour}:${startDate.minute}"),
+                                Text(
+                                  "${startDate.hour.toString().padLeft(2, '0')}:${startDate.minute.toString().padLeft(2, '0')}",
+                                ),
                               ],
                             ),
                             VerticalDivider(thickness: 0.5, width: 30),
                             Column(
                               children: [
                                 Text("Ende", style: TextStyle(fontSize: 12)),
-                                Text("${endDate.hour}:${endDate.minute}"),
+                                Text(
+                                  "${endDate.hour.toString().padLeft(2, '0')}:${endDate.minute.toString().padLeft(2, '0')}",
+                                ),
                               ],
                             ),
                           ],
