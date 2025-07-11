@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -30,6 +32,14 @@ class UserListController
     fetchInitial();
   }
 
+  @override
+  void dispose() {
+    _subscription?.cancel();
+    super.dispose();
+  }
+
+  StreamSubscription? _subscription;
+
   Future<void> fetchInitial() async {
     _lastDoc = null;
     _hasMore = true;
@@ -37,12 +47,25 @@ class UserListController
     _isLoading = true;
     state = const AsyncLoading();
 
-    final snapshot = await _fetchQuery(null);
-    _allDocs = snapshot.docs;
-    _lastDoc = snapshot.docs.isNotEmpty ? snapshot.docs.last : null;
-    _hasMore = snapshot.size == maxQuerySize;
+    // Cancel any existing listener
+    await _subscription?.cancel();
 
-    state = AsyncData(_allDocs);
+    Query<Map<String, dynamic>> query = collection
+        .orderBy(orderBy)
+        .limit(maxQuerySize);
+
+    _subscription = query.snapshots().listen(
+      (snapshot) {
+        _allDocs = snapshot.docs;
+        _lastDoc = snapshot.docs.isNotEmpty ? snapshot.docs.last : null;
+        _hasMore = snapshot.size == maxQuerySize;
+        state = AsyncData([..._allDocs]);
+      },
+      onError: (error, stack) {
+        state = AsyncError(error, stack);
+      },
+    );
+
     _isLoading = false;
   }
 
