@@ -5,15 +5,13 @@ import 'package:tv_oberwil/firestore_providers/paginated_list_proivder.dart';
 
 class PaginatedList extends ConsumerStatefulWidget {
   final Widget Function(DocumentSnapshot<Object?>) builder;
-  final Query<Map<String, dynamic>> collection;
-  final String orderBy;
+  final Query<Map<String, dynamic>> query;
   final int maxQueryLimit;
 
   const PaginatedList({
     super.key,
     required this.builder,
-    required this.collection,
-    required this.orderBy,
+    required this.query,
     this.maxQueryLimit = 10,
   });
 
@@ -22,44 +20,34 @@ class PaginatedList extends ConsumerStatefulWidget {
 }
 
 class PaginatedParams {
-  final Query<Map<String, dynamic>> collection;
-  final String orderBy;
+  final Query<Map<String, dynamic>> query;
   final int maxQuerySize;
 
-  const PaginatedParams(this.collection, this.orderBy, this.maxQuerySize);
+  const PaginatedParams(this.query, this.maxQuerySize);
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is PaginatedParams &&
           runtimeType == other.runtimeType &&
-          collection == other.collection &&
-          orderBy == other.orderBy &&
+          query == other.query &&
           maxQuerySize == other.maxQuerySize;
 
   @override
-  int get hashCode =>
-      collection.hashCode ^ orderBy.hashCode ^ maxQuerySize.hashCode;
+  int get hashCode => query.hashCode ^ maxQuerySize.hashCode;
 }
 
 final paginatedListProvider = StateNotifierProvider.autoDispose.family<
   UserListController,
   AsyncValue<List<DocumentSnapshot>>,
   PaginatedParams
->(
-  (ref, params) => UserListController(
-    ref,
-    params.collection,
-    params.orderBy,
-    params.maxQuerySize,
-  ),
-);
+>((ref, params) => UserListController(ref, params.query, params.maxQuerySize));
 
 class _PaginatedListState extends ConsumerState<PaginatedList> {
   @override
   Widget build(BuildContext context) {
     final provider = paginatedListProvider(
-      PaginatedParams(widget.collection, widget.orderBy, widget.maxQueryLimit),
+      PaginatedParams(widget.query, widget.maxQueryLimit),
     );
     final docs = ref.watch(provider);
     return docs.when(

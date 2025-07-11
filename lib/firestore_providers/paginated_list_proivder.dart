@@ -5,20 +5,19 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 StateNotifierProvider<UserListController, AsyncValue<List<DocumentSnapshot>>>
 paginatedListProvider(
-  Query<Map<String, dynamic>> collection,
+  Query<Map<String, dynamic>> query,
   String orderBy, [
   int maxQuerySize = 10,
 ]) {
   return StateNotifierProvider<
     UserListController,
     AsyncValue<List<DocumentSnapshot>>
-  >((ref) => UserListController(ref, collection, orderBy, maxQuerySize));
+  >((ref) => UserListController(ref, query, maxQuerySize));
 }
 
 class UserListController
     extends StateNotifier<AsyncValue<List<DocumentSnapshot>>> {
-  final Query<Map<String, dynamic>> collection;
-  final String orderBy;
+  final Query<Map<String, dynamic>> query;
   final int maxQuerySize;
 
   final Ref ref;
@@ -27,7 +26,7 @@ class UserListController
   bool _isLoading = false;
   List<DocumentSnapshot> _allDocs = [];
 
-  UserListController(this.ref, this.collection, this.orderBy, this.maxQuerySize)
+  UserListController(this.ref, this.query, this.maxQuerySize)
     : super(const AsyncLoading()) {
     fetchInitial();
   }
@@ -50,9 +49,7 @@ class UserListController
     // Cancel any existing listener
     await _subscription?.cancel();
 
-    Query<Map<String, dynamic>> query = collection
-        .orderBy(orderBy)
-        .limit(maxQuerySize);
+    Query<Map<String, dynamic>> query = this.query.limit(maxQuerySize);
 
     _subscription = query.snapshots().listen(
       (snapshot) {
@@ -89,9 +86,7 @@ class UserListController
   Future<QuerySnapshot<Map<String, dynamic>>> _fetchQuery(
     DocumentSnapshot? startAfter,
   ) {
-    Query<Map<String, dynamic>> firestoreQuery = collection
-        .orderBy(orderBy)
-        .limit(maxQuerySize);
+    Query<Map<String, dynamic>> firestoreQuery = query.limit(maxQuerySize);
 
     if (startAfter != null) {
       firestoreQuery = firestoreQuery.startAfterDocument(startAfter);
