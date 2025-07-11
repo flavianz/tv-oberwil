@@ -35,10 +35,7 @@ class _PlayerEventsState extends ConsumerState<PlayerEvents> {
             final meetDate = getDateTime(doc.get("meet"));
             final startDate = getDateTime(doc.get("start"));
             final endDate = getDateTime(doc.get("end"));
-            final presence =
-                ((((doc.data() ?? {}) as Map<String, dynamic>)["presence"] ??
-                        <String, dynamic>{})
-                    as Map<String, dynamic>);
+            final presence = castMap(castMap(doc.data())["presence"]);
             final localMemberUid = ref.read(userDataProvider).value?["member"];
             return Card.outlined(
               elevation: 1,
@@ -178,13 +175,26 @@ class _PlayerEventsState extends ConsumerState<PlayerEvents> {
                                     .collection("events")
                                     .doc(doc.id)
                                     .update({
-                                      'presence.$localMemberUid': 'p',
+                                      'presence.$localMemberUid': {
+                                        "value": 'p',
+                                        "reason": "",
+                                      },
                                       // only this key inside the map is updated
                                     });
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('Du bist angemeldet!'),
+                                    ),
+                                  );
+                                }
                               },
                               style: FilledButton.styleFrom(
                                 backgroundColor:
-                                    presence[localMemberUid] == "p"
+                                    castMap(
+                                              presence[localMemberUid],
+                                            )["value"] ==
+                                            "p"
                                         ? Colors.green
                                         : Colors.grey,
                                 // set your desired color
@@ -201,7 +211,10 @@ class _PlayerEventsState extends ConsumerState<PlayerEvents> {
                                     Text("Dabei"),
                                     Text(
                                       presence.values
-                                          .where((value) => value == "p")
+                                          .where(
+                                            (value) =>
+                                                castMap(value)["value"] == "p",
+                                          )
                                           .length
                                           .toString(),
                                       style: TextStyle(
@@ -219,20 +232,44 @@ class _PlayerEventsState extends ConsumerState<PlayerEvents> {
                                 crossAxisAlignment: CrossAxisAlignment.stretch,
                                 children: [
                                   FilledButton(
-                                    onPressed: () async {
-                                      await FirebaseFirestore.instance
-                                          .collection('teams')
-                                          .doc(widget.teamId)
-                                          .collection("events")
-                                          .doc(doc.id)
-                                          .update({
-                                            'presence.$localMemberUid': 'u',
-                                            // only this key inside the map is updated
-                                          });
+                                    onPressed: () {
+                                      showStringInputDialog(
+                                        title: "Unsicher melden",
+                                        hintText: "Gib einen Grund an",
+                                        context: context,
+                                        onSubmit: (input) async {
+                                          await FirebaseFirestore.instance
+                                              .collection('teams')
+                                              .doc(widget.teamId)
+                                              .collection("events")
+                                              .doc(doc.id)
+                                              .update({
+                                                'presence.$localMemberUid': {
+                                                  "value": 'u',
+                                                  "reason": input,
+                                                },
+                                                // only this key inside the map is updated
+                                              });
+                                          if (context.mounted) {
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).showSnackBar(
+                                              SnackBar(
+                                                content: Text(
+                                                  'Du bist als unsicher gemeldet!',
+                                                ),
+                                              ),
+                                            );
+                                          }
+                                        },
+                                      );
                                     },
                                     style: FilledButton.styleFrom(
                                       backgroundColor:
-                                          presence[localMemberUid] == "u"
+                                          castMap(
+                                                    presence[localMemberUid],
+                                                  )["value"] ==
+                                                  "u"
                                               ? Colors.amber
                                               : Colors.grey,
                                       // set your desired color
@@ -250,7 +287,11 @@ class _PlayerEventsState extends ConsumerState<PlayerEvents> {
                                         Text("Unsicher"),
                                         Text(
                                           presence.values
-                                              .where((value) => value == "u")
+                                              .where(
+                                                (value) =>
+                                                    castMap(value)["value"] ==
+                                                    "u",
+                                              )
                                               .length
                                               .toString(),
                                           style: TextStyle(
@@ -261,20 +302,44 @@ class _PlayerEventsState extends ConsumerState<PlayerEvents> {
                                     ),
                                   ),
                                   FilledButton(
-                                    onPressed: () async {
-                                      await FirebaseFirestore.instance
-                                          .collection('teams')
-                                          .doc(widget.teamId)
-                                          .collection("events")
-                                          .doc(doc.id)
-                                          .update({
-                                            'presence.$localMemberUid': 'a',
-                                            // only this key inside the map is updated
-                                          });
+                                    onPressed: () {
+                                      showStringInputDialog(
+                                        title: "Abmelden",
+                                        hintText: "Gib einen Grund an",
+                                        context: context,
+                                        onSubmit: (input) async {
+                                          await FirebaseFirestore.instance
+                                              .collection('teams')
+                                              .doc(widget.teamId)
+                                              .collection("events")
+                                              .doc(doc.id)
+                                              .update({
+                                                'presence.$localMemberUid': {
+                                                  "value": 'a',
+                                                  "reason": input,
+                                                },
+                                                // only this key inside the map is updated
+                                              });
+                                          if (context.mounted) {
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).showSnackBar(
+                                              SnackBar(
+                                                content: Text(
+                                                  'Du bist abgemeldet!',
+                                                ),
+                                              ),
+                                            );
+                                          }
+                                        },
+                                      );
                                     },
                                     style: FilledButton.styleFrom(
                                       backgroundColor:
-                                          presence[localMemberUid] == "a"
+                                          castMap(
+                                                    presence[localMemberUid],
+                                                  )["value"] ==
+                                                  "a"
                                               ? Colors.redAccent
                                               : Colors.grey,
                                       // set your desired color
@@ -292,7 +357,11 @@ class _PlayerEventsState extends ConsumerState<PlayerEvents> {
                                         Text("Abwesend"),
                                         Text(
                                           presence.values
-                                              .where((value) => value == "a")
+                                              .where(
+                                                (value) =>
+                                                    castMap(value)["value"] ==
+                                                    "a",
+                                              )
                                               .length
                                               .toString(),
                                           style: TextStyle(

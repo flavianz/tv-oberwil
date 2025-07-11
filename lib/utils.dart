@@ -90,3 +90,48 @@ String? getNearbyTimeDifference(DateTime date) {
   }
   return null;
 }
+
+void showStringInputDialog({
+  required BuildContext context,
+  String title = 'Enter text',
+  String hintText = '',
+  String confirmText = 'Ok',
+  String cancelText = 'Abbrechen',
+  required Function(String) onSubmit,
+}) async {
+  final controller = TextEditingController();
+
+  await showDialog(
+    context: context,
+    builder:
+        (context) => AlertDialog(
+          title: Text(title),
+          content: TextField(
+            controller: controller,
+            decoration: InputDecoration(hintText: hintText),
+            autofocus: true,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(cancelText),
+            ),
+            FilledButton(
+              onPressed: () {
+                onSubmit(controller.text.trim());
+                Navigator.of(context).pop();
+              },
+              child: Text(confirmText),
+            ),
+          ],
+        ),
+  );
+}
+
+Map<String, dynamic> castMap(dynamic map) {
+  try {
+    return (map ?? <String, dynamic>{}) as Map<String, dynamic>;
+  } catch (e) {
+    return <String, dynamic>{};
+  }
+}
