@@ -8,6 +8,8 @@ class PaginatedList extends ConsumerStatefulWidget {
   final Query<Map<String, dynamic>> query;
   final int maxQueryLimit;
 
+  void refresh() {}
+
   const PaginatedList({
     super.key,
     required this.builder,

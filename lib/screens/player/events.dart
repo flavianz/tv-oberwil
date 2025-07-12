@@ -138,6 +138,7 @@ class _PlayerEventsState extends ConsumerState<PlayerEvents> {
       final voteBox = Padding(
         padding: EdgeInsets.symmetric(horizontal: 20),
         child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           spacing: 5,
           children: [
             FilledButton(
@@ -326,7 +327,7 @@ class _PlayerEventsState extends ConsumerState<PlayerEvents> {
         ),
       );
 
-      final bool isWideEnough = MediaQuery.of(context).size.width > 1500;
+      final bool isWideEnough = MediaQuery.of(context).size.width > 1200;
 
       return Card.outlined(
         elevation: 1,
@@ -358,8 +359,10 @@ class _PlayerEventsState extends ConsumerState<PlayerEvents> {
                           Expanded(child: nameBox),
                         ],
                       ),
-                      dateBox,
-                      voteBox,
+                      Divider(height: 40),
+                      IntrinsicHeight(child: timesBox),
+                      Divider(height: 40),
+                      IntrinsicHeight(child: voteBox),
                     ],
                   ),
         ),
