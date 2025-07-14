@@ -40,6 +40,7 @@ class UserListController
   StreamSubscription? _subscription;
 
   Future<void> fetchInitial() async {
+    print("fetched lsit");
     _lastDoc = null;
     _hasMore = true;
     _allDocs = [];

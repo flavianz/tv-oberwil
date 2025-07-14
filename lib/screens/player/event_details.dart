@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:tv_oberwil/components/paginated_list.dart';
 import 'package:tv_oberwil/utils.dart';
 
 import '../../components/app.dart';
@@ -476,7 +477,56 @@ class PlayerEventDetails extends ConsumerWidget {
                     ),
                   ],
                 ),
-                Center(),
+                PaginatedList(
+                  builder: (doc) {
+                    final playerData = castMap(doc.data());
+                    return Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 5,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "${playerData["first"] ?? ""} ${playerData["last"] ?? ""}",
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              ((presence[doc.id]?["reason"] ?? "") as String)
+                                      .isNotEmpty
+                                  ? Text(presence[doc.id]?["reason"] ?? "")
+                                  : SizedBox.shrink(),
+                            ],
+                          ),
+                          Container(
+                            height: 15,
+                            width: 15,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.all(
+                                Radius.circular(15),
+                              ),
+                              color:
+                                  presence[doc.id]?["value"] == "p"
+                                      ? Colors.green
+                                      : (presence[doc.id]?["value"] == "u"
+                                          ? Colors.amber
+                                          : (presence[doc.id]?["value"] == "a"
+                                              ? Colors.redAccent
+                                              : Colors.grey)),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                  query: FirebaseFirestore.instance
+                      .collection("members")
+                      .where("roles.player.team", isEqualTo: teamId),
+                ),
                 Center(),
               ],
             ),
