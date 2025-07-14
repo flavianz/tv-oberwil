@@ -127,7 +127,7 @@ class PlayerEventDetails extends ConsumerWidget {
                           ),
                         ),
                         SizedBox(
-                          height: 80,
+                          height: 65,
                           child: VerticalDivider(thickness: 1, width: 30),
                         ),
                         Padding(
@@ -151,7 +151,7 @@ class PlayerEventDetails extends ConsumerWidget {
                                 ],
                               ),
                               SizedBox(
-                                height: 70,
+                                height: 55,
                                 child: VerticalDivider(
                                   thickness: 0.5,
                                   width: 30,
@@ -166,7 +166,7 @@ class PlayerEventDetails extends ConsumerWidget {
                                 ],
                               ),
                               SizedBox(
-                                height: 70,
+                                height: 55,
                                 child: VerticalDivider(
                                   thickness: 0.5,
                                   width: 30,

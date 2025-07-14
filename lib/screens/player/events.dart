@@ -369,9 +369,58 @@ class _PlayerEventsState extends ConsumerState<PlayerEvents> {
                               Expanded(child: nameBox),
                             ],
                           ),
-                          Divider(height: 40),
-                          IntrinsicHeight(child: timesBox),
-                          Divider(height: 40),
+                          SizedBox(height: 20),
+                          IntrinsicHeight(
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(
+                                vertical: 10,
+                                horizontal: 10,
+                              ),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Column(
+                                    children: [
+                                      Text(
+                                        "Treffen",
+                                        style: TextStyle(fontSize: 12),
+                                      ),
+                                      Text(
+                                        "${meetDate.hour.toString().padLeft(2, '0')}:${meetDate.minute.toString().padLeft(2, '0')}",
+                                      ),
+                                    ],
+                                  ),
+                                  VerticalDivider(thickness: 0.5, width: 30),
+                                  Column(
+                                    children: [
+                                      Text(
+                                        "Start",
+                                        style: TextStyle(fontSize: 12),
+                                      ),
+                                      Text(
+                                        "${startDate.hour.toString().padLeft(2, '0')}:${startDate.minute.toString().padLeft(2, '0')}",
+                                      ),
+                                    ],
+                                  ),
+                                  VerticalDivider(thickness: 0.5, width: 30),
+                                  Column(
+                                    children: [
+                                      Text(
+                                        "Ende",
+                                        style: TextStyle(fontSize: 12),
+                                      ),
+                                      Text(
+                                        "${endDate.hour.toString().padLeft(2, '0')}:${endDate.minute.toString().padLeft(2, '0')}",
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: 10),
                           IntrinsicHeight(
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
