@@ -132,7 +132,7 @@ class _AppState extends ConsumerState<App> {
                           onDestinationSelected: (i) {
                             setState(() {
                               selectedIndex = i;
-                              context.pushReplacement(destinations[i]["url"]);
+                              context.go(destinations[i]["url"]);
                             });
                           },
                           leading:

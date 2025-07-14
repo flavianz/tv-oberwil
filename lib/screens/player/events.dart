@@ -362,14 +362,274 @@ class _PlayerEventsState extends ConsumerState<PlayerEvents> {
                           Row(
                             children: [
                               dateBox,
-                              VerticalDivider(width: 20),
+                              SizedBox(
+                                height: 40,
+                                child: VerticalDivider(width: 20),
+                              ),
                               Expanded(child: nameBox),
                             ],
                           ),
                           Divider(height: 40),
                           IntrinsicHeight(child: timesBox),
                           Divider(height: 40),
-                          IntrinsicHeight(child: voteBox),
+                          IntrinsicHeight(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              spacing: 5,
+                              children: [
+                                Flexible(
+                                  fit: FlexFit.loose,
+                                  child: FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    child: FilledButton(
+                                      onPressed: () async {
+                                        if (meetDate.isBefore(DateTime.now())) {
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            SnackBar(
+                                              content: Text('Du bist zu spät!'),
+                                            ),
+                                          );
+                                          return;
+                                        }
+                                        await FirebaseFirestore.instance
+                                            .collection('teams')
+                                            .doc(widget.teamId)
+                                            .collection("events")
+                                            .doc(doc.id)
+                                            .update({
+                                              'presence.$localMemberUid': {
+                                                "value": 'p',
+                                                "reason": "",
+                                              },
+                                              // only this key inside the map is updated
+                                            });
+                                        if (context.mounted) {
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            SnackBar(
+                                              content: Text(
+                                                'Du bist angemeldet!',
+                                              ),
+                                            ),
+                                          );
+                                        }
+                                      },
+                                      style: FilledButton.styleFrom(
+                                        backgroundColor:
+                                            castMap(
+                                                      presence[localMemberUid],
+                                                    )["value"] ==
+                                                    "p"
+                                                ? Colors.green
+                                                : Colors.grey,
+                                        // set your desired color
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            10,
+                                          ), // less round corners
+                                        ),
+                                      ),
+                                      child: Center(
+                                        child: Wrap(
+                                          spacing: 5,
+                                          children: [
+                                            Text("Dabei"),
+                                            Text(
+                                              presence.values
+                                                  .where(
+                                                    (value) =>
+                                                        castMap(
+                                                          value,
+                                                        )["value"] ==
+                                                        "p",
+                                                  )
+                                                  .length
+                                                  .toString(),
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+
+                                Flexible(
+                                  fit: FlexFit.loose,
+                                  child: FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    child: FilledButton(
+                                      onPressed: () {
+                                        if (meetDate.isBefore(DateTime.now())) {
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            SnackBar(
+                                              content: Text('Du bist zu spät!'),
+                                            ),
+                                          );
+                                          return;
+                                        }
+                                        showStringInputDialog(
+                                          title: "Unsicher melden",
+                                          hintText: "Gib einen Grund an",
+                                          context: context,
+                                          onSubmit: (input) async {
+                                            await FirebaseFirestore.instance
+                                                .collection('teams')
+                                                .doc(widget.teamId)
+                                                .collection("events")
+                                                .doc(doc.id)
+                                                .update({
+                                                  'presence.$localMemberUid': {
+                                                    "value": 'u',
+                                                    "reason": input,
+                                                  },
+                                                  // only this key inside the map is updated
+                                                });
+                                            if (context.mounted) {
+                                              ScaffoldMessenger.of(
+                                                context,
+                                              ).showSnackBar(
+                                                SnackBar(
+                                                  content: Text(
+                                                    'Du bist als unsicher gemeldet!',
+                                                  ),
+                                                ),
+                                              );
+                                            }
+                                          },
+                                        );
+                                      },
+                                      style: FilledButton.styleFrom(
+                                        backgroundColor:
+                                            castMap(
+                                                      presence[localMemberUid],
+                                                    )["value"] ==
+                                                    "u"
+                                                ? Colors.amber
+                                                : Colors.grey,
+                                        // set your desired color
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            10,
+                                          ), // less round corners
+                                        ),
+                                      ),
+                                      child: Wrap(
+                                        spacing: 5,
+                                        children: [
+                                          Text("Unsicher"),
+                                          Text(
+                                            presence.values
+                                                .where(
+                                                  (value) =>
+                                                      castMap(value)["value"] ==
+                                                      "u",
+                                                )
+                                                .length
+                                                .toString(),
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                Flexible(
+                                  fit: FlexFit.loose,
+                                  child: FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    child: FilledButton(
+                                      onPressed: () {
+                                        if (meetDate.isBefore(DateTime.now())) {
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            SnackBar(
+                                              content: Text('Du bist zu spät!'),
+                                            ),
+                                          );
+                                          return;
+                                        }
+                                        showStringInputDialog(
+                                          title: "Abmelden",
+                                          hintText: "Gib einen Grund an",
+                                          context: context,
+                                          onSubmit: (input) async {
+                                            await FirebaseFirestore.instance
+                                                .collection('teams')
+                                                .doc(widget.teamId)
+                                                .collection("events")
+                                                .doc(doc.id)
+                                                .update({
+                                                  'presence.$localMemberUid': {
+                                                    "value": 'a',
+                                                    "reason": input,
+                                                  },
+                                                  // only this key inside the map is updated
+                                                });
+                                            if (context.mounted) {
+                                              ScaffoldMessenger.of(
+                                                context,
+                                              ).showSnackBar(
+                                                SnackBar(
+                                                  content: Text(
+                                                    'Du bist abgemeldet!',
+                                                  ),
+                                                ),
+                                              );
+                                            }
+                                          },
+                                        );
+                                      },
+                                      style: FilledButton.styleFrom(
+                                        backgroundColor:
+                                            castMap(
+                                                      presence[localMemberUid],
+                                                    )["value"] ==
+                                                    "a"
+                                                ? Colors.redAccent
+                                                : Colors.grey,
+                                        // set your desired color
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            10,
+                                          ), // less round corners
+                                        ),
+                                      ),
+                                      child: Wrap(
+                                        spacing: 5,
+                                        children: [
+                                          Text("Abwesend"),
+                                          Text(
+                                            presence.values
+                                                .where(
+                                                  (value) =>
+                                                      castMap(value)["value"] ==
+                                                      "a",
+                                                )
+                                                .length
+                                                .toString(),
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ],
                       ),
             ),
