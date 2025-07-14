@@ -1,5 +1,6 @@
 import 'dart:collection';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -49,7 +50,9 @@ class TeamsScreenState extends ConsumerState<TeamsScreen> {
       }).then((_) {});
     }
 
-    final teamSummary = ref.watch(realtimeDocProvider("teams/summary"));
+    final teamSummary = ref.watch(
+      realtimeDocProvider(FirebaseFirestore.instance.doc("teams/summary")),
+    );
     if (teamSummary.isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -265,7 +268,9 @@ class FilterDialog extends ConsumerStatefulWidget {
 class _FilterDialogState extends ConsumerState<FilterDialog> {
   @override
   Widget build(BuildContext context) {
-    final userData = ref.watch(realtimeDocProvider("teams/summary"));
+    final userData = ref.watch(
+      realtimeDocProvider(FirebaseFirestore.instance.doc("teams/summary")),
+    );
     if (userData.isLoading) {
       return const Center(child: CircularProgressIndicator());
     }

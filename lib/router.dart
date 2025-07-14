@@ -8,6 +8,7 @@ import 'package:tv_oberwil/screens/admin/member_details_screen.dart';
 import 'package:tv_oberwil/screens/admin/members_screen.dart';
 import 'package:tv_oberwil/screens/admin/team_details_screen.dart';
 import 'package:tv_oberwil/screens/admin/teams_screen.dart';
+import 'package:tv_oberwil/screens/player/event_details.dart';
 import 'package:tv_oberwil/screens/player/events.dart';
 
 final router = GoRouter(
@@ -57,11 +58,18 @@ final router = GoRouter(
           },
         ),
         GoRoute(
-          path: '/player/events',
+          path: '/player/team/:team/events',
           builder: (context, state) {
-            return PlayerEvents(
-              teamId: state.uri.queryParameters["team"] ?? "",
-            );
+            return PlayerEvents(teamId: state.pathParameters["team"] ?? "");
+          },
+        ),
+
+        GoRoute(
+          path: '/player/team/:team/event/:event',
+          builder: (context, state) {
+            final eventId = state.pathParameters['event']!;
+            final teamId = state.pathParameters['team']!;
+            return PlayerEventDetails(eventId: eventId, teamId: teamId);
           },
         ),
       ],

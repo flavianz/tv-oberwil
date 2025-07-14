@@ -60,7 +60,11 @@ class _MemberDetailsScreenState extends ConsumerState<MemberDetailsScreen> {
       isFirstRender = false;
     }
     final isTablet = MediaQuery.of(context).size.aspectRatio > 1;
-    final memberData = ref.watch(realtimeDocProvider("members/${widget.uid}"));
+    final memberData = ref.watch(
+      realtimeDocProvider(
+        FirebaseFirestore.instance.doc("members/${widget.uid}"),
+      ),
+    );
 
     if (memberData.isLoading) {
       return const Center(child: CircularProgressIndicator());

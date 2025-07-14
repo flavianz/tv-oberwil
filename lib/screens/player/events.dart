@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:tv_oberwil/components/app.dart';
 import 'package:tv_oberwil/components/paginated_list.dart';
 
@@ -20,7 +21,7 @@ class _PlayerEventsState extends ConsumerState<PlayerEvents> {
   Widget build(BuildContext context) {
     final isScreenWide = MediaQuery.of(context).size.aspectRatio > 1;
 
-    builder(doc) {
+    builder(DocumentSnapshot<Object?> doc) {
       final meetDate = getDateTime(doc.get("meet"));
       final startDate = getDateTime(doc.get("start"));
       final endDate = getDateTime(doc.get("end"));
@@ -329,42 +330,50 @@ class _PlayerEventsState extends ConsumerState<PlayerEvents> {
 
       final bool isWideEnough = MediaQuery.of(context).size.width > 1200;
 
-      return Card.outlined(
-        elevation: 1,
-        child: Padding(
-          padding: EdgeInsets.all(15),
-          child:
-              isWideEnough
-                  ? IntrinsicHeight(
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        dateBox,
-                        VerticalDivider(width: 20),
-                        Expanded(child: nameBox),
-                        VerticalDivider(width: 20),
-                        timesBox,
-                        VerticalDivider(width: 20),
-                        voteBox,
-                      ],
-                    ),
-                  )
-                  : Column(
-                    children: [
-                      Row(
+      return MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: GestureDetector(
+          onTap: () {
+            context.push("/player/team/${widget.teamId}/event/${doc.id}");
+          },
+          child: Card.outlined(
+            elevation: 1,
+            child: Padding(
+              padding: EdgeInsets.all(15),
+              child:
+                  isWideEnough
+                      ? IntrinsicHeight(
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            dateBox,
+                            VerticalDivider(width: 20),
+                            Expanded(child: nameBox),
+                            VerticalDivider(width: 20),
+                            timesBox,
+                            VerticalDivider(width: 20),
+                            voteBox,
+                          ],
+                        ),
+                      )
+                      : Column(
                         children: [
-                          dateBox,
-                          VerticalDivider(width: 20),
-                          Expanded(child: nameBox),
+                          Row(
+                            children: [
+                              dateBox,
+                              VerticalDivider(width: 20),
+                              Expanded(child: nameBox),
+                            ],
+                          ),
+                          Divider(height: 40),
+                          IntrinsicHeight(child: timesBox),
+                          Divider(height: 40),
+                          IntrinsicHeight(child: voteBox),
                         ],
                       ),
-                      Divider(height: 40),
-                      IntrinsicHeight(child: timesBox),
-                      Divider(height: 40),
-                      IntrinsicHeight(child: voteBox),
-                    ],
-                  ),
+            ),
+          ),
         ),
       );
     }

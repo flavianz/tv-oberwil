@@ -54,7 +54,11 @@ class _TeamDetailsScreenState extends ConsumerState<TeamDetailsScreen> {
     }
 
     final isTablet = MediaQuery.of(context).size.aspectRatio > 1;
-    final teamData = ref.watch(realtimeDocProvider("teams/${widget.uid}"));
+    final teamData = ref.watch(
+      realtimeDocProvider(
+        FirebaseFirestore.instance.doc("teams/${widget.uid}"),
+      ),
+    );
 
     if (teamData.isLoading) {
       return const Center(child: CircularProgressIndicator());
