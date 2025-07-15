@@ -60,10 +60,9 @@ class _AppState extends ConsumerState<App> {
       return Center(child: Text("An error occurred loading your data."));
     }
 
-    final Map<String, Map<String, dynamic>> roles =
-        Map<String, Map<String, dynamic>>.from(
-          memberData.value?["roles"] ?? {},
-        );
+    final Map<String, dynamic> roles = Map<String, dynamic>.from(
+      memberData.value?["roles"] ?? {},
+    );
 
     selectedRole = selectedRole ?? roles.keys.first;
 
@@ -94,7 +93,7 @@ class _AppState extends ConsumerState<App> {
         {
           "icon": Icon(Icons.event),
           "label": "Termine",
-          "url": "/player/team/${roles["player"]?["team"] ?? ""}/events",
+          "url": "/player/team/${roles["player"][0] ?? ""}/events",
         },
       ]);
     }
@@ -167,6 +166,23 @@ class _AppState extends ConsumerState<App> {
                     : Column(
                       children: [
                         Expanded(child: widget.child),
+                        DropdownButton(
+                          items:
+                              roles.keys.map((role) {
+                                return DropdownMenuItem(
+                                  value: role,
+                                  child: Text(role),
+                                );
+                              }).toList(),
+                          onChanged: (selectedRole) {
+                            setState(() {
+                              this.selectedRole = selectedRole;
+                              context.go("/");
+                              selectedIndex = 0;
+                            });
+                          },
+                          value: selectedRole,
+                        ),
                         NavigationBar(
                           destinations:
                               destinations.map((element) {

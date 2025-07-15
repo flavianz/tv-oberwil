@@ -95,12 +95,15 @@ class UserListController
       if (teams.contains("none")) {
         firestoreQuery = firestoreQuery.where(
           Filter.or(
-            Filter("teams", arrayContainsAny: teams),
-            Filter("teams", isEqualTo: []),
+            Filter("roles.player", arrayContainsAny: teams),
+            Filter("roles.player", isNull: true),
           ),
         );
       } else {
-        firestoreQuery = firestoreQuery.where("teams", arrayContainsAny: teams);
+        firestoreQuery = firestoreQuery.where(
+          "roles.player",
+          arrayContainsAny: teams,
+        );
       }
     }
 

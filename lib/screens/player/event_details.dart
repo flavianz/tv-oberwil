@@ -55,7 +55,7 @@ class PlayerEventDetails extends ConsumerWidget {
         vertical: 15,
       ),
       child: DefaultTabController(
-        length: 3,
+        length: 2,
         child: Scaffold(
           appBar: AppBar(
             title: Row(
@@ -97,7 +97,7 @@ class PlayerEventDetails extends ConsumerWidget {
               tabs: [
                 Tab(icon: Icon(Icons.info_outline), text: "Infos"),
                 Tab(icon: Icon(Icons.people_alt), text: "Teilnehmer"),
-                Tab(icon: Icon(Icons.directions_car), text: "Mitfahren"),
+                /*Tab(icon: Icon(Icons.directions_car), text: "Mitfahren"),*/
               ],
             ),
             actions: [IconButton(onPressed: () {}, icon: Icon(Icons.refresh))],
@@ -525,9 +525,8 @@ class PlayerEventDetails extends ConsumerWidget {
                   },
                   query: FirebaseFirestore.instance
                       .collection("members")
-                      .where("roles.player.team", isEqualTo: teamId),
+                      .where("roles.player", arrayContains: teamId),
                 ),
-                Center(),
               ],
             ),
           ),

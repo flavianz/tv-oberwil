@@ -218,9 +218,10 @@ class MembersScreenState extends ConsumerState<MembersScreen> {
                                     child: Row(
                                       spacing: 5,
                                       children:
-                                          (List.from(data['teams'] ?? [])).map((
-                                            teamId,
-                                          ) {
+                                          List.from(
+                                            castMap(data['roles'])["player"] ??
+                                                [],
+                                          ).map((teamId) {
                                             return Text(
                                               (memberSummary.value?["names"]
                                                       as LinkedHashMap<
