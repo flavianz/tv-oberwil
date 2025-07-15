@@ -5,6 +5,7 @@ import 'package:tv_oberwil/components/paginated_list.dart';
 import 'package:tv_oberwil/utils.dart';
 
 import '../../components/app.dart';
+import '../../components/misc.dart';
 import '../../firestore_providers/basic_providers.dart';
 
 class PlayerEventDetails extends ConsumerWidget {
@@ -61,34 +62,15 @@ class PlayerEventDetails extends ConsumerWidget {
             title: Row(
               children: [
                 Text(eventData["name"] ?? ""),
-                getNearbyTimeDifference(startDate) != null
-                    ? Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 3,
-                      ),
-                      margin: EdgeInsets.only(left: 10),
-                      decoration: BoxDecoration(
-                        color:
-                            isSameDay(startDate, DateTime.now())
-                                ? Theme.of(context).primaryColor
-                                : Theme.of(
-                                  context,
-                                ).colorScheme.secondaryFixedDim,
-                        borderRadius: BorderRadius.circular(
-                          10,
-                        ), // Makes it pill-shaped
-                      ),
-                      child: Text(
-                        getNearbyTimeDifference(startDate)!,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color:
-                              isSameDay(startDate, DateTime.now())
-                                  ? Theme.of(context).canvasColor
-                                  : null,
-                        ),
-                      ),
+                eventData["cancelled"] == true
+                    ? getPill("Abgesagt", Colors.red, true)
+                    : getNearbyTimeDifference(startDate) != null
+                    ? getPill(
+                      getNearbyTimeDifference(startDate)!,
+                      isSameDay(startDate, DateTime.now())
+                          ? Theme.of(context).primaryColor
+                          : Theme.of(context).colorScheme.secondaryFixedDim,
+                      isSameDay(startDate, DateTime.now()),
                     )
                     : SizedBox.shrink(),
               ],

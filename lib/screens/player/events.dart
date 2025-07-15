@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:tv_oberwil/components/app.dart';
+import 'package:tv_oberwil/components/misc.dart';
 import 'package:tv_oberwil/components/paginated_list.dart';
 
 import '../../utils.dart';
@@ -22,10 +23,11 @@ class _PlayerEventsState extends ConsumerState<PlayerEvents> {
     final isScreenWide = MediaQuery.of(context).size.aspectRatio > 1;
 
     builder(DocumentSnapshot<Object?> doc) {
-      final meetDate = getDateTime(doc.get("meet"));
-      final startDate = getDateTime(doc.get("start"));
-      final endDate = getDateTime(doc.get("end"));
-      final presence = castMap(castMap(doc.data())["presence"]);
+      final eventData = castMap(doc.data());
+      final meetDate = getDateTime(eventData["meet"]);
+      final startDate = getDateTime(eventData["start"]);
+      final endDate = getDateTime(eventData["end"]);
+      final presence = castMap(eventData["presence"]);
       final localMemberUid = ref.read(userDataProvider).value?["member"];
 
       final dateBox = ConstrainedBox(
@@ -58,42 +60,28 @@ class _PlayerEventsState extends ConsumerState<PlayerEvents> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    doc.get("name") ?? "",
+                    eventData["name"] ?? "",
                     style: TextStyle(fontWeight: FontWeight.bold),
                     overflow: TextOverflow.ellipsis,
                     maxLines: 2,
                   ),
 
                   Text(
-                    doc.get("location") ?? "",
+                    eventData["location"] ?? "",
                     style: TextStyle(fontSize: 14),
                   ),
                 ],
               ),
             ),
-            getNearbyTimeDifference(startDate) != null
-                ? Container(
-                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-                  margin: EdgeInsets.only(left: 10),
-                  decoration: BoxDecoration(
-                    color:
-                        isSameDay(startDate, DateTime.now())
-                            ? Theme.of(context).primaryColor
-                            : Theme.of(context).colorScheme.secondaryFixedDim,
-                    borderRadius: BorderRadius.circular(
-                      10,
-                    ), // Makes it pill-shaped
-                  ),
-                  child: Text(
-                    getNearbyTimeDifference(startDate)!,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color:
-                          isSameDay(startDate, DateTime.now())
-                              ? Theme.of(context).canvasColor
-                              : null,
-                    ),
-                  ),
+            eventData["cancelled"] == true
+                ? getPill("Abgesagt", Colors.red, true)
+                : getNearbyTimeDifference(startDate) != null
+                ? getPill(
+                  getNearbyTimeDifference(startDate)!,
+                  isSameDay(startDate, DateTime.now())
+                      ? Theme.of(context).primaryColor
+                      : Theme.of(context).colorScheme.secondaryFixedDim,
+                  isSameDay(startDate, DateTime.now()),
                 )
                 : SizedBox.shrink(),
           ],
