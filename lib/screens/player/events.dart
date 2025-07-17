@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:tv_oberwil/components/app.dart';
 import 'package:tv_oberwil/components/misc.dart';
 import 'package:tv_oberwil/components/paginated_list.dart';
+import 'package:tv_oberwil/firestore_providers/basic_providers.dart';
 
 import '../../utils.dart';
 
@@ -22,11 +23,41 @@ class _PlayerEventsState extends ConsumerState<PlayerEvents> {
   Widget build(BuildContext context) {
     final isScreenWide = MediaQuery.of(context).size.aspectRatio > 1;
 
+    final recEventsProvider = ref.watch(
+      realtimeCollectionProvider(
+        FirebaseFirestore.instance
+            .collection("teams")
+            .doc(widget.teamId)
+            .collection("r_events"),
+      ),
+    );
+    if (recEventsProvider.isLoading) {
+      return Center(child: CircularProgressIndicator());
+    }
+
+    if (recEventsProvider.hasError || !recEventsProvider.hasValue) {
+      return Center(child: Text("${recEventsProvider.error}"));
+    }
+
+    final recEvents = <String, Map<String, dynamic>>{
+      for (var doc in recEventsProvider.value!.docs)
+        doc.id: castMap(doc.data()),
+    };
+
     builder(DocumentSnapshot<Object?> doc) {
       final eventData = castMap(doc.data());
-      final meetDate = getDateTime(eventData["meet"]);
-      final startDate = getDateTime(eventData["start"]);
-      final endDate = getDateTime(eventData["end"]);
+
+      dynamic getValue(String key, {dynamic defaultV}) {
+        if (eventData["r"] != null && eventData[key] == null) {
+          return recEvents[eventData["r"]]?[key] ?? defaultV;
+        }
+        return eventData[key] ?? defaultV;
+      }
+
+      final date = getDateTime(getValue("date"));
+      final meetDate = getDateTime(getValue("meet"));
+      final startDate = getDateTime(getValue("start"));
+      final endDate = getDateTime(getValue("end"));
       final presence = castMap(eventData["presence"]);
       final localMemberUid = ref.read(userDataProvider).value?["member"];
 
@@ -37,12 +68,9 @@ class _PlayerEventsState extends ConsumerState<PlayerEvents> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              Text(getWeekday(date.weekday), style: TextStyle(fontSize: 12)),
               Text(
-                getWeekday(startDate.weekday),
-                style: TextStyle(fontSize: 12),
-              ),
-              Text(
-                "${startDate.day}.${startDate.month}.",
+                "${date.day}.${date.month}.",
                 style: TextStyle(fontWeight: FontWeight.w600),
               ),
             ],
@@ -60,28 +88,28 @@ class _PlayerEventsState extends ConsumerState<PlayerEvents> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    eventData["name"] ?? "",
+                    getValue("name", defaultV: ""),
                     style: TextStyle(fontWeight: FontWeight.bold),
                     overflow: TextOverflow.ellipsis,
                     maxLines: 2,
                   ),
 
                   Text(
-                    eventData["location"] ?? "",
+                    getValue("location", defaultV: ""),
                     style: TextStyle(fontSize: 14),
                   ),
                 ],
               ),
             ),
-            eventData["cancelled"] == true
+            getValue("cancelled") == true
                 ? getPill("Abgesagt", Colors.red, true)
-                : getNearbyTimeDifference(startDate) != null
+                : getNearbyTimeDifference(date) != null
                 ? getPill(
-                  getNearbyTimeDifference(startDate)!,
-                  isSameDay(startDate, DateTime.now())
+                  getNearbyTimeDifference(date)!,
+                  isSameDay(date, DateTime.now())
                       ? Theme.of(context).primaryColor
                       : Theme.of(context).colorScheme.secondaryFixedDim,
-                  isSameDay(startDate, DateTime.now()),
+                  isSameDay(date, DateTime.now()),
                 )
                 : SizedBox.shrink(),
           ],
@@ -123,6 +151,15 @@ class _PlayerEventsState extends ConsumerState<PlayerEvents> {
           ],
         ),
       );
+      final isLateToVote = DateTime.now().isAfter(
+        DateTime(
+          date.year,
+          date.month,
+          date.day,
+          startDate.hour,
+          startDate.minute,
+        ),
+      );
 
       final voteBox = Padding(
         padding: EdgeInsets.symmetric(horizontal: 20),
@@ -132,7 +169,7 @@ class _PlayerEventsState extends ConsumerState<PlayerEvents> {
           children: [
             FilledButton(
               onPressed: () async {
-                if (meetDate.isBefore(DateTime.now())) {
+                if (isLateToVote) {
                   ScaffoldMessenger.of(
                     context,
                   ).showSnackBar(SnackBar(content: Text('Du bist zu spät!')));
@@ -189,7 +226,7 @@ class _PlayerEventsState extends ConsumerState<PlayerEvents> {
                 children: [
                   FilledButton(
                     onPressed: () {
-                      if (meetDate.isBefore(DateTime.now())) {
+                      if (isLateToVote) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(content: Text('Du bist zu spät!')),
                         );
@@ -251,7 +288,7 @@ class _PlayerEventsState extends ConsumerState<PlayerEvents> {
                   ),
                   FilledButton(
                     onPressed: () {
-                      if (meetDate.isBefore(DateTime.now())) {
+                      if (isLateToVote) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(content: Text('Du bist zu spät!')),
                         );
@@ -420,7 +457,9 @@ class _PlayerEventsState extends ConsumerState<PlayerEvents> {
                                     fit: BoxFit.scaleDown,
                                     child: FilledButton(
                                       onPressed: () async {
-                                        if (meetDate.isBefore(DateTime.now())) {
+                                        if (startDate.isBefore(
+                                          DateTime.now(),
+                                        )) {
                                           ScaffoldMessenger.of(
                                             context,
                                           ).showSnackBar(
@@ -502,7 +541,9 @@ class _PlayerEventsState extends ConsumerState<PlayerEvents> {
                                     fit: BoxFit.scaleDown,
                                     child: FilledButton(
                                       onPressed: () {
-                                        if (meetDate.isBefore(DateTime.now())) {
+                                        if (startDate.isBefore(
+                                          DateTime.now(),
+                                        )) {
                                           ScaffoldMessenger.of(
                                             context,
                                           ).showSnackBar(
@@ -586,7 +627,9 @@ class _PlayerEventsState extends ConsumerState<PlayerEvents> {
                                     fit: BoxFit.scaleDown,
                                     child: FilledButton(
                                       onPressed: () {
-                                        if (meetDate.isBefore(DateTime.now())) {
+                                        if (startDate.isBefore(
+                                          DateTime.now(),
+                                        )) {
                                           ScaffoldMessenger.of(
                                             context,
                                           ).showSnackBar(
@@ -675,6 +718,12 @@ class _PlayerEventsState extends ConsumerState<PlayerEvents> {
       );
     }
 
+    final today = Timestamp.fromMillisecondsSinceEpoch(
+      Timestamp.now().millisecondsSinceEpoch -
+          (Timestamp.now().millisecondsSinceEpoch % (1000 * 3600 * 24)) -
+          1000 * 2600 * 12,
+    );
+
     return Padding(
       padding: EdgeInsets.symmetric(
         horizontal: isScreenWide ? 35 : 0,
@@ -703,8 +752,8 @@ class _PlayerEventsState extends ConsumerState<PlayerEvents> {
                       .collection("teams")
                       .doc(widget.teamId)
                       .collection("events")
-                      .where("end", isGreaterThanOrEqualTo: Timestamp.now())
-                      .orderBy("end"),
+                      .where("date", isGreaterThanOrEqualTo: today)
+                      .orderBy("date"),
                   maxQueryLimit: 5,
                 ),
                 PaginatedList(
@@ -713,8 +762,8 @@ class _PlayerEventsState extends ConsumerState<PlayerEvents> {
                       .collection("teams")
                       .doc(widget.teamId)
                       .collection("events")
-                      .where("end", isLessThan: Timestamp.now())
-                      .orderBy("end"),
+                      .where("date", isLessThan: today)
+                      .orderBy("date"),
                   maxQueryLimit: 5,
                 ),
               ],
