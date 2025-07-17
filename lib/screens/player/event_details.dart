@@ -41,14 +41,54 @@ class PlayerEventDetails extends ConsumerWidget {
         child: SelectableText("An error occurred: ${eventDoc.error}"),
       );
     }
+
+    final recEventsProvider = ref.watch(
+      realtimeCollectionProvider(
+        FirebaseFirestore.instance
+            .collection("teams")
+            .doc(teamId)
+            .collection("r_events"),
+      ),
+    );
+    if (recEventsProvider.isLoading) {
+      return Center(child: CircularProgressIndicator());
+    }
+
+    if (recEventsProvider.hasError || !recEventsProvider.hasValue) {
+      return Center(child: Text("${recEventsProvider.error}"));
+    }
+
+    final recEvents = <String, Map<String, dynamic>>{
+      for (var doc in recEventsProvider.value!.docs)
+        doc.id: castMap(doc.data()),
+    };
+
     final eventData = castMap(eventDoc.value?.data());
 
-    final meetDate = getDateTime(eventData["meet"] ?? Timestamp.now());
-    final startDate = getDateTime(eventData["start"] ?? Timestamp.now());
-    final endDate = getDateTime(eventData["end"] ?? Timestamp.now());
+    dynamic getValue(String key, {dynamic defaultV}) {
+      if (eventData["r"] != null && eventData[key] == null) {
+        return recEvents[eventData["r"]]?[key] ?? defaultV;
+      }
+      return eventData[key] ?? defaultV;
+    }
+
+    final date = getDateTime(getValue("date"));
+    final meetDate = getDateTime(getValue("meet"));
+    final startDate = getDateTime(getValue("start"));
+    final endDate = getDateTime(getValue("end"));
 
     final localMemberUid = ref.read(userDataProvider).value?["member"];
     final presence = castMap(eventData["presence"]);
+
+    final isLateToVote = DateTime.now().isAfter(
+      DateTime(
+        date.year,
+        date.month,
+        date.day,
+        startDate.hour,
+        startDate.minute,
+      ),
+    );
 
     return Padding(
       padding: EdgeInsets.symmetric(
@@ -61,8 +101,8 @@ class PlayerEventDetails extends ConsumerWidget {
           appBar: AppBar(
             title: Row(
               children: [
-                Text(eventData["name"] ?? ""),
-                eventData["cancelled"] == true
+                Text(getValue("name", defaultV: "")),
+                getValue("cancelled") == true
                     ? getPill("Abgesagt", Colors.red, true)
                     : getNearbyTimeDifference(startDate) != null
                     ? getPill(
@@ -99,11 +139,11 @@ class PlayerEventDetails extends ConsumerWidget {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Text(
-                                getWeekday(startDate.weekday),
+                                getWeekday(date.weekday),
                                 style: TextStyle(fontSize: 12),
                               ),
                               Text(
-                                "${startDate.day}.${startDate.month}.",
+                                "${date.day}.${date.month}.",
                                 style: TextStyle(fontWeight: FontWeight.w600),
                               ),
                             ],
@@ -181,7 +221,9 @@ class PlayerEventDetails extends ConsumerWidget {
                             Icons.place_outlined,
                             color: Theme.of(context).colorScheme.primary,
                           ),
-                          Text(eventData["location"] ?? "Keine Ortsangabe"),
+                          Text(
+                            getValue("location", defaultV: "Keine Ortsangabe"),
+                          ),
                         ],
                       ),
                     ),
@@ -197,7 +239,7 @@ class PlayerEventDetails extends ConsumerWidget {
                               fit: BoxFit.scaleDown,
                               child: FilledButton(
                                 onPressed: () async {
-                                  if (meetDate.isBefore(DateTime.now())) {
+                                  if (isLateToVote) {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
                                         content: Text('Du bist zu spät!'),
@@ -271,7 +313,7 @@ class PlayerEventDetails extends ConsumerWidget {
                               fit: BoxFit.scaleDown,
                               child: FilledButton(
                                 onPressed: () {
-                                  if (meetDate.isBefore(DateTime.now())) {
+                                  if (isLateToVote) {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
                                         content: Text('Du bist zu spät!'),
@@ -352,7 +394,7 @@ class PlayerEventDetails extends ConsumerWidget {
                               fit: BoxFit.scaleDown,
                               child: FilledButton(
                                 onPressed: () {
-                                  if (meetDate.isBefore(DateTime.now())) {
+                                  if (isLateToVote) {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
                                         content: Text('Du bist zu spät!'),
@@ -450,7 +492,7 @@ class PlayerEventDetails extends ConsumerWidget {
                               ),
                             ),
                             Text(
-                              eventData["notes"] ?? "",
+                              getValue("notes", defaultV: ""),
                               style: TextStyle(fontSize: 14),
                             ),
                           ],
