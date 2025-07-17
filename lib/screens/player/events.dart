@@ -49,15 +49,36 @@ class _PlayerEventsState extends ConsumerState<PlayerEvents> {
 
       dynamic getValue(String key, {dynamic defaultV}) {
         if (eventData["r"] != null && eventData[key] == null) {
-          return recEvents[eventData["r"]]?[key] ?? defaultV;
+          dynamic value = recEvents[eventData["r"]]?[key];
+          final edits = List<Map<String, dynamic>>.of(
+            castList(
+              recEvents[eventData["r"]]?["edits"],
+            ).map((e) => castMap(e)),
+          )..sort(
+            (a, b) =>
+                castDateTime(a["time"]).compareTo(castDateTime(b["time"])),
+          );
+
+          print(edits);
+
+          for (dynamic edit in edits) {
+            final after = castDateTime(edit["after"]);
+            final date = castDateTime(eventData["date"]);
+            if (after.millisecondsSinceEpoch <= date.millisecondsSinceEpoch ||
+                isSameDay(after, date)) {
+              value = edit["fields"]?[key] ?? value;
+            }
+          }
+
+          return value ?? defaultV;
         }
         return eventData[key] ?? defaultV;
       }
 
-      final date = getDateTime(getValue("date"));
-      final meetDate = getDateTime(getValue("meet"));
-      final startDate = getDateTime(getValue("start"));
-      final endDate = getDateTime(getValue("end"));
+      final date = castDateTime(getValue("date"));
+      final meetDate = castDateTime(getValue("meet"));
+      final startDate = castDateTime(getValue("start"));
+      final endDate = castDateTime(getValue("end"));
       final presence = castMap(eventData["presence"]);
       final localMemberUid = ref.read(userDataProvider).value?["member"];
 

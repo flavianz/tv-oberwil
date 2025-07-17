@@ -58,24 +58,27 @@ class _PaginatedListState extends ConsumerState<PaginatedList> {
           return const Center(child: Text('Nichts gefunden!'));
         }
         final controller = ref.read(provider.notifier);
-        return ListView(
-          children:
-              data.map((doc) => widget.builder(doc)).toList()..add(
-                controller.isLoading
-                    ? const Padding(
-                      padding: EdgeInsets.all(16),
-                      child: Center(child: CircularProgressIndicator()),
-                    )
-                    : controller.hasMore
-                    ? FilledButton.icon(
-                      onPressed: () {
-                        ref.read(provider.notifier).fetchMore();
-                      },
-                      label: Text("Mehr laden"),
-                      icon: Icon(Icons.add),
-                    )
-                    : Container(),
-              ),
+        return Padding(
+          padding: EdgeInsets.symmetric(horizontal: 10),
+          child: ListView(
+            children:
+                data.map((doc) => widget.builder(doc)).toList()..add(
+                  controller.isLoading
+                      ? const Padding(
+                        padding: EdgeInsets.all(16),
+                        child: Center(child: CircularProgressIndicator()),
+                      )
+                      : controller.hasMore
+                      ? FilledButton.icon(
+                        onPressed: () {
+                          ref.read(provider.notifier).fetchMore();
+                        },
+                        label: Text("Mehr laden"),
+                        icon: Icon(Icons.add),
+                      )
+                      : Container(),
+                ),
+          ),
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),

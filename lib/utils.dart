@@ -41,7 +41,7 @@ String getWeekday(int weekday) {
   }
 }
 
-DateTime getDateTime(dynamic timestamp) {
+DateTime castDateTime(dynamic timestamp) {
   return DateTime.fromMillisecondsSinceEpoch(
     ((timestamp ?? Timestamp.now()) as Timestamp).millisecondsSinceEpoch,
   );
@@ -133,5 +133,13 @@ Map<String, dynamic> castMap(dynamic map) {
     return (map ?? <String, dynamic>{}) as Map<String, dynamic>;
   } catch (e) {
     return <String, dynamic>{};
+  }
+}
+
+List<dynamic> castList(dynamic list) {
+  try {
+    return (list ?? <dynamic>[]) as List<dynamic>;
+  } catch (e) {
+    return <dynamic>[];
   }
 }
