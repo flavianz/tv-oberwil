@@ -9,7 +9,7 @@ import 'package:tv_oberwil/firestore_providers/firestore_tools.dart';
 import '../../components/input_boxes.dart';
 import '../../firestore_providers/basic_providers.dart';
 
-enum DetailsEditPropertyType { text, date, selection, bool }
+enum DetailsEditPropertyType { text, date, time, selection, bool }
 
 class DetailsEditProperty {
   final String key;
@@ -61,15 +61,19 @@ class _DetailsEditPageState extends ConsumerState<DetailsEditPage> {
     expandedProperties =
         widget.properties.expand((element) => element).toList();
     for (var property in expandedProperties) {
-      if (property.type == DetailsEditPropertyType.text) {
-        values[property.key] = TextEditingController();
-        values[property.key]?.text = data[property.key] ?? "";
-      } else if (property.type == DetailsEditPropertyType.selection) {
-        values[property.key] = data[property.key] ?? property.data?.keys[0];
-      } else if (property.type == DetailsEditPropertyType.bool) {
-        values[property.key] = data[property.key] ?? true;
-      } else if (property.type == DetailsEditPropertyType.date) {
-        values[property.key] = data[property.key] ?? Timestamp.now();
+      switch (property.type) {
+        case DetailsEditPropertyType.text:
+          {
+            values[property.key] = TextEditingController();
+            values[property.key]?.text = data[property.key] ?? "";
+          }
+        case DetailsEditPropertyType.date:
+        case DetailsEditPropertyType.time:
+          values[property.key] = data[property.key] ?? Timestamp.now();
+        case DetailsEditPropertyType.selection:
+          values[property.key] = data[property.key] ?? property.data?.keys[0];
+        case DetailsEditPropertyType.bool:
+          values[property.key] = data[property.key] ?? true;
       }
     }
   }
@@ -103,49 +107,73 @@ class _DetailsEditPageState extends ConsumerState<DetailsEditPage> {
 
     final personalInfoBoxes = widget.properties.map((list) {
       return list.map((property) {
-        if (property.type == DetailsEditPropertyType.text) {
-          return TextInputBox(
-            controller: values[property.key],
-            title: property.name,
-            isEditMode: isEditMode,
-          );
-        } else if (property.type == DetailsEditPropertyType.selection) {
-          values[property.key] = data[property.key] ?? property.data?.keys[0];
-          return SelectionInputBox(
-            title: property.name,
-            isEditMode: isEditMode,
-            options: property.data,
-            selected: values[property.key],
-            onSelected: (s) {
-              setState(() {
-                values = {...values, property.key: s};
-              });
-            },
-          );
-        } else if (property.type == DetailsEditPropertyType.bool) {
-          return SelectionInputBox(
-            title: property.name,
-            isEditMode: isEditMode,
-            options: {true: "Ja", false: "Nein"},
-            selected: values[property.key],
-            onSelected: (s) {
-              setState(() {
-                values = {...values, property.key: s};
-              });
-            },
-          );
-        } else if (property.type == DetailsEditPropertyType.date) {
-          values[property.key] = data[property.key] ?? Timestamp.now();
-          return DateInputBox(
-            title: property.name,
-            onDateSelected: (s) {
-              setState(() {
-                values = {...values, property.key: s};
-              });
-            },
-            defaultDate: values[property.key],
-            isEditMode: isEditMode,
-          );
+        switch (property.type) {
+          case DetailsEditPropertyType.text:
+            return TextInputBox(
+              controller: values[property.key],
+              title: property.name,
+              isEditMode: isEditMode,
+            );
+          case DetailsEditPropertyType.date:
+            return DateInputBox(
+              title: property.name,
+              onDateSelected: (s) {
+                setState(() {
+                  values = {
+                    ...values,
+                    property.key: Timestamp.fromMillisecondsSinceEpoch(
+                      s.millisecondsSinceEpoch,
+                    ),
+                  };
+                });
+              },
+              defaultDate: DateTime.fromMillisecondsSinceEpoch(
+                values[property.key].millisecondsSinceEpoch,
+              ),
+              isEditMode: isEditMode,
+            );
+          case DetailsEditPropertyType.time:
+            return TimeInputBox(
+              title: property.name,
+              onTimeSelected: (s) {
+                setState(() {
+                  values = {
+                    ...values,
+                    property.key: Timestamp.fromMillisecondsSinceEpoch(
+                      s.millisecondsSinceEpoch,
+                    ),
+                  };
+                });
+              },
+              defaultTime: DateTime.fromMillisecondsSinceEpoch(
+                values[property.key].millisecondsSinceEpoch,
+              ),
+              isEditMode: isEditMode,
+            );
+          case DetailsEditPropertyType.selection:
+            return SelectionInputBox(
+              title: property.name,
+              isEditMode: isEditMode,
+              options: property.data,
+              selected: values[property.key],
+              onSelected: (s) {
+                setState(() {
+                  values = {...values, property.key: s};
+                });
+              },
+            );
+          case DetailsEditPropertyType.bool:
+            return SelectionInputBox(
+              title: property.name,
+              isEditMode: isEditMode,
+              options: {true: "Ja", false: "Nein"},
+              selected: values[property.key],
+              onSelected: (s) {
+                setState(() {
+                  values = {...values, property.key: s};
+                });
+              },
+            );
         }
       });
     });
@@ -188,23 +216,25 @@ class _DetailsEditPageState extends ConsumerState<DetailsEditPage> {
                           final Map<String, dynamic> inputs = {};
 
                           for (var property in expandedProperties) {
-                            if (property.type == DetailsEditPropertyType.text) {
-                              inputs[property.key] = values[property.key]?.text;
-                              if (property.data == true) {
-                                inputs["search_${property.key}"] = searchify(
-                                  values[property.key]?.text,
-                                );
-                              }
-                            } else if (property.type ==
-                                    DetailsEditPropertyType.selection ||
-                                property.type == DetailsEditPropertyType.bool) {
-                              inputs[property.key] = values[property.key];
-                            } else if (property.type ==
-                                DetailsEditPropertyType.date) {
-                              inputs[property
-                                  .key] = Timestamp.fromMillisecondsSinceEpoch(
-                                values[property.key].millisecondsSinceEpoch,
-                              );
+                            switch (property.type) {
+                              case DetailsEditPropertyType.text:
+                                inputs[property.key] =
+                                    values[property.key]?.text;
+                                if (property.data == true) {
+                                  inputs["search_${property.key}"] = searchify(
+                                    values[property.key]?.text,
+                                  );
+                                }
+                              case DetailsEditPropertyType.date:
+                              case DetailsEditPropertyType.time:
+                                inputs[property.key] =
+                                    Timestamp.fromMillisecondsSinceEpoch(
+                                      values[property.key]
+                                          .millisecondsSinceEpoch,
+                                    );
+                              case DetailsEditPropertyType.selection:
+                              case DetailsEditPropertyType.bool:
+                                inputs[property.key] = values[property.key];
                             }
                           }
 

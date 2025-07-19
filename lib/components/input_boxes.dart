@@ -70,6 +70,60 @@ class DateInputBox extends StatelessWidget {
   }
 }
 
+class TimeInputBox extends StatelessWidget {
+  final String title;
+  final Function(DateTime) onTimeSelected;
+  final DateTime defaultTime;
+  final bool isEditMode;
+
+  const TimeInputBox({
+    super.key,
+    required this.title,
+    required this.onTimeSelected,
+    required this.defaultTime,
+    required this.isEditMode,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final formattedTime =
+        "${defaultTime.hour.toString().padLeft(2, '0')}:${defaultTime.minute.toString().padLeft(2, '0')}";
+
+    return InputBox(
+      inputWidget: TextField(
+        decoration: InputDecoration(
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+          hintText: formattedTime,
+          prefixIcon: Icon(Icons.access_time),
+        ),
+        readOnly: true,
+        onTap: () async {
+          if (isEditMode) {
+            TimeOfDay? newTime = await showTimePicker(
+              context: context,
+              initialTime: TimeOfDay.fromDateTime(defaultTime),
+            );
+
+            if (newTime != null) {
+              // Convert TimeOfDay to DateTime with today's date
+              final now = DateTime.now();
+              final selectedDateTime = DateTime(
+                now.year,
+                now.month,
+                now.day,
+                newTime.hour,
+                newTime.minute,
+              );
+              onTimeSelected(selectedDateTime);
+            }
+          }
+        },
+      ),
+      title: title,
+    );
+  }
+}
+
 class TextInputBox extends StatelessWidget {
   final TextEditingController controller;
   final String title;
