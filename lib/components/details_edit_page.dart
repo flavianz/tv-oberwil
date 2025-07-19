@@ -98,11 +98,8 @@ class _DetailsEditPageState extends ConsumerState<DetailsEditPage> {
     final data = teamData.value?.data() ?? {};
 
     if (!teamData.isLoading && teamData.value != null && !_inputsInitialized) {
-      final data = teamData.value!.data();
-      if (data != null) {
-        resetInputs(data);
-        _inputsInitialized = true;
-      }
+      resetInputs(data);
+      _inputsInitialized = true;
     }
 
     final personalInfoBoxes = widget.properties.map((list) {
@@ -110,7 +107,7 @@ class _DetailsEditPageState extends ConsumerState<DetailsEditPage> {
         switch (property.type) {
           case DetailsEditPropertyType.text:
             return TextInputBox(
-              controller: values[property.key],
+              controller: values[property.key] ?? TextEditingController(),
               title: property.name,
               isEditMode: isEditMode,
             );
@@ -183,200 +180,197 @@ class _DetailsEditPageState extends ConsumerState<DetailsEditPage> {
         horizontal: isTablet ? 35 : 0,
         vertical: 15,
       ),
-      child: DefaultTabController(
-        length: 3,
-        child: Scaffold(
-          appBar: AppBar(
-            actionsPadding: const EdgeInsets.symmetric(horizontal: 12),
-            title: Text(values[widget.titleKey].text),
-            actions: [
-              (isEditMode
-                  ? Row(
-                    children: [
-                      TextButton.icon(
-                        onPressed: () {
-                          setState(() {
-                            resetInputs(data);
-                            isEditMode = false;
-                            _inputsInitialized = true;
-                            if (widget.created) {
-                              context.pop();
-                            }
-                          });
-                        },
-                        label: Text("Abbrechen"),
-                        icon: Icon(Icons.close),
-                      ),
-                      FilledButton.icon(
-                        onPressed: () async {
-                          setState(() {
-                            _isSaving = true;
-                          });
-                          Map<String, dynamic> changedData = {};
-                          final Map<String, dynamic> inputs = {};
-
-                          for (var property in expandedProperties) {
-                            switch (property.type) {
-                              case DetailsEditPropertyType.text:
-                                inputs[property.key] =
-                                    values[property.key]?.text;
-                                if (property.data == true) {
-                                  inputs["search_${property.key}"] = searchify(
-                                    values[property.key]?.text,
-                                  );
-                                }
-                              case DetailsEditPropertyType.date:
-                              case DetailsEditPropertyType.time:
-                                inputs[property.key] =
-                                    Timestamp.fromMillisecondsSinceEpoch(
-                                      values[property.key]
-                                          .millisecondsSinceEpoch,
-                                    );
-                              case DetailsEditPropertyType.selection:
-                              case DetailsEditPropertyType.bool:
-                                inputs[property.key] = values[property.key];
-                            }
-                          }
-
+      child: Scaffold(
+        appBar: AppBar(
+          actionsPadding: const EdgeInsets.symmetric(horizontal: 12),
+          title: Text(values[widget.titleKey]?.text ?? ""),
+          actions: [
+            (isEditMode
+                ? Row(
+                  children: [
+                    TextButton.icon(
+                      onPressed: () {
+                        setState(() {
+                          resetInputs(data);
+                          isEditMode = false;
+                          _inputsInitialized = true;
                           if (widget.created) {
-                            widget.doc.set(inputs).whenComplete(() {
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text('Erstellt!')),
+                            context.pop();
+                          }
+                        });
+                      },
+                      label: Text("Abbrechen"),
+                      icon: Icon(Icons.close),
+                    ),
+                    FilledButton.icon(
+                      onPressed: () async {
+                        setState(() {
+                          _isSaving = true;
+                        });
+                        Map<String, dynamic> changedData = {};
+                        final Map<String, dynamic> inputs = {};
+
+                        for (var property in expandedProperties) {
+                          switch (property.type) {
+                            case DetailsEditPropertyType.text:
+                              inputs[property.key] = values[property.key]?.text;
+                              if (property.data == true) {
+                                inputs["search_${property.key}"] = searchify(
+                                  values[property.key]?.text ?? "",
                                 );
                               }
-                            });
-                          } else {
-                            for (final entry in inputs.entries) {
-                              if (data[entry.key] != entry.value) {
-                                changedData[entry.key] = entry.value;
-                              }
-                            }
-                            if (changedData.isNotEmpty) {
-                              await widget.doc.update(changedData).whenComplete(
-                                () {
-                                  if (context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(content: Text('Aktualisiert!')),
-                                    );
-                                  }
-                                },
+                            case DetailsEditPropertyType.date:
+                            case DetailsEditPropertyType.time:
+                              inputs[property
+                                  .key] = Timestamp.fromMillisecondsSinceEpoch(
+                                values[property.key].millisecondsSinceEpoch,
+                              );
+                            case DetailsEditPropertyType.selection:
+                            case DetailsEditPropertyType.bool:
+                              inputs[property.key] = values[property.key];
+                          }
+                        }
+
+                        if (widget.created) {
+                          widget.doc.set(inputs).whenComplete(() {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Erstellt!')),
                               );
                             }
-                          }
-
-                          setState(() {
-                            _isSaving = false;
-                            isEditMode = false;
-                            if (widget.created) {
-                              context.pop();
-                            }
                           });
-                        },
-                        label: Text("Speichern"),
-                        icon:
-                            _isSaving
-                                ? Transform.scale(
-                                  scale: 0.5,
-                                  child: CircularProgressIndicator(
-                                    color: Theme.of(context).canvasColor,
-                                  ),
-                                )
-                                : Icon(Icons.check),
-                      ),
-                    ],
-                  )
-                  : IconButton(
-                    onPressed: () {
-                      setState(() {
-                        isEditMode = true;
-                      });
-                    },
-                    icon: const Icon(Icons.edit),
-                  )),
-              IconButton(
-                onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder:
-                        (context) => AlertDialog(
-                          title: const Text('Löschen?'),
-                          content: const SingleChildScrollView(
-                            child: ListBody(
-                              children: [
-                                Text(
-                                  'Das Löschen kann nicht rückgängig gemacht werden.',
-                                ),
-                              ],
-                            ),
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () => context.pop(),
-                              child: const Text("Abbrechen"),
-                            ),
-                            FilledButton.icon(
-                              onPressed: () {
-                                widget.doc.delete();
-                                context.pop();
-                                context.pop();
+                        } else {
+                          for (final entry in inputs.entries) {
+                            if (data[entry.key] != entry.value) {
+                              changedData[entry.key] = entry.value;
+                            }
+                          }
+                          if (changedData.isNotEmpty) {
+                            await widget.doc.update(changedData).whenComplete(
+                              () {
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('Aktualisiert!')),
+                                  );
+                                }
                               },
-                              label: const Text("Löschen"),
-                              icon: const Icon(Icons.delete),
-                            ),
-                          ],
-                        ),
-                  );
-                },
-                icon: const Icon(Icons.delete),
-              ),
-            ],
-          ),
-          body: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 15),
-            child: ListView(
-              children: [
-                const SizedBox(height: 30),
-                isTablet
-                    ? Column(
-                      children:
-                          personalInfoBoxes
-                              .map(
-                                (row) => Row(
-                                  children:
-                                      row
-                                          .toList()
-                                          .map(
-                                            (w) => Expanded(
-                                              child: Padding(
-                                                padding: EdgeInsets.only(
-                                                  right: 15,
-                                                ),
-                                                child: w,
-                                              ),
-                                            ),
-                                          )
-                                          .toList(),
+                            );
+                          }
+                        }
+
+                        setState(() {
+                          _isSaving = false;
+                          isEditMode = false;
+                          if (widget.created) {
+                            context.pop();
+                          }
+                        });
+                      },
+                      label: Text("Speichern"),
+                      icon:
+                          _isSaving
+                              ? Transform.scale(
+                                scale: 0.5,
+                                child: CircularProgressIndicator(
+                                  color: Theme.of(context).canvasColor,
                                 ),
                               )
-                              .toList(),
-                    )
-                    : Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children:
-                          personalInfoBoxes
-                              .expand((element) => element)
-                              .toList()
-                              .map(
-                                (w) => Padding(
-                                  padding: EdgeInsets.only(bottom: 10),
-                                  child: w,
-                                ),
-                              )
-                              .toList(),
+                              : Icon(Icons.check),
                     ),
-              ],
+                  ],
+                )
+                : IconButton(
+                  onPressed: () {
+                    setState(() {
+                      isEditMode = true;
+                    });
+                  },
+                  icon: const Icon(Icons.edit),
+                )),
+            IconButton(
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder:
+                      (context) => AlertDialog(
+                        title: const Text('Löschen?'),
+                        content: const SingleChildScrollView(
+                          child: ListBody(
+                            children: [
+                              Text(
+                                'Das Löschen kann nicht rückgängig gemacht werden.',
+                              ),
+                            ],
+                          ),
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => context.pop(),
+                            child: const Text("Abbrechen"),
+                          ),
+                          FilledButton.icon(
+                            onPressed: () {
+                              if (!widget.created) {
+                                widget.doc.delete();
+                              }
+                              context.pop();
+                              context.pop();
+                            },
+                            label: const Text("Löschen"),
+                            icon: const Icon(Icons.delete),
+                          ),
+                        ],
+                      ),
+                );
+              },
+              icon: const Icon(Icons.delete),
             ),
+          ],
+        ),
+        body: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 15),
+          child: ListView(
+            children: [
+              const SizedBox(height: 30),
+              isTablet
+                  ? Column(
+                    children:
+                        personalInfoBoxes
+                            .map(
+                              (row) => Row(
+                                children:
+                                    row
+                                        .toList()
+                                        .map(
+                                          (w) => Expanded(
+                                            child: Padding(
+                                              padding: EdgeInsets.only(
+                                                right: 15,
+                                              ),
+                                              child: w,
+                                            ),
+                                          ),
+                                        )
+                                        .toList(),
+                              ),
+                            )
+                            .toList(),
+                  )
+                  : Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children:
+                        personalInfoBoxes
+                            .expand((element) => element)
+                            .toList()
+                            .map(
+                              (w) => Padding(
+                                padding: EdgeInsets.only(bottom: 10),
+                                child: w,
+                              ),
+                            )
+                            .toList(),
+                  ),
+            ],
           ),
         ),
       ),

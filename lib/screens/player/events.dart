@@ -764,7 +764,8 @@ class _PlayerEventsState extends ConsumerState<PlayerEvents> {
                 Tab(icon: Icon(Icons.more_time_outlined), text: "Vergangen"),
               ],
             ),
-            actions: [IconButton(onPressed: () {}, icon: Icon(Icons.refresh))],
+            actions:
+                widget.isCoach ? [NewEventMenu(teamId: widget.teamId)] : [],
           ),
           body: Padding(
             padding: EdgeInsets.only(top: 10),
@@ -795,6 +796,56 @@ class _PlayerEventsState extends ConsumerState<PlayerEvents> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class NewEventMenu extends StatefulWidget {
+  final String teamId;
+
+  const NewEventMenu({super.key, required this.teamId});
+
+  @override
+  State<NewEventMenu> createState() => _NewEventMenuState();
+}
+
+class _NewEventMenuState extends State<NewEventMenu> {
+  final FocusNode _buttonFocusNode = FocusNode(debugLabel: 'Menu Button');
+
+  @override
+  void dispose() {
+    _buttonFocusNode.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MenuAnchor(
+      childFocusNode: _buttonFocusNode,
+      menuChildren: <Widget>[
+        MenuItemButton(
+          onPressed: () {
+            context.push(
+              "/coach/team/${widget.teamId}/event/${generateFirestoreKey()}/createSimple",
+            );
+          },
+          child: const Text('Einzel'),
+        ),
+        MenuItemButton(onPressed: () {}, child: const Text('Wiederkehrend')),
+      ],
+      builder: (_, MenuController controller, Widget? child) {
+        return IconButton(
+          focusNode: _buttonFocusNode,
+          onPressed: () {
+            if (controller.isOpen) {
+              controller.close();
+            } else {
+              controller.open();
+            }
+          },
+          icon: const Icon(Icons.add),
+        );
+      },
     );
   }
 }

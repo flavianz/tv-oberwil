@@ -103,7 +103,7 @@ final router = GoRouter(
           },
         ),
         GoRoute(
-          path: '/coach/team/:team/event/:event/create',
+          path: '/coach/team/:team/event/:event/createSimple',
           builder: (context, state) {
             final eventId = state.pathParameters['event']!;
             final teamId = state.pathParameters['team']!;
