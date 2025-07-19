@@ -11,8 +11,9 @@ import '../../utils.dart';
 
 class PlayerEvents extends ConsumerStatefulWidget {
   final String teamId;
+  final bool isCoach;
 
-  const PlayerEvents({super.key, required this.teamId});
+  const PlayerEvents({super.key, required this.teamId, this.isCoach = false});
 
   @override
   ConsumerState<PlayerEvents> createState() => _PlayerEventsState();
@@ -380,7 +381,9 @@ class _PlayerEventsState extends ConsumerState<PlayerEvents> {
         cursor: SystemMouseCursors.click,
         child: GestureDetector(
           onTap: () {
-            context.push("/player/team/${widget.teamId}/event/${doc.id}");
+            context.push(
+              "/${widget.isCoach ? "coach" : "player"}/team/${widget.teamId}/event/${doc.id}",
+            );
           },
           child: Card.outlined(
             elevation: 1,

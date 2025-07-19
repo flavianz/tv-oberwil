@@ -96,6 +96,14 @@ class _AppState extends ConsumerState<App> {
           "url": "/player/team/${roles["player"][0] ?? ""}/events",
         },
       ]);
+    } else if (selectedRole == "coach") {
+      destinations.addAll([
+        {
+          "icon": Icon(Icons.event),
+          "label": "Termine",
+          "url": "/coach/team/${roles["player"][0] ?? ""}/events",
+        },
+      ]);
     }
 
     final isTablet = MediaQuery.of(context).size.aspectRatio > 1;

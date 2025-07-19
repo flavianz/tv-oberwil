@@ -8,6 +8,7 @@ import 'package:tv_oberwil/screens/admin/member_details_screen.dart';
 import 'package:tv_oberwil/screens/admin/members_screen.dart';
 import 'package:tv_oberwil/screens/admin/team_details_screen.dart';
 import 'package:tv_oberwil/screens/admin/teams_screen.dart';
+import 'package:tv_oberwil/screens/coach/event_details_edit.dart';
 import 'package:tv_oberwil/screens/player/event_details.dart';
 import 'package:tv_oberwil/screens/player/events.dart';
 
@@ -20,6 +21,7 @@ final router = GoRouter(
       routes: [
         GoRoute(path: '/', builder: (context, state) => HomeScreen()),
         GoRoute(
+          routes: [],
           path: '/admin/members',
           builder: (context, state) {
             return MembersScreen(
@@ -63,13 +65,41 @@ final router = GoRouter(
             return PlayerEvents(teamId: state.pathParameters["team"] ?? "");
           },
         ),
-
         GoRoute(
           path: '/player/team/:team/event/:event',
           builder: (context, state) {
             final eventId = state.pathParameters['event']!;
             final teamId = state.pathParameters['team']!;
             return PlayerEventDetails(eventId: eventId, teamId: teamId);
+          },
+        ),
+        GoRoute(
+          path: '/coach/team/:team/events',
+          builder: (context, state) {
+            return PlayerEvents(
+              teamId: state.pathParameters["team"] ?? "",
+              isCoach: true,
+            );
+          },
+        ),
+        GoRoute(
+          path: '/coach/team/:team/event/:event',
+          builder: (context, state) {
+            final eventId = state.pathParameters['event']!;
+            final teamId = state.pathParameters['team']!;
+            return PlayerEventDetails(
+              eventId: eventId,
+              teamId: teamId,
+              isCoach: true,
+            );
+          },
+        ),
+        GoRoute(
+          path: '/edit',
+          builder: (context, state) {
+            final eventId = state.pathParameters['event']!;
+            final teamId = state.pathParameters['team']!;
+            return EventDetailsEdit(eventId: eventId, teamId: teamId);
           },
         ),
       ],
