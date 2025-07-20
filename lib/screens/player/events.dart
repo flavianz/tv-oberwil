@@ -60,8 +60,6 @@ class _PlayerEventsState extends ConsumerState<PlayerEvents> {
                 castDateTime(a["time"]).compareTo(castDateTime(b["time"])),
           );
 
-          print(edits);
-
           for (dynamic edit in edits) {
             final after = castDateTime(edit["after"]);
             final date = castDateTime(eventData["date"]);
@@ -750,7 +748,7 @@ class _PlayerEventsState extends ConsumerState<PlayerEvents> {
 
     return Padding(
       padding: EdgeInsets.symmetric(
-        horizontal: isScreenWide ? 35 : 0,
+        horizontal: isScreenWide ? 35 : 10,
         vertical: 15,
       ),
       child: DefaultTabController(
@@ -834,7 +832,7 @@ class _NewEventMenuState extends State<NewEventMenu> {
         MenuItemButton(onPressed: () {}, child: const Text('Wiederkehrend')),
       ],
       builder: (_, MenuController controller, Widget? child) {
-        return IconButton(
+        return FilledButton.icon(
           focusNode: _buttonFocusNode,
           onPressed: () {
             if (controller.isOpen) {
@@ -844,6 +842,7 @@ class _NewEventMenuState extends State<NewEventMenu> {
             }
           },
           icon: const Icon(Icons.add),
+          label: Text("Neu"),
         );
       },
     );

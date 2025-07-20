@@ -7,6 +7,7 @@ class PaginatedList extends ConsumerStatefulWidget {
   final Widget Function(DocumentSnapshot<Object?>) builder;
   final Query<Map<String, dynamic>> query;
   final int maxQueryLimit;
+  final bool divider;
 
   void refresh() {}
 
@@ -15,6 +16,7 @@ class PaginatedList extends ConsumerStatefulWidget {
     required this.builder,
     required this.query,
     this.maxQueryLimit = 10,
+    this.divider = false,
   });
 
   @override
@@ -58,27 +60,24 @@ class _PaginatedListState extends ConsumerState<PaginatedList> {
           return const Center(child: Text('Nichts gefunden!'));
         }
         final controller = ref.read(provider.notifier);
-        return Padding(
-          padding: EdgeInsets.symmetric(horizontal: 10),
-          child: ListView(
-            children:
-                data.map((doc) => widget.builder(doc)).toList()..add(
-                  controller.isLoading
-                      ? const Padding(
-                        padding: EdgeInsets.all(16),
-                        child: Center(child: CircularProgressIndicator()),
-                      )
-                      : controller.hasMore
-                      ? FilledButton.icon(
-                        onPressed: () {
-                          ref.read(provider.notifier).fetchMore();
-                        },
-                        label: Text("Mehr laden"),
-                        icon: Icon(Icons.add),
-                      )
-                      : Container(),
-                ),
-          ),
+        return ListView(
+          children:
+              data.map((doc) => widget.builder(doc)).toList()..add(
+                controller.isLoading
+                    ? const Padding(
+                      padding: EdgeInsets.all(16),
+                      child: Center(child: CircularProgressIndicator()),
+                    )
+                    : controller.hasMore
+                    ? FilledButton.icon(
+                      onPressed: () {
+                        ref.read(provider.notifier).fetchMore();
+                      },
+                      label: Text("Mehr laden"),
+                      icon: Icon(Icons.add),
+                    )
+                    : Container(),
+              ),
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
