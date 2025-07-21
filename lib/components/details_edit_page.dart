@@ -25,6 +25,7 @@ class DetailsEditPage extends ConsumerStatefulWidget {
   final bool created;
   final List<List<DetailsEditProperty>> properties;
   final String titleKey;
+  final bool defaultEdit;
 
   const DetailsEditPage({
     super.key,
@@ -32,6 +33,7 @@ class DetailsEditPage extends ConsumerStatefulWidget {
     this.created = false,
     required this.properties,
     required this.titleKey,
+    this.defaultEdit = false,
   });
 
   @override
@@ -81,7 +83,7 @@ class _DetailsEditPageState extends ConsumerState<DetailsEditPage> {
   @override
   Widget build(BuildContext context) {
     if (isFirstRender) {
-      isEditMode = widget.created;
+      isEditMode = widget.created || widget.defaultEdit;
       isFirstRender = false;
     }
 

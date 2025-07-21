@@ -98,18 +98,107 @@ class PlayerEventDetails extends ConsumerWidget {
     final startDate = castDateTime(getValue("start"));
     final endDate = castDateTime(getValue("end"));
 
-    final localMemberUid = ref.read(userDataProvider).value?["member"];
+    final localMemberUid = ref.watch(userDataProvider).value?["member"];
     final presence = castMap(eventData["presence"]);
 
-    final isLateToVote = DateTime.now().isAfter(
-      DateTime(
-        date.year,
-        date.month,
-        date.day,
-        startDate.hour,
-        startDate.minute,
-      ),
-    );
+    final isLateToVote =
+        DateTime.now().isAfter(
+          DateTime(
+            date.year,
+            date.month,
+            date.day,
+            startDate.hour,
+            startDate.minute,
+          ),
+        ) &&
+        !isCoach;
+
+    void cancel(memberId) {
+      if (isLateToVote) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Du bist zu spät!')));
+        return;
+      }
+      showStringInputDialog(
+        title: "Abmelden",
+        hintText: "Gib einen Grund an",
+        context: context,
+        onSubmit: (input) async {
+          await FirebaseFirestore.instance
+              .collection('teams')
+              .doc(teamId)
+              .collection("events")
+              .doc(eventId)
+              .update({
+                'presence.$memberId': {"value": 'a', "reason": input},
+                // only this key inside the map is updated
+              });
+          if (context.mounted) {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text('Abgemeldet!')));
+          }
+        },
+      );
+    }
+
+    void unsure(memberId) {
+      if (isLateToVote) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Du bist zu spät!')));
+        return;
+      }
+      showStringInputDialog(
+        title: "Unsicher melden",
+        hintText: "Gib einen Grund an",
+        context: context,
+        onSubmit: (input) async {
+          await FirebaseFirestore.instance
+              .collection('teams')
+              .doc(teamId)
+              .collection("events")
+              .doc(eventId)
+              .update({
+                'presence.$memberId': {"value": 'u', "reason": input},
+                // only this key inside the map is updated
+              });
+          if (context.mounted) {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text('Als unsicher gemeldet!')));
+          }
+        },
+      );
+    }
+
+    void regi() {
+      print("");
+    }
+
+    void register(memberId) {
+      if (isLateToVote) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Du bist zu spät!')));
+        return;
+      }
+      FirebaseFirestore.instance
+          .collection('teams')
+          .doc(teamId)
+          .collection("events")
+          .doc(eventId)
+          .update({
+            'presence.$memberId': {"value": 'p', "reason": ""},
+            // only this key inside the map is updated
+          });
+      if (context.mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Angemeldet!')));
+      }
+    }
 
     return Padding(
       padding: EdgeInsets.symmetric(
@@ -143,17 +232,19 @@ class PlayerEventDetails extends ConsumerWidget {
                 /*Tab(icon: Icon(Icons.directions_car), text: "Mitfahren"),*/
               ],
             ),
-            actions: [
-              isCoach
-                  ? IconButton(
-                    onPressed: () {
-                      context.push("/coach/team/$teamId/event/$eventId/edit");
-                    },
-                    icon: Icon(Icons.edit),
-                  )
-                  : SizedBox.shrink(),
-              IconButton(onPressed: () {}, icon: Icon(Icons.refresh)),
-            ],
+            actions:
+                isCoach
+                    ? [
+                      IconButton(
+                        onPressed: () {
+                          context.push(
+                            "/coach/team/$teamId/event/$eventId/edit",
+                          );
+                        },
+                        icon: Icon(Icons.edit),
+                      ),
+                    ]
+                    : [],
           ),
           body: Padding(
             padding: EdgeInsets.only(top: 20),
@@ -269,35 +360,7 @@ class PlayerEventDetails extends ConsumerWidget {
                             child: FittedBox(
                               fit: BoxFit.scaleDown,
                               child: FilledButton(
-                                onPressed: () async {
-                                  if (isLateToVote) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text('Du bist zu spät!'),
-                                      ),
-                                    );
-                                    return;
-                                  }
-                                  await FirebaseFirestore.instance
-                                      .collection('teams')
-                                      .doc(teamId)
-                                      .collection("events")
-                                      .doc(eventId)
-                                      .update({
-                                        'presence.$localMemberUid': {
-                                          "value": 'p',
-                                          "reason": "",
-                                        },
-                                        // only this key inside the map is updated
-                                      });
-                                  if (context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text('Du bist angemeldet!'),
-                                      ),
-                                    );
-                                  }
-                                },
+                                onPressed: () => register(localMemberUid),
                                 style: FilledButton.styleFrom(
                                   backgroundColor:
                                       castMap(
@@ -343,46 +406,7 @@ class PlayerEventDetails extends ConsumerWidget {
                             child: FittedBox(
                               fit: BoxFit.scaleDown,
                               child: FilledButton(
-                                onPressed: () {
-                                  if (isLateToVote) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text('Du bist zu spät!'),
-                                      ),
-                                    );
-                                    return;
-                                  }
-                                  showStringInputDialog(
-                                    title: "Unsicher melden",
-                                    hintText: "Gib einen Grund an",
-                                    context: context,
-                                    onSubmit: (input) async {
-                                      await FirebaseFirestore.instance
-                                          .collection('teams')
-                                          .doc(teamId)
-                                          .collection("events")
-                                          .doc(eventId)
-                                          .update({
-                                            'presence.$localMemberUid': {
-                                              "value": 'u',
-                                              "reason": input,
-                                            },
-                                            // only this key inside the map is updated
-                                          });
-                                      if (context.mounted) {
-                                        ScaffoldMessenger.of(
-                                          context,
-                                        ).showSnackBar(
-                                          SnackBar(
-                                            content: Text(
-                                              'Du bist als unsicher gemeldet!',
-                                            ),
-                                          ),
-                                        );
-                                      }
-                                    },
-                                  );
-                                },
+                                onPressed: () => unsure(localMemberUid),
                                 style: FilledButton.styleFrom(
                                   backgroundColor:
                                       castMap(
@@ -424,46 +448,7 @@ class PlayerEventDetails extends ConsumerWidget {
                             child: FittedBox(
                               fit: BoxFit.scaleDown,
                               child: FilledButton(
-                                onPressed: () {
-                                  if (isLateToVote) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text('Du bist zu spät!'),
-                                      ),
-                                    );
-                                    return;
-                                  }
-                                  showStringInputDialog(
-                                    title: "Abmelden",
-                                    hintText: "Gib einen Grund an",
-                                    context: context,
-                                    onSubmit: (input) async {
-                                      await FirebaseFirestore.instance
-                                          .collection('teams')
-                                          .doc(teamId)
-                                          .collection("events")
-                                          .doc(eventId)
-                                          .update({
-                                            'presence.$localMemberUid': {
-                                              "value": 'a',
-                                              "reason": input,
-                                            },
-                                            // only this key inside the map is updated
-                                          });
-                                      if (context.mounted) {
-                                        ScaffoldMessenger.of(
-                                          context,
-                                        ).showSnackBar(
-                                          SnackBar(
-                                            content: Text(
-                                              'Du bist abgemeldet!',
-                                            ),
-                                          ),
-                                        );
-                                      }
-                                    },
-                                  );
-                                },
+                                onPressed: () => cancel(localMemberUid),
                                 style: FilledButton.styleFrom(
                                   backgroundColor:
                                       castMap(
@@ -546,39 +531,103 @@ class PlayerEventDetails extends ConsumerWidget {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    "${playerData["first"] ?? ""} ${playerData["last"] ?? ""}",
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      "${playerData["first"] ?? ""} ${playerData["last"] ?? ""}",
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    ((presence[doc.id]?["reason"] ?? "")
+                                                as String)
+                                            .isNotEmpty
+                                        ? Text(
+                                          presence[doc.id]?["reason"] ?? "",
+                                        )
+                                        : SizedBox.shrink(),
+                                  ],
+                                ),
+                              ),
+                              MenuAnchor(
+                                menuChildren: [
+                                  MenuItemButton(
+                                    style: ButtonStyle(
+                                      backgroundColor: WidgetStateProperty.all(
+                                        Colors.green,
+                                      ),
+                                    ),
+                                    onPressed: () => register(doc.id),
+                                    child: Text(
+                                      "Dabei",
+                                      style: TextStyle(color: Colors.white),
                                     ),
                                   ),
-                                  ((presence[doc.id]?["reason"] ?? "")
-                                              as String)
-                                          .isNotEmpty
-                                      ? Text(presence[doc.id]?["reason"] ?? "")
-                                      : SizedBox.shrink(),
-                                ],
-                              ),
-                              Container(
-                                height: 15,
-                                width: 15,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.all(
-                                    Radius.circular(15),
+                                  MenuItemButton(
+                                    onPressed: () => unsure(doc.id),
+                                    style: ButtonStyle(
+                                      backgroundColor: WidgetStateProperty.all(
+                                        Colors.amber,
+                                      ),
+                                    ),
+                                    child: Text(
+                                      "Unsicher",
+                                      style: TextStyle(color: Colors.white),
+                                    ),
                                   ),
-                                  color:
+                                  MenuItemButton(
+                                    onPressed: () => cancel(doc.id),
+                                    style: ButtonStyle(
+                                      backgroundColor: WidgetStateProperty.all(
+                                        Colors.red,
+                                      ),
+                                    ),
+                                    child: Text(
+                                      "Abwesend",
+                                      style: TextStyle(color: Colors.white),
+                                    ),
+                                  ),
+                                ],
+                                builder: (_, controller, _) {
+                                  return FilledButton.icon(
+                                    icon: isCoach ? Icon(Icons.edit) : null,
+                                    style: ButtonStyle(
+                                      backgroundColor: WidgetStateProperty.all(
+                                        presence[doc.id]?["value"] == "p"
+                                            ? Colors.green
+                                            : (presence[doc.id]?["value"] == "u"
+                                                ? Colors.amber
+                                                : (presence[doc.id]?["value"] ==
+                                                        "a"
+                                                    ? Colors.redAccent
+                                                    : Colors.grey)),
+                                      ),
+                                    ),
+                                    onPressed:
+                                        isCoach
+                                            ? () {
+                                              if (controller.isOpen) {
+                                                controller.close();
+                                              } else {
+                                                controller.open();
+                                              }
+                                            }
+                                            : null,
+                                    label: Text(
                                       presence[doc.id]?["value"] == "p"
-                                          ? Colors.green
+                                          ? "Dabei"
                                           : (presence[doc.id]?["value"] == "u"
-                                              ? Colors.amber
+                                              ? "Unsicher"
                                               : (presence[doc.id]?["value"] ==
                                                       "a"
-                                                  ? Colors.redAccent
-                                                  : Colors.grey)),
-                                ),
+                                                  ? "Abwesend"
+                                                  : "Keine Antwort")),
+                                      style: TextStyle(color: Colors.white),
+                                    ),
+                                  );
+                                },
                               ),
                             ],
                           ),

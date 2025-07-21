@@ -8,6 +8,7 @@ import 'package:tv_oberwil/screens/admin/member_details.dart';
 import 'package:tv_oberwil/screens/admin/members.dart';
 import 'package:tv_oberwil/screens/admin/team_details.dart';
 import 'package:tv_oberwil/screens/admin/teams.dart';
+import 'package:tv_oberwil/screens/coach/coach_team.dart';
 import 'package:tv_oberwil/screens/coach/simple_event_details_edit.dart';
 import 'package:tv_oberwil/screens/player/event_details.dart';
 import 'package:tv_oberwil/screens/player/events.dart';
@@ -112,6 +113,13 @@ final router = GoRouter(
               teamId: teamId,
               created: true,
             );
+          },
+        ),
+        GoRoute(
+          path: '/coach/team/:team',
+          builder: (context, state) {
+            final teamId = state.pathParameters['team']!;
+            return CoachTeam(teamId: teamId);
           },
         ),
       ],

@@ -171,15 +171,17 @@ class _PlayerEventsState extends ConsumerState<PlayerEvents> {
           ],
         ),
       );
-      final isLateToVote = DateTime.now().isAfter(
-        DateTime(
-          date.year,
-          date.month,
-          date.day,
-          startDate.hour,
-          startDate.minute,
-        ),
-      );
+      final isLateToVote =
+          DateTime.now().isAfter(
+            DateTime(
+              date.year,
+              date.month,
+              date.day,
+              startDate.hour,
+              startDate.minute,
+            ),
+          ) &&
+          !widget.isCoach;
 
       final voteBox = Padding(
         padding: EdgeInsets.symmetric(horizontal: 20),

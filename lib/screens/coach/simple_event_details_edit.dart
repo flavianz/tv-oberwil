@@ -47,6 +47,7 @@ class SimpleEventDetailsEdit extends StatelessWidget {
       ],
       titleKey: "name",
       created: created,
+      defaultEdit: true,
     );
   }
 }

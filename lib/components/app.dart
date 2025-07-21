@@ -103,6 +103,11 @@ class _AppState extends ConsumerState<App> {
           "label": "Termine",
           "url": "/coach/team/${roles["player"][0] ?? ""}/events",
         },
+        {
+          "icon": Icon(Icons.diversity_3),
+          "label": "Team",
+          "url": "/coach/team/${roles["player"][0] ?? ""}",
+        },
       ]);
     }
 
