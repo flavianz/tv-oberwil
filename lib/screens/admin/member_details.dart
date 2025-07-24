@@ -127,105 +127,124 @@ class _MemberDetailsScreenState extends ConsumerState<MemberDetailsScreen> {
                 : "${_lastNameController.text}, ${_firstNameController.text}",
           ),
           actions: [
-            (isEditMode
-                ? Row(
-                  children: [
-                    TextButton.icon(
-                      onPressed: () {
-                        setState(() {
-                          resetInputs(data);
-                          isEditMode = false;
-                          _inputsInitialized = true;
-                          if (widget.created) {
-                            context.go("/admin/members");
-                          }
-                        });
-                      },
-                      label: Text("Abbrechen"),
-                      icon: Icon(Icons.close),
-                    ),
-                    FilledButton.icon(
-                      onPressed: () async {
-                        setState(() {
-                          _isSaving = true;
-                        });
-                        Map<String, dynamic> changedData = {};
-                        final Map<String, dynamic> inputs = {
-                          "first": _firstNameController.text,
-                          "search_first": searchify(_firstNameController.text),
-                          "middle": _middleNameController.text,
-                          "last": _lastNameController.text,
-                          "search_last": searchify(_lastNameController.text),
-                          "birthdate": Timestamp.fromMillisecondsSinceEpoch(
-                            _birthdate.millisecondsSinceEpoch,
-                          ),
-                          "teams": teams,
-                        };
-                        if (widget.created) {
-                          FirebaseFirestore.instance
-                              .doc("members/${widget.uid}")
-                              .set(inputs)
-                              .whenComplete(() {
-                                if (context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text('Mitglied wurde erstellt!'),
-                                    ),
-                                  );
-                                }
-                              });
-                        } else {
-                          for (final entry in inputs.entries) {
-                            if (data[entry.key] != entry.value) {
-                              changedData[entry.key] = entry.value;
-                            }
-                          }
-                          if (changedData.isNotEmpty) {
-                            await FirebaseFirestore.instance
-                                .doc("members/${widget.uid}")
-                                .update(changedData)
-                                .whenComplete(() {
-                                  if (context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(
-                                          'Daten wurden aktualisiert!',
+            (Row(
+              spacing: 5,
+              children:
+                  isEditMode
+                      ? [
+                        TextButton.icon(
+                          onPressed: () {
+                            setState(() {
+                              resetInputs(data);
+                              isEditMode = false;
+                              _inputsInitialized = true;
+                              if (widget.created) {
+                                context.go("/admin/members");
+                              }
+                            });
+                          },
+                          label: Text("Abbrechen"),
+                          icon: Icon(Icons.close),
+                        ),
+                        FilledButton.icon(
+                          onPressed: () async {
+                            setState(() {
+                              _isSaving = true;
+                            });
+                            Map<String, dynamic> changedData = {};
+                            final Map<String, dynamic> inputs = {
+                              "first": _firstNameController.text,
+                              "search_first": searchify(
+                                _firstNameController.text,
+                              ),
+                              "middle": _middleNameController.text,
+                              "last": _lastNameController.text,
+                              "search_last": searchify(
+                                _lastNameController.text,
+                              ),
+                              "birthdate": Timestamp.fromMillisecondsSinceEpoch(
+                                _birthdate.millisecondsSinceEpoch,
+                              ),
+                              "teams": teams,
+                            };
+                            if (widget.created) {
+                              FirebaseFirestore.instance
+                                  .doc("members/${widget.uid}")
+                                  .set(inputs)
+                                  .whenComplete(() {
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            'Mitglied wurde erstellt!',
+                                          ),
                                         ),
-                                      ),
-                                    );
-                                  }
-                                });
-                          }
-                        }
-                        setState(() {
-                          _isSaving = false;
-                          isEditMode = false;
-                          if (widget.created) {
-                            context.go("/admin/members?r=true");
-                          }
-                        });
-                      },
-                      label: Text("Speichern"),
-                      icon:
-                          _isSaving
-                              ? Transform.scale(
-                                scale: 0.5,
-                                child: CircularProgressIndicator(
-                                  color: Theme.of(context).canvasColor,
-                                ),
-                              )
-                              : Icon(Icons.check),
-                    ),
-                  ],
-                )
-                : IconButton(
-                  onPressed: () {
-                    setState(() {
-                      isEditMode = true;
-                    });
-                  },
-                  icon: const Icon(Icons.edit),
-                )),
+                                      );
+                                    }
+                                  });
+                            } else {
+                              for (final entry in inputs.entries) {
+                                if (data[entry.key] != entry.value) {
+                                  changedData[entry.key] = entry.value;
+                                }
+                              }
+                              if (changedData.isNotEmpty) {
+                                await FirebaseFirestore.instance
+                                    .doc("members/${widget.uid}")
+                                    .update(changedData)
+                                    .whenComplete(() {
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          SnackBar(
+                                            content: Text(
+                                              'Daten wurden aktualisiert!',
+                                            ),
+                                          ),
+                                        );
+                                      }
+                                    });
+                              }
+                            }
+                            setState(() {
+                              _isSaving = false;
+                              isEditMode = false;
+                              if (widget.created) {
+                                context.go("/admin/members?r=true");
+                              }
+                            });
+                          },
+                          label: Text("Speichern"),
+                          icon:
+                              _isSaving
+                                  ? Transform.scale(
+                                    scale: 0.5,
+                                    child: CircularProgressIndicator(
+                                      color: Theme.of(context).canvasColor,
+                                    ),
+                                  )
+                                  : Icon(Icons.check),
+                        ),
+                      ]
+                      : [
+                        FilledButton.icon(
+                          onPressed: () {},
+                          label: Text("Benutzer verbinden"),
+                          icon: Icon(Icons.link),
+                        ),
+                        IconButton(
+                          onPressed: () {
+                            setState(() {
+                              isEditMode = true;
+                            });
+                          },
+                          icon: const Icon(Icons.edit),
+                        ),
+                      ],
+            )),
             IconButton(
               onPressed: () {
                 showDialog(
