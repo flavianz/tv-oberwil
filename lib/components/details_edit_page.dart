@@ -185,12 +185,15 @@ class _DetailsEditPageState extends ConsumerState<DetailsEditPage> {
       child: Scaffold(
         appBar: AppBar(
           actionsPadding: const EdgeInsets.symmetric(horizontal: 12),
-          title: Text(values[widget.titleKey]?.text ?? ""),
+          title: Text(
+            widget.created ? "Neu" : values[widget.titleKey]?.text ?? "",
+          ),
           actions: [
-            (isEditMode
-                ? Row(
-                  children: [
-                    TextButton.icon(
+            Row(
+              spacing: 5,
+              children: [
+                isEditMode
+                    ? TextButton.icon(
                       onPressed: () {
                         setState(() {
                           resetInputs(data);
@@ -203,8 +206,10 @@ class _DetailsEditPageState extends ConsumerState<DetailsEditPage> {
                       },
                       label: Text("Abbrechen"),
                       icon: Icon(Icons.close),
-                    ),
-                    FilledButton.icon(
+                    )
+                    : SizedBox.shrink(),
+                isEditMode
+                    ? FilledButton.icon(
                       onPressed: () async {
                         setState(() {
                           _isSaving = true;
@@ -278,54 +283,57 @@ class _DetailsEditPageState extends ConsumerState<DetailsEditPage> {
                                 ),
                               )
                               : Icon(Icons.check),
-                    ),
-                  ],
-                )
-                : IconButton(
+                    )
+                    : SizedBox.shrink(),
+                !isEditMode
+                    ? IconButton(
+                      onPressed: () {
+                        setState(() {
+                          isEditMode = true;
+                        });
+                      },
+                      icon: const Icon(Icons.edit),
+                    )
+                    : SizedBox.shrink(),
+                IconButton(
                   onPressed: () {
-                    setState(() {
-                      isEditMode = true;
-                    });
-                  },
-                  icon: const Icon(Icons.edit),
-                )),
-            IconButton(
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder:
-                      (context) => AlertDialog(
-                        title: const Text('Löschen?'),
-                        content: const SingleChildScrollView(
-                          child: ListBody(
-                            children: [
-                              Text(
-                                'Das Löschen kann nicht rückgängig gemacht werden.',
+                    showDialog(
+                      context: context,
+                      builder:
+                          (context) => AlertDialog(
+                            title: const Text('Löschen?'),
+                            content: const SingleChildScrollView(
+                              child: ListBody(
+                                children: [
+                                  Text(
+                                    'Das Löschen kann nicht rückgängig gemacht werden.',
+                                  ),
+                                ],
+                              ),
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => context.pop(),
+                                child: const Text("Abbrechen"),
+                              ),
+                              FilledButton.icon(
+                                onPressed: () {
+                                  if (!widget.created) {
+                                    widget.doc.delete();
+                                  }
+                                  context.pop();
+                                  context.pop();
+                                },
+                                label: const Text("Löschen"),
+                                icon: const Icon(Icons.delete),
                               ),
                             ],
                           ),
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () => context.pop(),
-                            child: const Text("Abbrechen"),
-                          ),
-                          FilledButton.icon(
-                            onPressed: () {
-                              if (!widget.created) {
-                                widget.doc.delete();
-                              }
-                              context.pop();
-                              context.pop();
-                            },
-                            label: const Text("Löschen"),
-                            icon: const Icon(Icons.delete),
-                          ),
-                        ],
-                      ),
-                );
-              },
-              icon: const Icon(Icons.delete),
+                    );
+                  },
+                  icon: const Icon(Icons.delete),
+                ),
+              ],
             ),
           ],
         ),

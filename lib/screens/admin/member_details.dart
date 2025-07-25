@@ -230,11 +230,6 @@ class _MemberDetailsScreenState extends ConsumerState<MemberDetailsScreen> {
                         ),
                       ]
                       : [
-                        FilledButton.icon(
-                          onPressed: () {},
-                          label: Text("Benutzer verbinden"),
-                          icon: Icon(Icons.link),
-                        ),
                         IconButton(
                           onPressed: () {
                             setState(() {
