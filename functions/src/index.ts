@@ -5,7 +5,7 @@ import {logger, setGlobalOptions} from "firebase-functions";
 import functions = require("firebase-functions/v1");
 import {onCall} from "firebase-functions/v2/https";
 import {defineSecret} from "firebase-functions/params";
-import {encrypt} from "./crypto";
+import {decrypt, encrypt} from "./crypto";
 
 initializeApp();
 setGlobalOptions({ region: "europe-west3" });
@@ -25,7 +25,7 @@ exports.deleteUser = functions.region("europe-west3").auth.user().onDelete(async
     logger.log("Deleted user doc with id ", user.uid);
 })
 
-exports.getEncryptedMembmerId = onCall(async (request, response)=> {
+exports.getEncryptedMembmerId = onCall(async (request)=> {
     if (!request.auth || !request.data || !request.data["id"] || typeof request.data["id"] != "string") {
         return {error: true, reason: "No auth or request data"};
     }
@@ -36,7 +36,7 @@ exports.getEncryptedMembmerId = onCall(async (request, response)=> {
     const [invitingMember, invitedMember] = await Promise.all([db.doc(`/members/${invitingMemberId}`).get(),
         db.doc(`/members/${memberId}`).get()]);
     const invitingRoles = ((invitingMember.data()?.roles ?? {}) as Map<String, any>);
-    const invitedRoles = ((invitingMember.data()?.roles ?? {}) as Map<String, any>);
+    const invitedRoles = ((invitedMember.data()?.roles ?? {}) as Map<String, any>);
 
     let allowed = false;
 
@@ -56,5 +56,36 @@ exports.getEncryptedMembmerId = onCall(async (request, response)=> {
         return {error: true, reason: "No permission"};
     }
 
-    return {error: false, value: encrypt({id: memberId}, aesKey.value())};
+    return {error: false, cipher: encrypt({id: memberId}, aesKey.value()).ciphertext};
+});
+
+exports.assignUserToMembmer = onCall(async (request) => {
+    if (!request.auth || !request.data || !request.data["cipher"] || typeof request.data["cipher"] != "string") {
+        return {error: true, reason: "No auth or request data"};
+    }
+    const cipher = request.data["cipher"];
+
+    let memberId;
+    try {
+        memberId = decrypt(cipher, aesKey.value())
+    } catch (e) {
+        logger.error(e);
+        return {error: true, reason: "Decryption failed"};
+    }
+
+    const memberDoc = await db.doc(`/members/${memberId}`).get();
+    if (memberDoc.data()?.user) {
+        return {error: true, reason: "member already assigned"};
+    }
+
+    const batch = db.batch();
+    batch.update(db.doc(`/users/${request.auth.uid}`), {
+        member: memberId
+    });
+    batch.update(db.doc(`/members/${memberId}`), {
+        user: request.auth.uid
+    });
+    await batch.commit();
+
+    return {error: false};
 });

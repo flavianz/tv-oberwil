@@ -13,7 +13,7 @@ export function encrypt(data: object, key: string) {
     };
 }
 
-function decrypt(ciphertextBase64: string, key: string): any {
+export function decrypt(ciphertextBase64: string, key: string): any {
     const buf = Buffer.from(ciphertextBase64, 'base64');
 
     const iv = buf.subarray(0, 12);
