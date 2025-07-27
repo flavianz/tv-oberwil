@@ -1,9 +1,12 @@
 import 'dart:async';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 import 'package:firebase_ui_oauth_google/firebase_ui_oauth_google.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,6 +16,19 @@ import 'package:tv_oberwil/router.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  if (kDebugMode && false) {
+    try {
+      FirebaseFirestore.instance.useFirestoreEmulator('localhost', 9101);
+      await FirebaseAuth.instance.useAuthEmulator('localhost', 9099);
+      FirebaseFunctions.instanceFor(
+        region: "europe-west3",
+      ).useFunctionsEmulator('localhost', 5001);
+    } catch (e) {
+      // ignore: avoid_print
+      print(e);
+    }
+  }
 
   FirebaseUIAuth.configureProviders([
     GoogleProvider(

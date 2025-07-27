@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:tv_oberwil/screens/norole/assignment.dart';
 
 final userProvider = StreamProvider<User?>(
   (ref) => FirebaseAuth.instance.authStateChanges(),
@@ -31,7 +32,7 @@ final memberDataProvider = StreamProvider<Map?>((ref) {
         .doc(userData["member"]);
     return docRef.snapshots().map((doc) => doc.data());
   } else {
-    return Stream.empty();
+    return Stream.value(null);
   }
 });
 
@@ -59,11 +60,13 @@ class _AppState extends ConsumerState<App> {
     if (memberData.hasError) {
       return Center(child: Text("An error occurred loading your data."));
     }
+    if (memberData.value == null) {
+      return Assignment();
+    }
 
     final Map<String, dynamic> roles = Map<String, dynamic>.from(
       memberData.value?["roles"] ?? {},
     );
-
     selectedRole = selectedRole ?? roles.keys.first;
 
     final List<Map<String, dynamic>> destinations = [

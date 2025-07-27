@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -110,6 +111,25 @@ class _MemberDetailsScreenState extends ConsumerState<MemberDetailsScreen> {
         },
         defaultDate: _birthdate,
         isEditMode: isEditMode,
+      ),
+      InputBox(
+        inputWidget: TextField(
+          decoration: InputDecoration(
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+            hintText: data["user"] == null ? "Nein" : "Ja",
+            prefixIcon: Icon(Icons.link),
+          ),
+          readOnly: true,
+          onTap: () async {
+            showDialog(
+              context: context,
+              builder: (context) {
+                return Dialog(child: UserAssignDialog(widget.uid));
+              },
+            );
+          },
+        ),
+        title: "Verknüpft",
       ),
     ];
 
@@ -324,3 +344,83 @@ class _MemberDetailsScreenState extends ConsumerState<MemberDetailsScreen> {
     );
   }
 }
+
+class UserAssignDialog extends ConsumerStatefulWidget {
+  final String memberId;
+
+  const UserAssignDialog(this.memberId, {super.key});
+
+  @override
+  ConsumerState<UserAssignDialog> createState() => _UserAssignDialogState();
+}
+
+class _UserAssignDialogState extends ConsumerState<UserAssignDialog> {
+  @override
+  Widget build(BuildContext context) {
+    final encrypted = ref.watch(getEncryptedMemberId(widget.memberId));
+
+    if (encrypted.isLoading) {
+      return Center(child: CircularProgressIndicator());
+    }
+
+    if (encrypted.hasError || !encrypted.hasValue) {
+      print(encrypted.asError);
+      return Center(child: Text("Error: ${encrypted.error}"));
+    }
+
+    final data = encrypted.value!.data;
+    if (data["error"] == true) {
+      return Center(child: Text(data["reason"]));
+    }
+    final encryptedMemberId = data["cipher"];
+
+    //
+
+    return DefaultTabController(
+      length: 2,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: 800),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text("Mitglied mit Benutzer verknüpfen"),
+            ),
+            const TabBar(
+              tabs: [
+                Tab(text: "Mit Code", icon: Icon(Icons.pin)),
+                Tab(text: "Mit QR-Code", icon: Icon(Icons.qr_code)),
+              ],
+            ),
+            // Wrap in Flexible or SizedBox with max height
+            Flexible(
+              child: TabBarView(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Text(encryptedMemberId),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Text("QR-Code Scan"),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+final getEncryptedMemberId =
+    FutureProvider.family<HttpsCallableResult<dynamic>, String>((
+      ref,
+      id,
+    ) async {
+      return (await FirebaseFunctions.instanceFor(
+        region: "europe-west3",
+      ).httpsCallable("getEncryptedMemberId").call({"id": id}));
+    });
