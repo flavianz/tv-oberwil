@@ -13,19 +13,43 @@ class _AssignmentState extends State<Assignment> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: Column(
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text("Mit Mitglied verbinden"),
+          bottom: TabBar(
+            tabs: [
+              Tab(text: "Mit Code", icon: Icon(Icons.pin)),
+              Tab(text: "Mit QR-Code", icon: Icon(Icons.qr_code)),
+            ],
+          ),
+        ),
+        body: TabBarView(
           children: [
-            TextField(controller: controller),
-            FilledButton(
-              onPressed: () {
-                FirebaseFunctions.instanceFor(region: "europe-west3")
-                    .httpsCallable("assignUserToMember")
-                    .call({"cipher": controller.text});
-              },
-              child: Text("Get"),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                TextField(
+                  controller: controller,
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+                FilledButton(
+                  onPressed: () {
+                    FirebaseFunctions.instanceFor(region: "europe-west3")
+                        .httpsCallable("assignUserToMember")
+                        .call({"cipher": controller.text});
+                  },
+                  child: Text("Get"),
+                ),
+              ],
             ),
+            Center(),
           ],
         ),
       ),

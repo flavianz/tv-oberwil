@@ -24,6 +24,10 @@ final userDataProvider = StreamProvider<Map?>((ref) {
 final memberDataProvider = StreamProvider<Map?>((ref) {
   final userDataStream = ref.watch(userDataProvider);
 
+  if (userDataStream.isLoading) {
+    return Stream.empty();
+  }
+
   var userData = userDataStream.value;
 
   if (userData != null && userData["member"] != null) {
@@ -32,7 +36,7 @@ final memberDataProvider = StreamProvider<Map?>((ref) {
         .doc(userData["member"]);
     return docRef.snapshots().map((doc) => doc.data());
   } else {
-    return Stream.value(null);
+    return Stream.value({"assign": true});
   }
 });
 
@@ -60,7 +64,7 @@ class _AppState extends ConsumerState<App> {
     if (memberData.hasError) {
       return Center(child: Text("An error occurred loading your data."));
     }
-    if (memberData.value == null) {
+    if (memberData.value?["assign"] == true) {
       return Assignment();
     }
 

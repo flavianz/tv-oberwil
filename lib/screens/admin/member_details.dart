@@ -1,8 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:qr_flutter/qr_flutter.dart';
+import 'package:tv_oberwil/components/app.dart';
 import 'package:tv_oberwil/firestore_providers/firestore_tools.dart';
 
 import '../../components/input_boxes.dart';
@@ -116,17 +119,19 @@ class _MemberDetailsScreenState extends ConsumerState<MemberDetailsScreen> {
         inputWidget: TextField(
           decoration: InputDecoration(
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-            hintText: data["user"] == null ? "Nein" : "Ja",
+            hintText: data["user"] == null ? "Nein - Jetzt verknüpfen" : "Ja",
             prefixIcon: Icon(Icons.link),
           ),
           readOnly: true,
           onTap: () async {
-            showDialog(
-              context: context,
-              builder: (context) {
-                return Dialog(child: UserAssignDialog(widget.uid));
-              },
-            );
+            if (data["user"] == null) {
+              showDialog(
+                context: context,
+                builder: (context) {
+                  return Dialog(child: UserAssignDialog(widget.uid));
+                },
+              );
+            }
           },
         ),
         title: "Verknüpft",
@@ -374,8 +379,6 @@ class _UserAssignDialogState extends ConsumerState<UserAssignDialog> {
     }
     final encryptedMemberId = data["cipher"];
 
-    //
-
     return DefaultTabController(
       length: 2,
       child: ConstrainedBox(
@@ -385,7 +388,10 @@ class _UserAssignDialogState extends ConsumerState<UserAssignDialog> {
           children: [
             Padding(
               padding: const EdgeInsets.all(16.0),
-              child: Text("Mitglied mit Benutzer verknüpfen"),
+              child: Text(
+                "Mitglied mit Benutzer verknüpfen",
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+              ),
             ),
             const TabBar(
               tabs: [
@@ -399,11 +405,65 @@ class _UserAssignDialogState extends ConsumerState<UserAssignDialog> {
                 children: [
                   Padding(
                     padding: const EdgeInsets.all(16.0),
-                    child: Text(encryptedMemberId),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Text("Teile diesen Code mit dem Mitglied"),
+                        SizedBox(height: 20),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: TextField(
+                                controller: TextEditingController(
+                                  text: encryptedMemberId,
+                                ),
+                                readOnly: true,
+                                decoration: InputDecoration(
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            IconButton(
+                              onPressed: () async {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('Code kopiert!')),
+                                );
+                                await Clipboard.setData(
+                                  ClipboardData(text: encryptedMemberId),
+                                );
+                              },
+                              icon: Icon(Icons.copy_rounded),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                   Padding(
                     padding: const EdgeInsets.all(16.0),
-                    child: Text("QR-Code Scan"),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Text("Teile diesen QR-Code mit dem Mitglied"),
+                        SizedBox(height: 20),
+                        Container(
+                          padding: EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.all(Radius.circular(20)),
+                          ),
+                          child: QrImageView(
+                            data: encryptedMemberId,
+                            version: QrVersions.auto,
+                            size: 200.0,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
