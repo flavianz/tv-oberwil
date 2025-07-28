@@ -71,6 +71,30 @@ class _AppState extends ConsumerState<App> {
     final Map<String, dynamic> roles = Map<String, dynamic>.from(
       memberData.value?["roles"] ?? {},
     );
+    if (roles.isEmpty) {
+      return Scaffold(
+        body: Padding(
+          padding: EdgeInsets.all(32),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: 400),
+              child: Column(
+                spacing: 30,
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text("Dir wurden noch keine Funktionen zugewiesen."),
+                  Text(
+                    "Wenn das ein Fehler ist, setze dich mit deinem Trainer oder der Mitgliederverwaltung des Vereins in Kontakt",
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
     selectedRole = selectedRole ?? roles.keys.first;
 
     final List<Map<String, dynamic>> destinations = [
