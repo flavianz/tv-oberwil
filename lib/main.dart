@@ -82,7 +82,7 @@ class _MyAppState extends State<MyApp> {
       routerConfig: activeRouter,
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.redAccent),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.greenAccent),
         textTheme: ThemeData.light().textTheme.copyWith(
           bodyMedium: const TextStyle(fontSize: 17),
         ),

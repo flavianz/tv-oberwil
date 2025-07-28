@@ -5,7 +5,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-import 'package:tv_oberwil/components/app.dart';
 import 'package:tv_oberwil/firestore_providers/firestore_tools.dart';
 
 import '../../components/input_boxes.dart';
@@ -379,10 +378,10 @@ class _UserAssignDialogState extends ConsumerState<UserAssignDialog> {
     }
     final encryptedMemberId = data["cipher"];
 
-    return DefaultTabController(
-      length: 2,
-      child: ConstrainedBox(
-        constraints: BoxConstraints(maxWidth: 800),
+    return ConstrainedBox(
+      constraints: BoxConstraints(maxWidth: 400, maxHeight: 500),
+      child: DefaultTabController(
+        length: 2,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -401,17 +400,18 @@ class _UserAssignDialogState extends ConsumerState<UserAssignDialog> {
             ),
             // Wrap in Flexible or SizedBox with max height
             Flexible(
-              child: TabBarView(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
+              child: Padding(
+                padding: EdgeInsetsGeometry.all(16),
+                child: TabBarView(
+                  children: [
+                    Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Text("Teile diesen Code mit dem Mitglied"),
                         SizedBox(height: 20),
                         Row(
+                          spacing: 5,
                           children: [
                             Expanded(
                               child: TextField(
@@ -424,6 +424,7 @@ class _UserAssignDialogState extends ConsumerState<UserAssignDialog> {
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                 ),
+                                maxLines: 4,
                               ),
                             ),
                             IconButton(
@@ -441,10 +442,7 @@ class _UserAssignDialogState extends ConsumerState<UserAssignDialog> {
                         ),
                       ],
                     ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
+                    Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
@@ -464,8 +462,8 @@ class _UserAssignDialogState extends ConsumerState<UserAssignDialog> {
                         ),
                       ],
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ],
