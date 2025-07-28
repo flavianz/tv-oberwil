@@ -481,9 +481,7 @@ class _PlayerEventsState extends ConsumerState<PlayerEvents> {
                                     fit: BoxFit.scaleDown,
                                     child: FilledButton(
                                       onPressed: () async {
-                                        if (startDate.isBefore(
-                                          DateTime.now(),
-                                        )) {
+                                        if (isLateToVote) {
                                           ScaffoldMessenger.of(
                                             context,
                                           ).showSnackBar(
@@ -565,9 +563,7 @@ class _PlayerEventsState extends ConsumerState<PlayerEvents> {
                                     fit: BoxFit.scaleDown,
                                     child: FilledButton(
                                       onPressed: () {
-                                        if (startDate.isBefore(
-                                          DateTime.now(),
-                                        )) {
+                                        if (isLateToVote) {
                                           ScaffoldMessenger.of(
                                             context,
                                           ).showSnackBar(
@@ -651,9 +647,7 @@ class _PlayerEventsState extends ConsumerState<PlayerEvents> {
                                     fit: BoxFit.scaleDown,
                                     child: FilledButton(
                                       onPressed: () {
-                                        if (startDate.isBefore(
-                                          DateTime.now(),
-                                        )) {
+                                        if (isLateToVote) {
                                           ScaffoldMessenger.of(
                                             context,
                                           ).showSnackBar(

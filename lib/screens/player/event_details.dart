@@ -77,8 +77,6 @@ class PlayerEventDetails extends ConsumerWidget {
           (a, b) => castDateTime(a["time"]).compareTo(castDateTime(b["time"])),
         );
 
-        print(edits);
-
         for (dynamic edit in edits) {
           final after = castDateTime(edit["after"]);
           final date = castDateTime(eventData["date"]);
@@ -171,10 +169,6 @@ class PlayerEventDetails extends ConsumerWidget {
           }
         },
       );
-    }
-
-    void regi() {
-      print("");
     }
 
     void register(memberId) {
