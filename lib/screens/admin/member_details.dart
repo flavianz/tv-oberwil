@@ -5,12 +5,13 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:tv_oberwil/components/details_edit_page.dart';
 import 'package:tv_oberwil/firestore_providers/firestore_tools.dart';
 
 import '../../components/input_boxes.dart';
 import '../../firestore_providers/basic_providers.dart';
 
-class MemberDetailsScreen extends ConsumerStatefulWidget {
+class MemberDetailsScreen extends StatelessWidget {
   final String uid;
   final bool created;
 
@@ -21,16 +22,93 @@ class MemberDetailsScreen extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<MemberDetailsScreen> createState() =>
+  Widget build(BuildContext context) {
+    return DetailsEditPage(
+      doc: FirebaseFirestore.instance.collection("members").doc(uid),
+      properties: [
+        [
+          DetailsEditProperty(
+            "first",
+            "Vorname",
+            DetailsEditPropertyType.text,
+            data: true,
+          ),
+          DetailsEditProperty(
+            "middle",
+            "2. Vorname",
+            DetailsEditPropertyType.text,
+            data: true,
+          ),
+          DetailsEditProperty(
+            "last",
+            "Nachname",
+            DetailsEditPropertyType.text,
+            data: true,
+          ),
+        ],
+        [
+          DetailsEditProperty(
+            "birthdate",
+            "Geburtstag",
+            DetailsEditPropertyType.date,
+          ),
+          DetailsEditProperty(
+            "user",
+            "Verknüpft",
+            DetailsEditPropertyType.custom,
+            data: CustomInputBox((dynamic data, Function _) {
+              return InputBox(
+                inputWidget: TextField(
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    hintText: data == null ? "Nein - Jetzt verknüpfen" : "Ja",
+                    prefixIcon: Icon(Icons.link),
+                  ),
+                  readOnly: true,
+                  onTap: () async {
+                    if (data == null) {
+                      showDialog(
+                        context: context,
+                        builder: (context) {
+                          return Dialog(child: UserAssignDialog(uid));
+                        },
+                      );
+                    }
+                  },
+                ),
+                title: "Verknüpft",
+              );
+            }),
+          ),
+        ],
+      ],
+      titleKey: "first",
+    );
+  }
+}
+
+class MemberDetailsScreenOld extends ConsumerStatefulWidget {
+  final String uid;
+  final bool created;
+
+  const MemberDetailsScreenOld({
+    super.key,
+    required this.uid,
+    this.created = false,
+  });
+
+  @override
+  ConsumerState<MemberDetailsScreenOld> createState() =>
       _MemberDetailsScreenState();
 }
 
-class _MemberDetailsScreenState extends ConsumerState<MemberDetailsScreen> {
+class _MemberDetailsScreenState extends ConsumerState<MemberDetailsScreenOld> {
   final _firstNameController = TextEditingController();
   final _middleNameController = TextEditingController();
   final _lastNameController = TextEditingController();
   DateTime _birthdate = DateTime.now();
-  List<dynamic> teams = [];
 
   bool isEditMode = false;
   bool _inputsInitialized = false;
@@ -53,7 +131,6 @@ class _MemberDetailsScreenState extends ConsumerState<MemberDetailsScreen> {
       ((data["birthdate"] ?? Timestamp.now()) as Timestamp)
           .millisecondsSinceEpoch,
     );
-    teams = (data["teams"] ?? []) as List<dynamic>;
   }
 
   @override
@@ -189,7 +266,6 @@ class _MemberDetailsScreenState extends ConsumerState<MemberDetailsScreen> {
                               "birthdate": Timestamp.fromMillisecondsSinceEpoch(
                                 _birthdate.millisecondsSinceEpoch,
                               ),
-                              "teams": teams,
                             };
                             if (widget.created) {
                               FirebaseFirestore.instance

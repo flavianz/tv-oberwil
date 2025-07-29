@@ -9,7 +9,7 @@ import 'package:tv_oberwil/firestore_providers/firestore_tools.dart';
 import '../../components/input_boxes.dart';
 import '../../firestore_providers/basic_providers.dart';
 
-enum DetailsEditPropertyType { text, date, time, selection, bool }
+enum DetailsEditPropertyType { text, date, time, selection, bool, custom }
 
 class DetailsEditProperty {
   final String key;
@@ -76,6 +76,10 @@ class _DetailsEditPageState extends ConsumerState<DetailsEditPage> {
           values[property.key] = data[property.key] ?? property.data?.keys[0];
         case DetailsEditPropertyType.bool:
           values[property.key] = data[property.key] ?? true;
+        case DetailsEditPropertyType.custom:
+          values[property.key] =
+              data[property.key] ??
+              (property.data as CustomInputBox).defaultValue;
       }
     }
   }
@@ -173,6 +177,15 @@ class _DetailsEditPageState extends ConsumerState<DetailsEditPage> {
                 });
               },
             );
+          case DetailsEditPropertyType.custom:
+            return (property.data as CustomInputBox).builder(
+              values[property.key],
+              (dynamic newData) {
+                setState(() {
+                  values = {...values, property.key: newData};
+                });
+              },
+            );
         }
       });
     });
@@ -234,6 +247,7 @@ class _DetailsEditPageState extends ConsumerState<DetailsEditPage> {
                               );
                             case DetailsEditPropertyType.selection:
                             case DetailsEditPropertyType.bool:
+                            case DetailsEditPropertyType.custom:
                               inputs[property.key] = values[property.key];
                           }
                         }

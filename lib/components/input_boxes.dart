@@ -241,3 +241,11 @@ class MemberInputBox extends StatelessWidget {
     );
   }
 }
+
+class CustomInputBox {
+  final dynamic defaultValue;
+  final Widget Function(dynamic data, Function(dynamic newData) updateValue)
+  builder;
+
+  const CustomInputBox(this.builder, {this.defaultValue});
+}
