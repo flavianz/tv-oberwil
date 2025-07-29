@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -80,6 +79,7 @@ class MemberDetailsScreen extends StatelessWidget {
                   title: "Verknüpft",
                 );
               },
+              defaultValue: null,
             ),
           ),
         ],
@@ -102,10 +102,9 @@ class _UserAssignDialogState extends ConsumerState<UserAssignDialog> {
   @override
   Widget build(BuildContext context) {
     final encrypted = ref.watch(
-      callableProvider((
-        name: "getEncryptedMemberId",
-        data: {"id": widget.memberId},
-      )),
+      callableProvider(
+        CallableProviderArgs("getEncryptedMemberId", {"id": widget.memberId}),
+      ),
     );
 
     if (encrypted.isLoading) {
