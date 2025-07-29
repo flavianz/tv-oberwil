@@ -79,7 +79,7 @@ class _DetailsEditPageState extends ConsumerState<DetailsEditPage> {
         case DetailsEditPropertyType.custom:
           values[property.key] =
               data[property.key] ??
-              (property.data as CustomInputBox).defaultValue;
+              (property.data as CustomInputBoxData).defaultValue;
       }
     }
   }
@@ -178,7 +178,7 @@ class _DetailsEditPageState extends ConsumerState<DetailsEditPage> {
               },
             );
           case DetailsEditPropertyType.custom:
-            return (property.data as CustomInputBox).builder(
+            return (property.data as CustomInputBoxData).builder(
               values[property.key],
               (dynamic newData) {
                 setState(() {

@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final realtimeDocProvider = StreamProvider.family<
@@ -14,3 +15,15 @@ final realtimeCollectionProvider = StreamProvider.family<
 >((ref, Query<Map<String, dynamic>> collectionRef) {
   return collectionRef.snapshots();
 });
+
+typedef CallableProviderArgs = ({String name, Map<String, dynamic> data});
+
+final callableProvider =
+    FutureProvider.family<HttpsCallableResult<dynamic>, CallableProviderArgs>((
+      ref,
+      args,
+    ) async {
+      return (await FirebaseFunctions.instanceFor(
+        region: "europe-west3",
+      ).httpsCallable(args.name).call(args.data));
+    });
