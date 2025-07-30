@@ -9,8 +9,6 @@ class PaginatedList extends ConsumerStatefulWidget {
   final Query<Map<String, dynamic>> query;
   final int maxQueryLimit;
 
-  void refresh() {}
-
   const PaginatedList({
     super.key,
     required this.builder,
@@ -33,10 +31,13 @@ class PaginatedParams extends Equatable {
 }
 
 final paginatedListProvider = StateNotifierProvider.autoDispose.family<
-  UserListController,
+  PaginatedListController,
   AsyncValue<List<DocumentSnapshot>>,
   PaginatedParams
->((ref, params) => UserListController(ref, params.query, params.maxQuerySize));
+>(
+  (ref, params) =>
+      PaginatedListController(ref, params.query, params.maxQuerySize),
+);
 
 class _PaginatedListState extends ConsumerState<PaginatedList> {
   @override

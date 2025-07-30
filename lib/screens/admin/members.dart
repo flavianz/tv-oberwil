@@ -1,24 +1,68 @@
-import 'dart:collection';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:tv_oberwil/utils.dart';
+import 'package:tv_oberwil/components/paginated_list_page.dart';
 
-import '../../firestore_providers/basic_providers.dart';
-import '../../firestore_providers/members_provider.dart';
-
-class MembersScreen extends ConsumerStatefulWidget {
-  final bool refresh;
-
-  const MembersScreen({super.key, required this.refresh});
+class MembersScreen extends StatelessWidget {
+  const MembersScreen({super.key});
 
   @override
-  ConsumerState<MembersScreen> createState() => MembersScreenState();
+  Widget build(BuildContext context) {
+    return PaginatedListPage(
+      builder: (doc) {
+        return Text(doc.get("first"));
+      },
+      query: FirebaseFirestore.instance
+          .collection("members")
+          .orderBy("search_last"),
+      searchFields: ["search_last", "search_first"],
+      title: "Mitglieder",
+      tableOptions: (
+        columns: [
+          (
+            name: "Nachname",
+            space: 2,
+            key: "last",
+            builder: (data) {
+              return Text(data);
+            },
+          ),
+          (
+            name: "Vorname",
+            space: 2,
+            key: "first",
+            builder: (data) {
+              return Text(data);
+            },
+          ),
+          (
+            name: "Ist verknüpft",
+            space: 1,
+            key: "user",
+            builder: (data) {
+              return Text(data == null ? "Nein" : "Ja");
+            },
+          ),
+        ],
+        rowOnTap: (doc) {
+          context.push("/admin/member/${doc.id}");
+        },
+      ),
+    );
+  }
 }
 
-class MembersScreenState extends ConsumerState<MembersScreen> {
+/*
+* class MembersScreenOld extends ConsumerStatefulWidget {
+  final bool refresh;
+
+  const MembersScreenOld({super.key, required this.refresh});
+
+  @override
+  ConsumerState<MembersScreenOld> createState() => MembersScreenState();
+}
+
+class MembersScreenState extends ConsumerState<MembersScreenOld> {
   List<String> notSelectedTeams = [];
 
   @override
@@ -400,3 +444,4 @@ class _FilterDialogState extends ConsumerState<FilterDialog> {
     );
   }
 }
+* */

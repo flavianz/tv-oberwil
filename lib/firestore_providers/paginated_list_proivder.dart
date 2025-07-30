@@ -3,19 +3,22 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-StateNotifierProvider<UserListController, AsyncValue<List<DocumentSnapshot>>>
+StateNotifierProvider<
+  PaginatedListController,
+  AsyncValue<List<DocumentSnapshot>>
+>
 paginatedListProvider(
   Query<Map<String, dynamic>> query,
   String orderBy, [
   int maxQuerySize = 10,
 ]) {
   return StateNotifierProvider<
-    UserListController,
+    PaginatedListController,
     AsyncValue<List<DocumentSnapshot>>
-  >((ref) => UserListController(ref, query, maxQuerySize));
+  >((ref) => PaginatedListController(ref, query, maxQuerySize));
 }
 
-class UserListController
+class PaginatedListController
     extends StateNotifier<AsyncValue<List<DocumentSnapshot>>> {
   final Query<Map<String, dynamic>> query;
   final int maxQuerySize;
@@ -26,7 +29,7 @@ class UserListController
   bool _isLoading = false;
   List<DocumentSnapshot> _allDocs = [];
 
-  UserListController(this.ref, this.query, this.maxQuerySize)
+  PaginatedListController(this.ref, this.query, this.maxQuerySize)
     : super(const AsyncLoading()) {
     fetchInitial();
   }

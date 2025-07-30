@@ -26,7 +26,7 @@ final router = GoRouter(
           path: '/admin/members',
           builder: (context, state) {
             return MembersScreen(
-              refresh: (state.uri.queryParameters["r"] ?? "false") == "true",
+              /*refresh: (state.uri.queryParameters["r"] ?? "false") == "true",*/
             );
           },
         ),
