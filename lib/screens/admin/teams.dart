@@ -14,18 +14,13 @@ class TeamsScreen extends StatelessWidget {
       query: FirebaseFirestore.instance.collection("teams"),
       title: "Teams",
       searchFields: ["search_name"],
-      tableOptions: (
-        columns: [
-          (
-            key: "name",
-            name: "Name",
-            space: 1,
-            builder: (data) {
-              return Text(data ?? "");
-            },
-          ),
+      tableOptions: TableOptions(
+        [
+          TableColumn("name", "Name", (data) {
+            return Text(data ?? "");
+          }, 1),
         ],
-        rowOnTap: (doc) {
+        (doc) {
           context.push("/admin/team/${doc.id}");
         },
       ),

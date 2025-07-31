@@ -19,34 +19,19 @@ class MembersScreen extends StatelessWidget {
           .orderBy("search_last"),
       searchFields: ["search_last", "search_first"],
       title: "Mitglieder",
-      tableOptions: (
-        columns: [
-          (
-            name: "Nachname",
-            space: 2,
-            key: "last",
-            builder: (data) {
-              return Text(data);
-            },
-          ),
-          (
-            name: "Vorname",
-            space: 2,
-            key: "first",
-            builder: (data) {
-              return Text(data);
-            },
-          ),
-          (
-            name: "Ist verknüpft",
-            space: 1,
-            key: "user",
-            builder: (data) {
-              return Text(data == null ? "Nein" : "Ja");
-            },
-          ),
+      tableOptions: TableOptions(
+        [
+          TableColumn("last", "Nachname", (data) {
+            return Text(data);
+          }, 2),
+          TableColumn("first", "Vorname", (data) {
+            return Text(data);
+          }, 2),
+          TableColumn("user", "Ist verknüpft", (data) {
+            return Text(data == null ? "Nein" : "Ja");
+          }, 1),
         ],
-        rowOnTap: (doc) {
+        (doc) {
           context.push("/admin/member/${doc.id}");
         },
       ),

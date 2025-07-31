@@ -22,33 +22,56 @@ class SimpleEventDetailsEdit extends StatelessWidget {
           .doc(teamId)
           .collection("events")
           .doc(eventId),
-      properties: [
-        [
-          DetailsEditProperty(
-            "name",
-            "Name",
-            DetailsEditPropertyType.text,
-            data: false,
-          ),
-          DetailsEditProperty(
-            "location",
-            "Ort",
-            DetailsEditPropertyType.text,
-            data: false,
-          ),
-          DetailsEditProperty("date", "Datum", DetailsEditPropertyType.date),
-        ],
-        [
-          DetailsEditProperty("meet", "Treffen", DetailsEditPropertyType.time),
-          DetailsEditProperty("start", "Start", DetailsEditPropertyType.time),
-          DetailsEditProperty("end", "Ende", DetailsEditPropertyType.time),
-        ],
-        [DetailsEditProperty("notes", "Notizen", DetailsEditPropertyType.text)],
+      tabs: [
+        (
+          tab: null,
+          type: DetailsTabType.details,
+          data: [
+            [
+              DetailsEditProperty(
+                "name",
+                "Name",
+                DetailsEditPropertyType.text,
+                data: false,
+              ),
+              DetailsEditProperty(
+                "location",
+                "Ort",
+                DetailsEditPropertyType.text,
+                data: false,
+              ),
+              DetailsEditProperty(
+                "date",
+                "Datum",
+                DetailsEditPropertyType.date,
+              ),
+            ],
+            [
+              DetailsEditProperty(
+                "meet",
+                "Treffen",
+                DetailsEditPropertyType.time,
+              ),
+              DetailsEditProperty(
+                "start",
+                "Start",
+                DetailsEditPropertyType.time,
+              ),
+              DetailsEditProperty("end", "Ende", DetailsEditPropertyType.time),
+            ],
+            [
+              DetailsEditProperty(
+                "notes",
+                "Notizen",
+                DetailsEditPropertyType.text,
+              ),
+            ],
+          ],
+        ),
       ],
       titleKey: "name",
       created: created,
       defaultEdit: true,
-      tabs: [],
     );
   }
 }

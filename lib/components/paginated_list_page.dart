@@ -3,16 +3,21 @@ import 'package:flutter/material.dart';
 import 'package:tv_oberwil/components/paginated_list.dart';
 import 'package:tv_oberwil/utils.dart';
 
-typedef TableColumn =
-    ({
-      String key,
-      String name,
-      Widget Function(dynamic data) builder,
-      int space,
-    });
+class TableColumn {
+  final String key;
+  final String name;
+  final Widget Function(dynamic data) builder;
+  final int space;
 
-typedef TableOptions =
-    ({List<TableColumn> columns, Function(DocumentSnapshot<Object?>) rowOnTap});
+  const TableColumn(this.key, this.name, this.builder, this.space);
+}
+
+class TableOptions {
+  final List<TableColumn> columns;
+  final Function(DocumentSnapshot<Object?>) rowOnTap;
+
+  const TableOptions(this.columns, this.rowOnTap);
+}
 
 class PaginatedListPage extends StatefulWidget {
   final Widget Function(DocumentSnapshot<Object?>)? builder;
@@ -21,19 +26,21 @@ class PaginatedListPage extends StatefulWidget {
   final List<String>? searchFields;
   final bool isFilterable;
   final List<Widget>? actions;
-  final String title;
+  final String? title;
   final TableOptions? tableOptions;
+  final bool showBackButton;
 
   const PaginatedListPage({
     super.key,
     this.builder,
     required this.query,
-    required this.title,
+    this.title,
     this.maxQueryLimit = 10,
     this.searchFields,
     this.isFilterable = true,
     this.actions,
     this.tableOptions,
+    this.showBackButton = true,
   });
 
   @override
@@ -77,18 +84,22 @@ class _PaginatedListPageState extends State<PaginatedListPage> {
         );
       }
     }
-
+    final showAppBar = widget.title != null || widget.searchFields != null;
     return Padding(
       padding: EdgeInsets.symmetric(
         horizontal: isScreenWide ? 35 : 0,
         vertical: 15,
       ),
       child: Scaffold(
-        appBar: AppBar(
-          actionsPadding: EdgeInsets.symmetric(horizontal: 12),
-          title: Text(widget.title),
-          actions: widget.actions,
-        ),
+        appBar:
+            showAppBar
+                ? AppBar(
+                  automaticallyImplyLeading: widget.showBackButton,
+                  actionsPadding: EdgeInsets.symmetric(horizontal: 12),
+                  title: widget.title != null ? Text(widget.title!) : null,
+                  actions: widget.actions,
+                )
+                : null,
         body: Padding(
           padding: EdgeInsets.all(12),
           child: Column(
