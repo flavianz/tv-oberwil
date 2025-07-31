@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:tv_oberwil/components/paginated_list_page.dart';
 
+import '../../utils.dart';
+
 class MembersScreen extends StatelessWidget {
   const MembersScreen({super.key});
 
@@ -48,6 +50,15 @@ class MembersScreen extends StatelessWidget {
           context.push("/admin/member/${doc.id}");
         },
       ),
+      actions: [
+        FilledButton.icon(
+          onPressed: () {
+            context.push("/admin/member/${generateFirestoreKey()}?create=true");
+          },
+          icon: Icon(Icons.add),
+          label: Text("Neu"),
+        ),
+      ],
     );
   }
 }

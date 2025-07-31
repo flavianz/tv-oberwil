@@ -26,7 +26,7 @@ class PaginatedListPage extends StatefulWidget {
 
   const PaginatedListPage({
     super.key,
-    required this.builder,
+    this.builder,
     required this.query,
     required this.title,
     this.maxQueryLimit = 10,

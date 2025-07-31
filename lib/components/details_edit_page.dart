@@ -11,6 +11,13 @@ import '../../firestore_providers/basic_providers.dart';
 
 enum DetailsEditPropertyType { text, date, time, selection, bool, custom }
 
+enum DetailsTabType { details, tab }
+
+typedef DetailsTab = ({Tab tab, DetailsTabType type, dynamic data});
+
+typedef PropertyDetailsTab = ({List<List<DetailsEditProperty>> properties});
+typedef ListDetailsTab = ({Query query});
+
 class DetailsEditProperty {
   final String key;
   final String name;
@@ -23,6 +30,7 @@ class DetailsEditProperty {
 class DetailsEditPage extends ConsumerStatefulWidget {
   final DocumentReference<Map<String, dynamic>> doc;
   final bool created;
+  final List<DetailsTab> tabs;
   final List<List<DetailsEditProperty>> properties;
   final String titleKey;
   final bool defaultEdit;
@@ -32,6 +40,7 @@ class DetailsEditPage extends ConsumerStatefulWidget {
     required this.doc,
     this.created = false,
     required this.properties,
+    required this.tabs,
     required this.titleKey,
     this.defaultEdit = false,
   });

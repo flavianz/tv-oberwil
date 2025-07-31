@@ -84,7 +84,9 @@ class MemberDetailsScreen extends StatelessWidget {
           ),
         ],
       ],
+      created: created,
       titleKey: "first",
+      tabs: [],
     );
   }
 }

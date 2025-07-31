@@ -1,15 +1,39 @@
-import 'dart:collection';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:tv_oberwil/components/paginated_list_page.dart';
 
-import '../../firestore_providers/basic_providers.dart';
-import '../../firestore_providers/teams_provider.dart';
-import '../../utils.dart';
+class TeamsScreen extends StatelessWidget {
+  final bool refresh;
 
-class TeamsScreen extends ConsumerStatefulWidget {
+  const TeamsScreen({super.key, this.refresh = false});
+
+  @override
+  Widget build(BuildContext context) {
+    return PaginatedListPage(
+      query: FirebaseFirestore.instance.collection("teams"),
+      title: "Teams",
+      searchFields: ["search_name"],
+      tableOptions: (
+        columns: [
+          (
+            key: "name",
+            name: "Name",
+            space: 1,
+            builder: (data) {
+              return Text(data ?? "");
+            },
+          ),
+        ],
+        rowOnTap: (doc) {
+          context.push("/admin/team/${doc.id}");
+        },
+      ),
+    );
+  }
+}
+
+/*class TeamsScreen extends ConsumerStatefulWidget {
   final bool refresh;
 
   const TeamsScreen({super.key, required this.refresh});
@@ -375,4 +399,4 @@ class _FilterDialogState extends ConsumerState<FilterDialog> {
       ),
     );
   }
-}
+}*/
