@@ -13,15 +13,28 @@ enum DetailsEditPropertyType { text, date, time, selection, bool, custom }
 
 enum DetailsTabType { details, list }
 
-typedef DetailsTab = ({Tab? tab, DetailsTabType type, dynamic data});
+class DetailsTab {
+  final Tab? tab;
+  final DetailsTabType type;
+  final dynamic data;
+
+  const DetailsTab(this.tab, this.type, this.data);
+}
 
 class DetailsEditProperty {
   final String key;
   final String name;
   final DetailsEditPropertyType type;
   final dynamic data;
+  final bool readOnly;
 
-  const DetailsEditProperty(this.key, this.name, this.type, {this.data});
+  const DetailsEditProperty(
+    this.key,
+    this.name,
+    this.type, {
+    this.data,
+    this.readOnly = false,
+  });
 }
 
 class DetailsEditPage extends ConsumerStatefulWidget {
@@ -315,7 +328,10 @@ class _DetailsEditPageState extends ConsumerState<DetailsEditPage> {
                                             values[property.key] ??
                                             TextEditingController(),
                                         title: property.name,
-                                        isEditMode: isEditMode,
+                                        isEditMode:
+                                            property.readOnly
+                                                ? false
+                                                : isEditMode,
                                       );
                                     case DetailsEditPropertyType.date:
                                       return DateInputBox(
@@ -336,7 +352,10 @@ class _DetailsEditPageState extends ConsumerState<DetailsEditPage> {
                                               values[property.key]
                                                   .millisecondsSinceEpoch,
                                             ),
-                                        isEditMode: isEditMode,
+                                        isEditMode:
+                                            property.readOnly
+                                                ? false
+                                                : isEditMode,
                                       );
                                     case DetailsEditPropertyType.time:
                                       return TimeInputBox(
@@ -357,12 +376,18 @@ class _DetailsEditPageState extends ConsumerState<DetailsEditPage> {
                                               values[property.key]
                                                   .millisecondsSinceEpoch,
                                             ),
-                                        isEditMode: isEditMode,
+                                        isEditMode:
+                                            property.readOnly
+                                                ? false
+                                                : isEditMode,
                                       );
                                     case DetailsEditPropertyType.selection:
                                       return SelectionInputBox(
                                         title: property.name,
-                                        isEditMode: isEditMode,
+                                        isEditMode:
+                                            property.readOnly
+                                                ? false
+                                                : isEditMode,
                                         options: property.data,
                                         selected: values[property.key],
                                         defaultKey: "none",
@@ -378,7 +403,10 @@ class _DetailsEditPageState extends ConsumerState<DetailsEditPage> {
                                     case DetailsEditPropertyType.bool:
                                       return SelectionInputBox(
                                         title: property.name,
-                                        isEditMode: isEditMode,
+                                        isEditMode:
+                                            property.readOnly
+                                                ? false
+                                                : isEditMode,
                                         options: {true: "Ja", false: "Nein"},
                                         selected: values[property.key],
                                         defaultKey: false,

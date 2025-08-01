@@ -23,72 +23,68 @@ class MemberDetailsScreen extends StatelessWidget {
     return DetailsEditPage(
       doc: FirebaseFirestore.instance.collection("members").doc(uid),
       tabs: [
-        (
-          tab: null,
-          type: DetailsTabType.details,
-          data: [
-            [
-              DetailsEditProperty(
-                "first",
-                "Vorname",
-                DetailsEditPropertyType.text,
-                data: true,
-              ),
-              DetailsEditProperty(
-                "middle",
-                "2. Vorname",
-                DetailsEditPropertyType.text,
-              ),
-              DetailsEditProperty(
-                "last",
-                "Nachname",
-                DetailsEditPropertyType.text,
-                data: true,
-              ),
-            ],
-            [
-              DetailsEditProperty(
-                "birthdate",
-                "Geburtstag",
-                DetailsEditPropertyType.date,
-              ),
-              DetailsEditProperty(
-                "user",
-                "Verknüpft",
-                DetailsEditPropertyType.custom,
-                data: (
-                  builder: (dynamic data, Function _) {
-                    return InputBox(
-                      inputWidget: TextField(
-                        decoration: InputDecoration(
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          hintText:
-                              data == null ? "Nein - Jetzt verknüpfen" : "Ja",
-                          prefixIcon: Icon(Icons.link),
-                        ),
-                        readOnly: true,
-                        onTap: () async {
-                          if (data == null) {
-                            showDialog(
-                              context: context,
-                              builder: (context) {
-                                return Dialog(child: UserAssignDialog(uid));
-                              },
-                            );
-                          }
-                        },
-                      ),
-                      title: "Verknüpft",
-                    );
-                  },
-                  defaultValue: null,
-                ),
-              ),
-            ],
+        DetailsTab(null, DetailsTabType.details, [
+          [
+            DetailsEditProperty(
+              "first",
+              "Vorname",
+              DetailsEditPropertyType.text,
+              data: true,
+            ),
+            DetailsEditProperty(
+              "middle",
+              "2. Vorname",
+              DetailsEditPropertyType.text,
+            ),
+            DetailsEditProperty(
+              "last",
+              "Nachname",
+              DetailsEditPropertyType.text,
+              data: true,
+            ),
           ],
-        ),
+          [
+            DetailsEditProperty(
+              "birthdate",
+              "Geburtstag",
+              DetailsEditPropertyType.date,
+            ),
+            DetailsEditProperty(
+              "user",
+              "Verknüpft",
+              DetailsEditPropertyType.custom,
+              data: (
+                builder: (dynamic data, Function _) {
+                  return InputBox(
+                    inputWidget: TextField(
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        hintText:
+                            data == null ? "Nein - Jetzt verknüpfen" : "Ja",
+                        prefixIcon: Icon(Icons.link),
+                      ),
+                      readOnly: true,
+                      onTap: () async {
+                        if (data == null) {
+                          showDialog(
+                            context: context,
+                            builder: (context) {
+                              return Dialog(child: UserAssignDialog(uid));
+                            },
+                          );
+                        }
+                      },
+                    ),
+                    title: "Verknüpft",
+                  );
+                },
+                defaultValue: null,
+              ),
+            ),
+          ],
+        ]),
       ],
       created: created,
       titleKey: "first",
