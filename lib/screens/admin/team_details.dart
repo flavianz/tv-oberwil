@@ -66,6 +66,8 @@ class TeamDetailsScreen extends StatelessWidget {
           type: DetailsTabType.list,
           data: PaginatedListPage(
             showBackButton: false,
+            actionsInSearchBar: true,
+            searchFields: ["search_first", "search_last"],
             query: FirebaseFirestore.instance
                 .collection("teams")
                 .doc(uid)
@@ -76,6 +78,13 @@ class TeamDetailsScreen extends StatelessWidget {
               TableColumn("position", "Position", (data) => Text(data), 1),
               TableColumn("roles", "Rolle", (data) => Text(data[0]), 1),
             ], (_) {}),
+            actions: [
+              FilledButton.icon(
+                onPressed: () {},
+                label: Text("Hinzufügen"),
+                icon: Icon(Icons.add),
+              ),
+            ],
           ),
         ),
       ],

@@ -29,6 +29,7 @@ class PaginatedListPage extends StatefulWidget {
   final String? title;
   final TableOptions? tableOptions;
   final bool showBackButton;
+  final bool actionsInSearchBar;
 
   const PaginatedListPage({
     super.key,
@@ -41,6 +42,7 @@ class PaginatedListPage extends StatefulWidget {
     this.actions,
     this.tableOptions,
     this.showBackButton = true,
+    this.actionsInSearchBar = false,
   });
 
   @override
@@ -84,7 +86,9 @@ class _PaginatedListPageState extends State<PaginatedListPage> {
         );
       }
     }
-    final showAppBar = widget.title != null || widget.searchFields != null;
+    final showAppBar =
+        widget.title != null ||
+        (widget.actions != null && !widget.actionsInSearchBar);
     return Padding(
       padding: EdgeInsets.symmetric(
         horizontal: isScreenWide ? 35 : 0,
@@ -94,10 +98,11 @@ class _PaginatedListPageState extends State<PaginatedListPage> {
         appBar:
             showAppBar
                 ? AppBar(
+                  backgroundColor: Colors.greenAccent,
                   automaticallyImplyLeading: widget.showBackButton,
                   actionsPadding: EdgeInsets.symmetric(horizontal: 12),
                   title: widget.title != null ? Text(widget.title!) : null,
-                  actions: widget.actions,
+                  actions: !widget.actionsInSearchBar ? widget.actions : null,
                 )
                 : null,
         body: Padding(
@@ -148,6 +153,9 @@ class _PaginatedListPageState extends State<PaginatedListPage> {
                           },
                         ),
                       ),
+                      (widget.actionsInSearchBar && widget.actions != null)
+                          ? Row(children: widget.actions!)
+                          : SizedBox.shrink(),
                       /*TextButton.icon(
                     onPressed: () {
                       if (isScreenWide) {
