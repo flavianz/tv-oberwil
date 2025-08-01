@@ -365,6 +365,7 @@ class _DetailsEditPageState extends ConsumerState<DetailsEditPage> {
                                         isEditMode: isEditMode,
                                         options: property.data,
                                         selected: values[property.key],
+                                        defaultKey: "none",
                                         onSelected: (s) {
                                           setState(() {
                                             values = {
@@ -380,6 +381,7 @@ class _DetailsEditPageState extends ConsumerState<DetailsEditPage> {
                                         isEditMode: isEditMode,
                                         options: {true: "Ja", false: "Nein"},
                                         selected: values[property.key],
+                                        defaultKey: false,
                                         onSelected: (s) {
                                           setState(() {
                                             values = {

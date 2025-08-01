@@ -98,7 +98,6 @@ class _PaginatedListPageState extends State<PaginatedListPage> {
         appBar:
             showAppBar
                 ? AppBar(
-                  backgroundColor: Colors.greenAccent,
                   automaticallyImplyLeading: widget.showBackButton,
                   actionsPadding: EdgeInsets.symmetric(horizontal: 12),
                   title: widget.title != null ? Text(widget.title!) : null,

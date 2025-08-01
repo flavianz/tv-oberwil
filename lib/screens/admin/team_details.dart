@@ -1,7 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:tv_oberwil/components/details_edit_page.dart';
+import 'package:tv_oberwil/components/misc.dart';
 import 'package:tv_oberwil/components/paginated_list_page.dart';
+import 'package:tv_oberwil/utils.dart';
 
 class TeamDetailsScreen extends StatelessWidget {
   final String uid;
@@ -33,6 +35,12 @@ class TeamDetailsScreen extends StatelessWidget {
                 "plays_in_league",
                 "Spielt in Liga",
                 DetailsEditPropertyType.bool,
+              ),
+              DetailsEditProperty(
+                "genders",
+                "Geschlecht",
+                DetailsEditPropertyType.selection,
+                data: {"women": "Damen", "men": "Herren", "mixed": "Gemischt"},
               ),
             ],
             [
@@ -71,12 +79,32 @@ class TeamDetailsScreen extends StatelessWidget {
             query: FirebaseFirestore.instance
                 .collection("teams")
                 .doc(uid)
-                .collection("players"),
+                .collection("teammembers"),
             tableOptions: TableOptions([
               TableColumn("last", "Nachname", (data) => Text(data), 1),
               TableColumn("first", "Vorname", (data) => Text(data), 1),
-              TableColumn("position", "Position", (data) => Text(data), 1),
-              TableColumn("roles", "Rolle", (data) => Text(data[0]), 1),
+              TableColumn("roles", "Rolle", (data) {
+                return SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children:
+                        castList(data).map((role) {
+                          return getRolePill(role);
+                        }).toList(),
+                  ),
+                );
+              }, 1),
+              TableColumn("positions", "Position", (data) {
+                return SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children:
+                        castList(data).map((role) {
+                          return getPositionPill(role);
+                        }).toList(),
+                  ),
+                );
+              }, 1),
             ], (_) {}),
             actions: [
               FilledButton.icon(
@@ -90,5 +118,35 @@ class TeamDetailsScreen extends StatelessWidget {
       ],
       titleKey: "name",
     );
+  }
+}
+
+Widget getPositionPill(role) {
+  switch (role) {
+    case "forward":
+      return getPill("Stürmer", Colors.lightBlueAccent, true);
+    case "center":
+      return getPill("Center", Colors.greenAccent, false);
+    case "defense":
+      return getPill("Verteidigung", Colors.amberAccent, false);
+    case "keeper":
+      return getPill("Torhüter", Colors.redAccent, true);
+    default:
+      return getPill("Keine", Colors.grey, true);
+  }
+}
+
+Widget getRolePill(role) {
+  switch (role) {
+    case "player":
+      return getPill("Spieler", Colors.grey, true);
+    case "no_liscence":
+      return getPill("Keine Lizenz", Colors.amberAccent, true);
+    case "coach":
+      return getPill("Trainer", Colors.green, true);
+    case "assistant_coach":
+      return getPill("Assistentstrainer", Colors.greenAccent, false);
+    default:
+      return getPill("Keine", Colors.grey, true);
   }
 }

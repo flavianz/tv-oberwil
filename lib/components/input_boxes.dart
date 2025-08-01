@@ -157,6 +157,7 @@ class SelectionInputBox<T> extends StatelessWidget {
   final Map<T, String> options;
   final T selected;
   final Function(T) onSelected;
+  final T defaultKey;
 
   const SelectionInputBox({
     super.key,
@@ -165,6 +166,7 @@ class SelectionInputBox<T> extends StatelessWidget {
     required this.options,
     required this.selected,
     required this.onSelected,
+    required this.defaultKey,
   });
 
   @override
@@ -175,12 +177,14 @@ class SelectionInputBox<T> extends StatelessWidget {
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         ),
         items:
-            options.entries.map((entry) {
-              return DropdownMenuItem(
-                value: entry.key,
-                child: Text(entry.value),
-              );
-            }).toList(),
+            (options..putIfAbsent(defaultKey, () => "Keine Angabe")).entries
+                .map((entry) {
+                  return DropdownMenuItem(
+                    value: entry.key,
+                    child: Text(entry.value),
+                  );
+                })
+                .toList(),
         onChanged:
             isEditMode
                 ? (T? s) {
@@ -189,7 +193,7 @@ class SelectionInputBox<T> extends StatelessWidget {
                 : null,
         value: isEditMode ? selected : null,
         disabledHint: Text(
-          options[selected] ?? "None",
+          options[selected] ?? "Keine Angabe",
           style: TextStyle(color: Colors.black),
         ),
       ),
