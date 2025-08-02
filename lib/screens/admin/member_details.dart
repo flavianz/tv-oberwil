@@ -6,8 +6,6 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:tv_oberwil/components/details_edit_page.dart';
 import 'package:tv_oberwil/firestore_providers/basic_providers.dart';
 
-import '../../components/input_boxes.dart';
-
 class MemberDetailsScreen extends StatelessWidget {
   final String uid;
   final bool created;
@@ -52,35 +50,11 @@ class MemberDetailsScreen extends StatelessWidget {
             DetailsEditProperty(
               "user",
               "Verknüpft",
-              DetailsEditPropertyType.custom,
-              data: (
-                builder: (dynamic data, Function _) {
-                  return InputBox(
-                    inputWidget: TextField(
-                      decoration: InputDecoration(
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        hintText:
-                            data == null ? "Nein - Jetzt verknüpfen" : "Ja",
-                        prefixIcon: Icon(Icons.link),
-                      ),
-                      readOnly: true,
-                      onTap: () async {
-                        if (data == null) {
-                          showDialog(
-                            context: context,
-                            builder: (context) {
-                              return Dialog(child: UserAssignDialog(uid));
-                            },
-                          );
-                        }
-                      },
-                    ),
-                    title: "Verknüpft",
-                  );
-                },
-                defaultValue: null,
+              DetailsEditPropertyType.dialog,
+              data: DialogInputBoxData(
+                (_) => Dialog(child: UserAssignDialog(uid)),
+                (user) => user == null ? "Nein - Jetzt verknüpfen" : "Ja",
+                openDialogInNonEditMode: true,
               ),
             ),
           ],

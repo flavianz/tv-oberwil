@@ -246,9 +246,125 @@ class MemberInputBox extends StatelessWidget {
   }
 }
 
+class DialogInputBox<T> extends StatelessWidget {
+  final Dialog Function(Function) dialogBuilder;
+  final bool isEditMode;
+  final String selectedText;
+  final String title;
+  final bool openDialogInNonEditMode;
+  final Function(dynamic data) onUpdate;
+  final Widget? prefixIcon;
+
+  const DialogInputBox({
+    super.key,
+    required this.dialogBuilder,
+    required this.isEditMode,
+    required this.selectedText,
+    required this.title,
+    required this.onUpdate,
+    this.openDialogInNonEditMode = false,
+    this.prefixIcon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InputBox(
+      inputWidget: TextField(
+        decoration: InputDecoration(
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+          hintText: selectedText,
+          prefixIcon: prefixIcon,
+        ),
+        readOnly: true,
+        onTap: () async {
+          if (isEditMode || openDialogInNonEditMode) {
+            showDialog(
+              context: context,
+              builder: (context) {
+                return dialogBuilder(onUpdate);
+              },
+            );
+          }
+        },
+      ),
+      title: title,
+    );
+  }
+}
+
 typedef CustomInputBoxData =
     ({
       dynamic defaultValue,
       Widget Function(dynamic data, Function(dynamic newData) updateValue)
       builder,
     });
+
+class MultiSelectInputBox extends StatefulWidget {
+  final String title;
+  final bool isEditMode;
+  final Map<T, String> options;
+  final List<T> selected;
+  final Function(List<T>) onSelected;
+
+  const MultiSelectInputBox({
+    super.key,
+    required this.title,
+    required this.isEditMode,
+    required this.options,
+    required this.selected,
+    required this.onSelected,
+  });
+
+  @override
+  State<MultiSelectInputBox> createState() => _MultiSelectInputBoxState();
+}
+
+class _MultiSelectInputBoxState extends State<MultiSelectInputBox> {
+  List<String> selected = [];
+
+  @override
+  void initState() {
+    selected = widget.selected;
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return DialogInputBox(
+      dialogBuilder: (onSelected) {
+        return Dialog(
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                Column(
+                  children:
+                      widget.options.entries.map((option) {
+                        return Row(
+                          spacing: 15,
+                          children: [
+                            Checkbox(
+                              value: selected.contains(option.key),
+                              onChanged: (bool? newValue) {
+                                if (newValue ?? false) {
+                                  selected.add(option.key);
+                                } else {
+                                  selected.remove(option.key);
+                                }
+                              },
+                            ),
+                          ],
+                        );
+                      }).toList(),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+      isEditMode: widget.isEditMode,
+      selectedText: widget.options[widget.selected] ?? "",
+      title: widget.title,
+      onUpdate: (selected) => widget.onSelected(selected),
+    );
+  }
+}

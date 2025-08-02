@@ -9,7 +9,7 @@ import 'package:tv_oberwil/firestore_providers/firestore_tools.dart';
 import '../../components/input_boxes.dart';
 import '../../firestore_providers/basic_providers.dart';
 
-enum DetailsEditPropertyType { text, date, time, selection, bool, custom }
+enum DetailsEditPropertyType { text, date, time, selection, bool, dialog }
 
 enum DetailsTabType { details, list }
 
@@ -102,10 +102,8 @@ class _DetailsEditPageState extends ConsumerState<DetailsEditPage> {
           values[property.key] = data[property.key] ?? "none";
         case DetailsEditPropertyType.bool:
           values[property.key] = data[property.key] ?? true;
-        case DetailsEditPropertyType.custom:
-          values[property.key] =
-              data[property.key] ??
-              (property.data as CustomInputBoxData).defaultValue;
+        case DetailsEditPropertyType.dialog:
+          values[property.key] = data[property.key];
       }
     }
   }
@@ -195,7 +193,7 @@ class _DetailsEditPageState extends ConsumerState<DetailsEditPage> {
                                     );
                               case DetailsEditPropertyType.selection:
                               case DetailsEditPropertyType.bool:
-                              case DetailsEditPropertyType.custom:
+                              case DetailsEditPropertyType.dialog:
                                 inputs[property.key] = values[property.key];
                             }
                           }
@@ -419,19 +417,30 @@ class _DetailsEditPageState extends ConsumerState<DetailsEditPage> {
                                           });
                                         },
                                       );
-                                    case DetailsEditPropertyType.custom:
-                                      return (property.data
-                                              as CustomInputBoxData)
-                                          .builder(values[property.key], (
-                                            dynamic newData,
-                                          ) {
-                                            setState(() {
-                                              values = {
-                                                ...values,
-                                                property.key: newData,
-                                              };
-                                            });
+                                    case DetailsEditPropertyType.dialog:
+                                      DialogInputBoxData dialogInputBoxData =
+                                          property.data as DialogInputBoxData;
+                                      return DialogInputBox(
+                                        dialogBuilder:
+                                            dialogInputBoxData.dialogBuilder,
+                                        isEditMode: isEditMode,
+                                        selectedText: dialogInputBoxData
+                                            .boxTextBuilder(
+                                              values[property.key],
+                                            ),
+                                        title: property.name,
+                                        onUpdate: (newValue) {
+                                          setState(() {
+                                            values = {
+                                              ...values,
+                                              property.key: newValue,
+                                            };
                                           });
+                                        },
+                                        openDialogInNonEditMode:
+                                            dialogInputBoxData
+                                                .openDialogInNonEditMode,
+                                      );
                                   }
                                 });
                               });
@@ -495,4 +504,16 @@ class _DetailsEditPageState extends ConsumerState<DetailsEditPage> {
       ),
     );
   }
+}
+
+class DialogInputBoxData {
+  final Dialog Function(Function) dialogBuilder;
+  final String Function(dynamic) boxTextBuilder;
+  final bool openDialogInNonEditMode;
+
+  const DialogInputBoxData(
+    this.dialogBuilder,
+    this.boxTextBuilder, {
+    this.openDialogInNonEditMode = false,
+  });
 }
