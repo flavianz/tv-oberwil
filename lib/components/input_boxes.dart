@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class InputBox extends StatelessWidget {
   final Widget inputWidget;
@@ -249,33 +250,25 @@ class MemberInputBox extends StatelessWidget {
 class DialogInputBox<T> extends StatelessWidget {
   final Dialog Function(Function) dialogBuilder;
   final bool isEditMode;
-  final String selectedText;
+  final Widget boxContent;
   final String title;
   final bool openDialogInNonEditMode;
   final Function(dynamic data) onUpdate;
-  final Widget? prefixIcon;
 
   const DialogInputBox({
     super.key,
     required this.dialogBuilder,
     required this.isEditMode,
-    required this.selectedText,
+    required this.boxContent,
     required this.title,
     required this.onUpdate,
     this.openDialogInNonEditMode = false,
-    this.prefixIcon,
   });
 
   @override
   Widget build(BuildContext context) {
     return InputBox(
-      inputWidget: TextField(
-        decoration: InputDecoration(
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-          hintText: selectedText,
-          prefixIcon: prefixIcon,
-        ),
-        readOnly: true,
+      inputWidget: GestureDetector(
         onTap: () async {
           if (isEditMode || openDialogInNonEditMode) {
             showDialog(
@@ -286,6 +279,24 @@ class DialogInputBox<T> extends StatelessWidget {
             );
           }
         },
+        child: MouseRegion(
+          cursor:
+              isEditMode || openDialogInNonEditMode
+                  ? SystemMouseCursors.click
+                  : SystemMouseCursors.basic,
+          child: Container(
+            alignment: Alignment.centerLeft,
+            constraints: BoxConstraints(
+              minHeight: 48,
+              minWidth: double.infinity,
+            ),
+            decoration: BoxDecoration(
+              border: Border.all(color: Theme.of(context).dividerColor),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: boxContent,
+          ),
+        ),
       ),
       title: title,
     );
@@ -299,12 +310,13 @@ typedef CustomInputBoxData =
       builder,
     });
 
-class MultiSelectInputBox extends StatefulWidget {
+class MultiSelectInputBox extends StatelessWidget {
   final String title;
   final bool isEditMode;
-  final Map<T, String> options;
-  final List<T> selected;
-  final Function(List<T>) onSelected;
+  final Map<String, String> options;
+  final List<dynamic> selected;
+  final Function(List<dynamic>) onSelected;
+  final Widget Function(String) optionBuilder;
 
   const MultiSelectInputBox({
     super.key,
@@ -313,58 +325,125 @@ class MultiSelectInputBox extends StatefulWidget {
     required this.options,
     required this.selected,
     required this.onSelected,
+    required this.optionBuilder,
   });
-
-  @override
-  State<MultiSelectInputBox> createState() => _MultiSelectInputBoxState();
-}
-
-class _MultiSelectInputBoxState extends State<MultiSelectInputBox> {
-  List<String> selected = [];
-
-  @override
-  void initState() {
-    selected = widget.selected;
-    super.initState();
-  }
 
   @override
   Widget build(BuildContext context) {
     return DialogInputBox(
       dialogBuilder: (onSelected) {
         return Dialog(
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                Column(
-                  children:
-                      widget.options.entries.map((option) {
-                        return Row(
-                          spacing: 15,
-                          children: [
-                            Checkbox(
-                              value: selected.contains(option.key),
-                              onChanged: (bool? newValue) {
-                                if (newValue ?? false) {
-                                  selected.add(option.key);
-                                } else {
-                                  selected.remove(option.key);
-                                }
-                              },
-                            ),
-                          ],
-                        );
-                      }).toList(),
-                ),
-              ],
-            ),
+          child: MultiSelectInputDialog(
+            selected: selected,
+            options: options,
+            optionBuilder: optionBuilder,
+            onSelected: this.onSelected,
           ),
         );
       },
-      isEditMode: widget.isEditMode,
-      selectedText: widget.options[widget.selected] ?? "",
-      title: widget.title,
-      onUpdate: (selected) => widget.onSelected(selected),
+      isEditMode: isEditMode,
+      boxContent: Row(
+        children: selected.map((option) => optionBuilder(option)).toList(),
+      ),
+      title: title,
+      onUpdate: (selected) => onSelected(selected),
     );
   }
+}
+
+class MultiSelectInputDialog extends StatefulWidget {
+  final List<dynamic> selected;
+  final Map<String, String> options;
+  final Widget Function(String) optionBuilder;
+  final Function(List<dynamic>) onSelected;
+
+  const MultiSelectInputDialog({
+    super.key,
+    required this.selected,
+    required this.options,
+    required this.optionBuilder,
+    required this.onSelected,
+  });
+
+  @override
+  State<MultiSelectInputDialog> createState() => _MultiSelectInputDialogState();
+}
+
+class _MultiSelectInputDialogState extends State<MultiSelectInputDialog> {
+  late List<dynamic> selected;
+
+  @override
+  void initState() {
+    super.initState();
+    // initialize local state from widget prop
+    selected = List<dynamic>.from(widget.selected);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      child: Padding(
+        padding: EdgeInsets.all(25),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          spacing: 16,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children:
+                  widget.options.entries.map((entry) {
+                    final key = entry.key;
+                    return Row(
+                      spacing: 8,
+                      mainAxisSize: MainAxisSize.min,
+                      // content only takes needed space
+                      children: [
+                        Checkbox(
+                          value: selected.contains(key),
+                          onChanged: (checked) {
+                            setState(() {
+                              if (checked == true) {
+                                selected = [...selected, key];
+                              } else {
+                                selected =
+                                    selected.where((e) => e != key).toList();
+                              }
+                            });
+                          },
+                        ),
+                        widget.optionBuilder(key),
+                      ],
+                    );
+                  }).toList(),
+            ),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.end,
+              spacing: 8,
+              children: [
+                TextButton(
+                  onPressed: () => context.pop(),
+                  child: Text("Abbrechen"),
+                ),
+                FilledButton(
+                  onPressed: () {
+                    widget.onSelected(selected);
+                    context.pop();
+                  },
+                  child: Text("Ok"),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class MultiSelectInputBoxData {
+  final Widget Function(String) optionBuilder;
+  final Map<String, String> options;
+
+  const MultiSelectInputBoxData(this.optionBuilder, this.options);
 }

@@ -60,7 +60,7 @@ class _AssignmentState extends State<Assignment> {
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          hint: Text("Dein Verknüpfungs-Code"),
+                          hintText: "Dein Verknüpfungs-Code",
                         ),
                       ),
                     ),

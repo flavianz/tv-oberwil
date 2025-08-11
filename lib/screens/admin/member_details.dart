@@ -121,7 +121,7 @@ class _UserAssignDialogState extends ConsumerState<UserAssignDialog> {
             // Wrap in Flexible or SizedBox with max height
             Flexible(
               child: Padding(
-                padding: EdgeInsetsGeometry.all(16),
+                padding: EdgeInsets.all(16),
                 child: TabBarView(
                   children: [
                     Column(
