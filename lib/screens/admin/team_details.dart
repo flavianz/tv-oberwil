@@ -146,7 +146,7 @@ Widget getRolePill(role) {
   switch (role) {
     case "player":
       return getPill("Spieler", Colors.grey, true);
-    case "no_liscence":
+    case "no_licence":
       return getPill("Keine Lizenz", Colors.amberAccent, true);
     case "coach":
       return getPill("Trainer", Colors.green, true);

@@ -7,11 +7,13 @@ import 'package:tv_oberwil/screens/admin/team_details.dart';
 class TeamMemberDetails extends StatelessWidget {
   final String teamId;
   final String teamMemberId;
+  final bool created;
 
   const TeamMemberDetails({
     super.key,
     required this.teamId,
     required this.teamMemberId,
+    this.created = false,
   });
 
   @override
@@ -22,6 +24,7 @@ class TeamMemberDetails extends StatelessWidget {
           .doc(teamId)
           .collection("team_members")
           .doc(teamMemberId),
+      created: created,
       tabs: [
         DetailsTab(null, DetailsTabType.details, [
           [
@@ -36,6 +39,18 @@ class TeamMemberDetails extends StatelessWidget {
               "Nachname",
               DetailsEditPropertyType.text,
               readOnly: true,
+            ),
+            DetailsEditProperty(
+              "roles",
+              "Rollen",
+              DetailsEditPropertyType.multiSelect,
+              data: MultiSelectInputBoxData((str) => getRolePill(str), {
+                "player": "Spieler",
+                "no_licence": "Keine Lizenz",
+                "coach": "Trainer",
+                "assistant_coach": "Assistentstrainer",
+                "none": "Keine",
+              }),
             ),
             DetailsEditProperty(
               "positions",

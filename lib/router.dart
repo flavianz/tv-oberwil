@@ -73,6 +73,18 @@ final router = GoRouter(
           },
         ),
         GoRoute(
+          path: '/admin/team/:teamId/team_members/:teamMemberId/create',
+          builder: (context, state) {
+            final teamId = state.pathParameters['teamId']!;
+            final teamMemberId = state.pathParameters['teamMemberId']!;
+            return TeamMemberDetails(
+              teamId: teamId,
+              teamMemberId: teamMemberId,
+              created: true,
+            );
+          },
+        ),
+        GoRoute(
           path: '/player/team/:team/events',
           builder: (context, state) {
             return PlayerEvents(teamId: state.pathParameters["team"] ?? "");
