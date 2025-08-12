@@ -54,11 +54,14 @@ final router = GoRouter(
           path: '/admin/team/:uid',
           builder: (context, state) {
             final teamId = state.pathParameters['uid']!;
-            return TeamDetailsScreen(
-              uid: teamId,
-              created:
-                  (state.uri.queryParameters["create"] ?? "false") == "true",
-            );
+            return TeamDetailsScreen(uid: teamId);
+          },
+        ),
+        GoRoute(
+          path: '/admin/team/:uid/create',
+          builder: (context, state) {
+            final teamId = state.pathParameters['uid']!;
+            return TeamDetailsScreen(uid: teamId, created: true);
           },
         ),
         GoRoute(

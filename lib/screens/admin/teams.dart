@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:tv_oberwil/components/misc.dart';
 import 'package:tv_oberwil/components/paginated_list_page.dart';
+import 'package:tv_oberwil/utils.dart';
 
 class TeamsScreen extends StatelessWidget {
   final bool refresh;
@@ -34,6 +35,14 @@ class TeamsScreen extends StatelessWidget {
           context.push("/admin/team/${doc.id}");
         },
       ),
+      actions: [
+        FilledButton.icon(
+          onPressed:
+              () => context.push("./../team/${generateFirestoreKey()}/create"),
+          label: Text("Neu"),
+          icon: Icon(Icons.add),
+        ),
+      ],
     );
   }
 }

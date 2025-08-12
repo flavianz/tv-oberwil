@@ -10,16 +10,13 @@ class TeamDetailsScreen extends StatelessWidget {
   final String uid;
   final bool created;
 
-  const TeamDetailsScreen({
-    super.key,
-    required this.uid,
-    required this.created,
-  });
+  const TeamDetailsScreen({super.key, required this.uid, this.created = false});
 
   @override
   Widget build(BuildContext context) {
     return DetailsEditPage(
       doc: FirebaseFirestore.instance.collection("teams").doc(uid),
+      created: created,
       tabs: [
         DetailsTab(
           Tab(text: "Infos", icon: Icon(Icons.info_outline)),
