@@ -292,7 +292,7 @@ class DialogInputBox<T> extends StatelessWidget {
             ),
             decoration: BoxDecoration(
               border: Border.all(color: Theme.of(context).dividerColor),
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(12),
             ),
             child: boxContent,
           ),
