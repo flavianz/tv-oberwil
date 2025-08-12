@@ -225,8 +225,12 @@ class _PaginatedListPageState extends State<PaginatedListPage> {
                                             ) {
                                               return Expanded(
                                                 flex: column.space,
-                                                child: column.builder(
-                                                  data[column.key],
+                                                child: Align(
+                                                  alignment:
+                                                      Alignment.centerLeft,
+                                                  child: column.builder(
+                                                    data[column.key],
+                                                  ),
                                                 ),
                                               );
                                             }).toList(),

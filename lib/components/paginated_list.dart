@@ -74,7 +74,7 @@ class _PaginatedListState extends ConsumerState<PaginatedList> {
       },
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (e, _) {
-        return Center(child: Text('Error: $e'));
+        return Center(child: SelectableText('Error: $e'));
       },
     );
   }

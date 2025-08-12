@@ -71,7 +71,7 @@ class TeamDetailsScreen extends StatelessWidget {
           ],
         ),
         DetailsTab(
-          Tab(text: "Spieler", icon: Icon(Icons.diversity_3)),
+          Tab(text: "Mitglieder", icon: Icon(Icons.diversity_3)),
           DetailsTabType.list,
           PaginatedListPage(
             showBackButton: false,
@@ -124,35 +124,5 @@ class TeamDetailsScreen extends StatelessWidget {
       ],
       titleKey: "name",
     );
-  }
-}
-
-Widget getPositionPill(role) {
-  switch (role) {
-    case "forward":
-      return getPill("Stürmer", Colors.lightBlueAccent, true);
-    case "center":
-      return getPill("Center", Colors.greenAccent, false);
-    case "defense":
-      return getPill("Verteidigung", Colors.amberAccent, false);
-    case "keeper":
-      return getPill("Torhüter", Colors.redAccent, true);
-    default:
-      return getPill("Keine", Colors.grey, true);
-  }
-}
-
-Widget getRolePill(role) {
-  switch (role) {
-    case "player":
-      return getPill("Spieler", Colors.grey, true);
-    case "no_licence":
-      return getPill("Keine Lizenz", Colors.amberAccent, true);
-    case "coach":
-      return getPill("Trainer", Colors.green, true);
-    case "assistant_coach":
-      return getPill("Assistentstrainer", Colors.greenAccent, false);
-    default:
-      return getPill("Keine", Colors.grey, true);
   }
 }

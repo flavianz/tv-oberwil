@@ -2,7 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:tv_oberwil/components/details_edit_page.dart';
 import 'package:tv_oberwil/components/input_boxes.dart';
-import 'package:tv_oberwil/screens/admin/team_details.dart';
+
+import '../../components/misc.dart';
 
 class TeamMemberDetails extends StatelessWidget {
   final String teamId;

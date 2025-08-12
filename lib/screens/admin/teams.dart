@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:tv_oberwil/components/misc.dart';
 import 'package:tv_oberwil/components/paginated_list_page.dart';
 
 class TeamsScreen extends StatelessWidget {
@@ -23,10 +24,10 @@ class TeamsScreen extends StatelessWidget {
             return Text(data ?? "");
           }, 1),
           TableColumn("plays_in_league", "Spielt in Liga", (data) {
-            return Text(data == true ? "Ja" : "Nein");
+            return getBoolPill(data);
           }, 1),
           TableColumn("genders", "Geschlecht", (data) {
-            return Text(data ?? "");
+            return getGenderPill(data);
           }, 1),
         ],
         (doc) {
