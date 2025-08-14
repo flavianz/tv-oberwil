@@ -65,7 +65,18 @@ final router = GoRouter(
           },
         ),
         GoRoute(
-          path: '/admin/team/:teamId/team_members/:teamMemberId',
+          path: '/admin/team/:teamId/team_member/:teamMemberId',
+          builder: (context, state) {
+            final teamId = state.pathParameters['teamId']!;
+            final teamMemberId = state.pathParameters['teamMemberId']!;
+            return TeamMemberDetails(
+              teamId: teamId,
+              teamMemberId: teamMemberId,
+            );
+          },
+        ),
+        GoRoute(
+          path: '/coach/team/:teamId/team_member/:teamMemberId',
           builder: (context, state) {
             final teamId = state.pathParameters['teamId']!;
             final teamMemberId = state.pathParameters['teamMemberId']!;

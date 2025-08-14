@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:tv_oberwil/components/misc.dart';
 import 'package:tv_oberwil/components/paginated_list_page.dart';
 
 import '../../utils.dart';
@@ -28,7 +29,7 @@ class MembersScreen extends StatelessWidget {
             return Text(data);
           }, 2),
           TableColumn("user", "Ist verknüpft", (data) {
-            return Text(data == null ? "Nein" : "Ja");
+            return getBoolPill(data != null);
           }, 1),
         ],
         (doc) {

@@ -26,32 +26,25 @@ class MemberDetailsScreen extends StatelessWidget {
             DetailsEditProperty(
               "first",
               "Vorname",
-              DetailsEditPropertyType.text,
-              data: true,
+              TextPropertyType(isSearchable: true),
             ),
-            DetailsEditProperty(
-              "middle",
-              "2. Vorname",
-              DetailsEditPropertyType.text,
-            ),
+            DetailsEditProperty("middle", "2. Vorname", TextPropertyType()),
             DetailsEditProperty(
               "last",
               "Nachname",
-              DetailsEditPropertyType.text,
-              data: true,
+              TextPropertyType(isSearchable: true),
             ),
           ],
           [
             DetailsEditProperty(
               "birthdate",
               "Geburtstag",
-              DetailsEditPropertyType.date,
+              DatePropertyType(DateTime.now()),
             ),
             DetailsEditProperty(
               "user",
               "Verknüpft",
-              DetailsEditPropertyType.dialog,
-              data: DialogInputBoxData(
+              DialogPropertyType(
                 (_) => Dialog(child: UserAssignDialog(uid)),
                 (user) => user == null ? "Nein - Jetzt verknüpfen" : "Ja",
                 openDialogInNonEditMode: true,

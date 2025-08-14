@@ -178,14 +178,12 @@ class SelectionInputBox<T> extends StatelessWidget {
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         ),
         items:
-            (options..putIfAbsent(defaultKey, () => "Keine Angabe")).entries
-                .map((entry) {
-                  return DropdownMenuItem(
-                    value: entry.key,
-                    child: Text(entry.value),
-                  );
-                })
-                .toList(),
+            options.entries.map((entry) {
+              return DropdownMenuItem(
+                value: entry.key,
+                child: Text(entry.value),
+              );
+            }).toList(),
         onChanged:
             isEditMode
                 ? (T? s) {
@@ -193,7 +191,7 @@ class SelectionInputBox<T> extends StatelessWidget {
                 }
                 : null,
         value: isEditMode ? selected : null,
-        disabledHint: Text(
+        hint: Text(
           options[selected] ?? "Keine Angabe",
           style: TextStyle(color: Colors.black),
         ),
@@ -439,11 +437,4 @@ class _MultiSelectInputDialogState extends State<MultiSelectInputDialog> {
       ),
     );
   }
-}
-
-class MultiSelectInputBoxData {
-  final Widget Function(String) optionBuilder;
-  final Map<String, String> options;
-
-  const MultiSelectInputBoxData(this.optionBuilder, this.options);
 }

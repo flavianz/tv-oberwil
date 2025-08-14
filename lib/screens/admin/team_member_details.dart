@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:tv_oberwil/components/details_edit_page.dart';
-import 'package:tv_oberwil/components/input_boxes.dart';
 
 import '../../components/misc.dart';
 
@@ -32,20 +31,17 @@ class TeamMemberDetails extends StatelessWidget {
             DetailsEditProperty(
               "first",
               "Vorname",
-              DetailsEditPropertyType.text,
-              readOnly: true,
+              TextPropertyType(isSearchable: true),
             ),
             DetailsEditProperty(
               "last",
               "Nachname",
-              DetailsEditPropertyType.text,
-              readOnly: true,
+              TextPropertyType(isSearchable: true),
             ),
             DetailsEditProperty(
               "roles",
               "Rollen",
-              DetailsEditPropertyType.multiSelect,
-              data: MultiSelectInputBoxData((str) => getRolePill(str), {
+              MultiSelectPropertyType((str) => getRolePill(str), {
                 "player": "Spieler",
                 "no_licence": "Keine Lizenz",
                 "coach": "Trainer",
@@ -56,8 +52,7 @@ class TeamMemberDetails extends StatelessWidget {
             DetailsEditProperty(
               "positions",
               "Positionen",
-              DetailsEditPropertyType.multiSelect,
-              data: MultiSelectInputBoxData((str) => getPositionPill(str), {
+              MultiSelectPropertyType((str) => getPositionPill(str), {
                 "forward": "Stürmer",
                 "center": "Center",
                 "defense": "Verteidigung",

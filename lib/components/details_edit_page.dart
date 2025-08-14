@@ -9,14 +9,64 @@ import 'package:tv_oberwil/firestore_providers/firestore_tools.dart';
 import '../../components/input_boxes.dart';
 import '../../firestore_providers/basic_providers.dart';
 
-enum DetailsEditPropertyType {
-  text,
-  date,
-  time,
-  selection,
-  bool,
-  dialog,
-  multiSelect,
+enum PropertyTypeEnum { multiSelect }
+
+sealed class PropertyType {
+  const PropertyType();
+}
+
+class TextPropertyType extends PropertyType {
+  final bool isSearchable;
+  final String defaultValue;
+
+  const TextPropertyType({this.isSearchable = false, this.defaultValue = ""});
+}
+
+class DatePropertyType extends PropertyType {
+  final DateTime defaultValue;
+
+  const DatePropertyType(this.defaultValue);
+}
+
+class TimePropertyType extends PropertyType {
+  final DateTime defaultValue;
+
+  const TimePropertyType(this.defaultValue);
+}
+
+class SelectionPropertyType extends PropertyType {
+  final Map<dynamic, String> options;
+
+  SelectionPropertyType(this.options) {
+    if (!options.keys.contains("null")) {
+      throw ArgumentError("Selection contained no null property");
+    }
+  }
+}
+
+class BoolPropertyType extends PropertyType {
+  final bool defaultValue;
+
+  const BoolPropertyType({this.defaultValue = false});
+}
+
+class DialogPropertyType extends PropertyType {
+  final Dialog Function(Function) dialogBuilder;
+  final String Function(dynamic) boxTextBuilder;
+  final bool openDialogInNonEditMode;
+
+  const DialogPropertyType(
+    this.dialogBuilder,
+    this.boxTextBuilder, {
+    this.openDialogInNonEditMode = false,
+  });
+}
+
+class MultiSelectPropertyType extends PropertyType {
+  final Widget Function(String) optionBuilder;
+  final Map<String, String> options;
+
+  const MultiSelectPropertyType(this.optionBuilder, this.options);
 }
 
 enum DetailsTabType { details, list }
@@ -32,15 +82,13 @@ class DetailsTab {
 class DetailsEditProperty {
   final String key;
   final String name;
-  final DetailsEditPropertyType type;
-  final dynamic data;
+  final PropertyType type;
   final bool readOnly;
 
   const DetailsEditProperty(
     this.key,
     this.name,
     this.type, {
-    this.data,
     this.readOnly = false,
   });
 }
@@ -78,7 +126,7 @@ class _DetailsEditPageState extends ConsumerState<DetailsEditPage> {
   @override
   void dispose() {
     for (var property in expandedProperties) {
-      if (property.type == DetailsEditPropertyType.text) {
+      if (property.type is TextPropertyType) {
         (values[property.key] as TextEditingController).dispose();
       }
     }
@@ -98,20 +146,34 @@ class _DetailsEditPageState extends ConsumerState<DetailsEditPage> {
     expandedProperties = properties!.expand((element) => element).toList();
     for (var property in expandedProperties) {
       switch (property.type) {
-        case DetailsEditPropertyType.text:
+        case TextPropertyType():
           {
             values[property.key] = TextEditingController();
-            values[property.key]?.text = data[property.key] ?? "";
+            values[property.key]?.text =
+                data[property.key] ??
+                (property.type as TextPropertyType).defaultValue;
           }
-        case DetailsEditPropertyType.date:
-        case DetailsEditPropertyType.time:
-          values[property.key] = data[property.key] ?? Timestamp.now();
-        case DetailsEditPropertyType.selection:
-        case DetailsEditPropertyType.multiSelect:
-          values[property.key] = data[property.key] ?? "none";
-        case DetailsEditPropertyType.bool:
-          values[property.key] = data[property.key] ?? true;
-        case DetailsEditPropertyType.dialog:
+        case DatePropertyType():
+          values[property.key] =
+              data[property.key] ??
+              Timestamp.fromDate(
+                (property.type as DatePropertyType).defaultValue,
+              );
+        case TimePropertyType():
+          values[property.key] =
+              data[property.key] ??
+              Timestamp.fromDate(
+                (property.type as TimePropertyType).defaultValue,
+              );
+        case SelectionPropertyType():
+          values[property.key] = data[property.key];
+        case MultiSelectPropertyType():
+          values[property.key] = data[property.key] ?? [];
+        case BoolPropertyType():
+          values[property.key] =
+              data[property.key] ??
+              (property.type as BoolPropertyType).defaultValue;
+        case DialogPropertyType():
           values[property.key] = data[property.key];
       }
     }
@@ -185,25 +247,26 @@ class _DetailsEditPageState extends ConsumerState<DetailsEditPage> {
 
                           for (var property in expandedProperties) {
                             switch (property.type) {
-                              case DetailsEditPropertyType.text:
+                              case TextPropertyType():
                                 inputs[property.key] =
                                     values[property.key]?.text;
-                                if (property.data == true) {
+                                if ((property.type as TextPropertyType)
+                                    .isSearchable) {
                                   inputs["search_${property.key}"] = searchify(
                                     values[property.key]?.text ?? "",
                                   );
                                 }
-                              case DetailsEditPropertyType.date:
-                              case DetailsEditPropertyType.time:
+                              case DatePropertyType():
+                              case TimePropertyType():
                                 inputs[property.key] =
                                     Timestamp.fromMillisecondsSinceEpoch(
                                       values[property.key]
                                           .millisecondsSinceEpoch,
                                     );
-                              case DetailsEditPropertyType.selection:
-                              case DetailsEditPropertyType.bool:
-                              case DetailsEditPropertyType.dialog:
-                              case DetailsEditPropertyType.multiSelect:
+                              case SelectionPropertyType():
+                              case BoolPropertyType():
+                              case DialogPropertyType():
+                              case MultiSelectPropertyType():
                                 inputs[property.key] = values[property.key];
                             }
                           }
@@ -330,7 +393,7 @@ class _DetailsEditPageState extends ConsumerState<DetailsEditPage> {
                               .map((list) {
                                 return list.map((property) {
                                   switch (property.type) {
-                                    case DetailsEditPropertyType.text:
+                                    case TextPropertyType():
                                       return TextInputBox(
                                         controller:
                                             values[property.key] ??
@@ -341,7 +404,7 @@ class _DetailsEditPageState extends ConsumerState<DetailsEditPage> {
                                                 ? false
                                                 : isEditMode,
                                       );
-                                    case DetailsEditPropertyType.date:
+                                    case DatePropertyType():
                                       return DateInputBox(
                                         title: property.name,
                                         onDateSelected: (s) {
@@ -365,7 +428,7 @@ class _DetailsEditPageState extends ConsumerState<DetailsEditPage> {
                                                 ? false
                                                 : isEditMode,
                                       );
-                                    case DetailsEditPropertyType.time:
+                                    case TimePropertyType():
                                       return TimeInputBox(
                                         title: property.name,
                                         onTimeSelected: (s) {
@@ -389,14 +452,17 @@ class _DetailsEditPageState extends ConsumerState<DetailsEditPage> {
                                                 ? false
                                                 : isEditMode,
                                       );
-                                    case DetailsEditPropertyType.selection:
+                                    case SelectionPropertyType():
                                       return SelectionInputBox(
                                         title: property.name,
                                         isEditMode:
                                             property.readOnly
                                                 ? false
                                                 : isEditMode,
-                                        options: property.data,
+                                        options:
+                                            (property.type
+                                                    as SelectionPropertyType)
+                                                .options,
                                         selected: values[property.key],
                                         defaultKey: "none",
                                         onSelected: (s) {
@@ -408,7 +474,7 @@ class _DetailsEditPageState extends ConsumerState<DetailsEditPage> {
                                           });
                                         },
                                       );
-                                    case DetailsEditPropertyType.bool:
+                                    case BoolPropertyType():
                                       return SelectionInputBox(
                                         title: property.name,
                                         isEditMode:
@@ -427,9 +493,9 @@ class _DetailsEditPageState extends ConsumerState<DetailsEditPage> {
                                           });
                                         },
                                       );
-                                    case DetailsEditPropertyType.dialog:
-                                      DialogInputBoxData dialogInputBoxData =
-                                          property.data as DialogInputBoxData;
+                                    case DialogPropertyType():
+                                      DialogPropertyType dialogInputBoxData =
+                                          property.type as DialogPropertyType;
                                       return DialogInputBox(
                                         dialogBuilder:
                                             dialogInputBoxData.dialogBuilder,
@@ -452,10 +518,10 @@ class _DetailsEditPageState extends ConsumerState<DetailsEditPage> {
                                             dialogInputBoxData
                                                 .openDialogInNonEditMode,
                                       );
-                                    case DetailsEditPropertyType.multiSelect:
-                                      MultiSelectInputBoxData data =
-                                          property.data
-                                              as MultiSelectInputBoxData;
+                                    case MultiSelectPropertyType():
+                                      MultiSelectPropertyType data =
+                                          property.type
+                                              as MultiSelectPropertyType;
                                       return MultiSelectInputBox(
                                         title: property.name,
                                         isEditMode: isEditMode,
@@ -470,34 +536,6 @@ class _DetailsEditPageState extends ConsumerState<DetailsEditPage> {
                                           });
                                         },
                                         optionBuilder: data.optionBuilder,
-                                      );
-                                      return DialogInputBox(
-                                        dialogBuilder: (onSelected) {
-                                          return Dialog(child: Text("select"));
-                                        },
-                                        isEditMode: isEditMode,
-                                        boxContent: SingleChildScrollView(
-                                          scrollDirection: Axis.horizontal,
-                                          child: Row(
-                                            children:
-                                                (values[property.key]
-                                                        as List<dynamic>)
-                                                    .map(
-                                                      (s) =>
-                                                          data.optionBuilder(s),
-                                                    )
-                                                    .toList(),
-                                          ),
-                                        ),
-                                        title: property.name,
-                                        onUpdate: (newValue) {
-                                          setState(() {
-                                            values = {
-                                              ...values,
-                                              property.key: newValue,
-                                            };
-                                          });
-                                        },
                                       );
                                   }
                                 });
@@ -562,16 +600,4 @@ class _DetailsEditPageState extends ConsumerState<DetailsEditPage> {
       ),
     );
   }
-}
-
-class DialogInputBoxData {
-  final Dialog Function(Function) dialogBuilder;
-  final String Function(dynamic) boxTextBuilder;
-  final bool openDialogInNonEditMode;
-
-  const DialogInputBoxData(
-    this.dialogBuilder,
-    this.boxTextBuilder, {
-    this.openDialogInNonEditMode = false,
-  });
 }

@@ -26,43 +26,44 @@ class TeamDetailsScreen extends StatelessWidget {
               DetailsEditProperty(
                 "name",
                 "Name",
-                DetailsEditPropertyType.text,
-                data: true,
+                TextPropertyType(isSearchable: true),
               ),
               DetailsEditProperty(
                 "plays_in_league",
                 "Spielt in Liga",
-                DetailsEditPropertyType.bool,
+                BoolPropertyType(),
               ),
               DetailsEditProperty(
                 "genders",
                 "Geschlecht",
-                DetailsEditPropertyType.selection,
-                data: {"women": "Damen", "men": "Herren", "mixed": "Gemischt"},
+                SelectionPropertyType({
+                  "women": "Damen",
+                  "men": "Herren",
+                  "mixed": "Gemischt",
+                  "null": "Keine Angabe",
+                }),
               ),
             ],
             [
               DetailsEditProperty(
                 "type",
                 "Teamart",
-                DetailsEditPropertyType.selection,
-                data: {
+                SelectionPropertyType({
                   "juniors": "Junioren",
                   "active": "Aktive",
                   "fun": "Plausch",
-                  "none": "Keine",
-                },
+                  "null": "Keine Angabe",
+                }),
               ),
               DetailsEditProperty(
                 "sport_type",
                 "Sportart",
-                DetailsEditPropertyType.selection,
-                data: {
+                SelectionPropertyType({
                   "floorball": "Unihockey",
                   "volleyball": "Volleyball",
                   "riege": "Riege",
-                  "none": "Keine",
-                },
+                  "null": "Keine Angabe",
+                }),
               ),
             ],
           ],
@@ -106,7 +107,7 @@ class TeamDetailsScreen extends StatelessWidget {
                 }, 1),
               ],
               (doc) {
-                context.push("./../team/$uid/team_members/${doc.id}");
+                context.push("./../team/$uid/team_member/${doc.id}");
               },
             ),
             actions: [
