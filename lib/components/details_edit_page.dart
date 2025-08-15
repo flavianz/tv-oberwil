@@ -500,9 +500,14 @@ class _DetailsEditPageState extends ConsumerState<DetailsEditPage> {
                                         dialogBuilder:
                                             dialogInputBoxData.dialogBuilder,
                                         isEditMode: isEditMode,
-                                        boxContent: Text(
-                                          dialogInputBoxData.boxTextBuilder(
-                                            values[property.key],
+                                        boxContent: Padding(
+                                          padding: EdgeInsets.symmetric(
+                                            horizontal: 12,
+                                          ),
+                                          child: Text(
+                                            dialogInputBoxData.boxTextBuilder(
+                                              values[property.key],
+                                            ),
                                           ),
                                         ),
                                         title: property.name,
