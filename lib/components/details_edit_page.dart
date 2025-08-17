@@ -9,8 +9,6 @@ import 'package:tv_oberwil/firestore_providers/firestore_tools.dart';
 import '../../components/input_boxes.dart';
 import '../../firestore_providers/basic_providers.dart';
 
-enum PropertyTypeEnum { multiSelect }
-
 sealed class PropertyType {
   const PropertyType();
 }

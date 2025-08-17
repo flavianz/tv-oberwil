@@ -19,6 +19,19 @@ class TableOptions {
   const TableOptions(this.columns, this.rowOnTap);
 }
 
+sealed class PropertyFilter {
+  final String name;
+  final String key;
+
+  const PropertyFilter(this.key, this.name);
+}
+
+class ChipFilter extends PropertyFilter {
+  final Map<String, String> options;
+
+  ChipFilter(super.key, super.name, this.options);
+}
+
 class PaginatedListPage extends StatefulWidget {
   final Widget Function(DocumentSnapshot<Object?>)? builder;
   final Query<Map<String, dynamic>> query;
@@ -30,6 +43,7 @@ class PaginatedListPage extends StatefulWidget {
   final TableOptions? tableOptions;
   final bool showBackButton;
   final bool actionsInSearchBar;
+  final List<PropertyFilter>? filtersProperties;
 
   const PaginatedListPage({
     super.key,
@@ -43,6 +57,7 @@ class PaginatedListPage extends StatefulWidget {
     this.tableOptions,
     this.showBackButton = true,
     this.actionsInSearchBar = false,
+    this.filtersProperties,
   });
 
   @override
@@ -155,34 +170,27 @@ class _PaginatedListPageState extends State<PaginatedListPage> {
                       (widget.actionsInSearchBar && widget.actions != null)
                           ? Row(children: widget.actions!)
                           : SizedBox.shrink(),
-                      /*TextButton.icon(
-                    onPressed: () {
-                      if (isScreenWide) {
-                        showDialog<String>(
-                          context: context,
-                          builder:
-                              (BuildContext context) => Dialog(
-                                child: FilterDialog(
-                                  allTeams: allTeams,
-                                  notSelectedTeams: notSelectedTeams,
-                                ),
-                              ),
-                        );
-                      } else {
-                        showModalBottomSheet(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return FilterDialog(
-                              allTeams: allTeams,
-                              notSelectedTeams: notSelectedTeams,
-                            );
-                          },
-                        );
-                      }
-                    },
-                    label: Text("Filter"),
-                    icon: Icon(Icons.filter_list),
-                  ),*/
+                      widget.filtersProperties != null
+                          ? TextButton.icon(
+                            onPressed: () {
+                              if (isScreenWide) {
+                                showDialog<String>(
+                                  context: context,
+                                  builder: (BuildContext context) => Dialog(),
+                                );
+                              } else {
+                                showModalBottomSheet(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return Center();
+                                  },
+                                );
+                              }
+                            },
+                            label: Text("Filter"),
+                            icon: Icon(Icons.filter_list),
+                          )
+                          : SizedBox.shrink(),
                     ],
                   )
                   : SizedBox.shrink(),
