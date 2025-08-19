@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:tv_oberwil/components/paginated_list.dart';
 import 'package:tv_oberwil/utils.dart';
 
@@ -299,126 +300,23 @@ class FilterDialogState extends State<FilterDialog> {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children:
-                  true
-                      ? widget.availableFilters.map((filter) {
-                        return Column(
-                          children: [
-                            Row(
-                              children: [
-                                Icon(filter.icon),
-                                const SizedBox(width: 16),
-                                Text(filter.name),
-                              ],
-                            ),
-                            Divider(),
-                            switch (filter) {
-                              ChipFilter() => Wrap(
-                                spacing: 8,
-                                runSpacing: 8,
-                                children: true ? filter.options.entries.map((option) {
-                                  return FilterChip(
-                                    label: Text(option.value),
-                                    onSelected: (isNowActive) {
-                                      setState(() {
-                                        if (isNowActive) {
-                                          widget.notSelectedTeams.remove(
-                                            entry.key,
-                                          );
-                                        } else {
-                                          widget.notSelectedTeams.add(
-                                            entry.key,
-                                          );
-                                        }
-                                      });
-                                    },
-                                    selected:
-                                    !widget.notSelectedTeams.contains(
-                                      entry.key,
-                                    ),
-                                  );
-                                }).toList() : [
-                                  FilterChip(
-                                    label: Text("Alle"),
-                                    onSelected: (isNowActive) {},
-                                    selected: widget.notSelectedTeams.isEmpty,
-                                  ),
-                                  ...(userData.value?["names"]
-                                  as LinkedHashMap<String, dynamic>)
-                                      .entries
-                                      .map((entry) {
-                                    return FilterChip(
-                                      label: Text(entry.value),
-                                      onSelected: (isNowActive) {
-                                        setState(() {
-                                          if (isNowActive) {
-                                            widget.notSelectedTeams.remove(
-                                              entry.key,
-                                            );
-                                          } else {
-                                            widget.notSelectedTeams.add(
-                                              entry.key,
-                                            );
-                                          }
-                                        });
-                                      },
-                                      selected:
-                                      !widget.notSelectedTeams.contains(
-                                        entry.key,
-                                      ),
-                                    );
-                                  }),
-                                ],
-                              ),,
-                            }
-                          ],
-                        );
-                      }).toList()
-                      : [
+                  widget.availableFilters.map((filter) {
+                    return Column(
+                      children: [
                         Row(
-                          children: const [
-                            Icon(Icons.people_alt),
-                            SizedBox(width: 16),
-                            Text("Teams"),
-                          ],
-                        ),
-                        Divider(color: Theme.of(context).dividerColor),
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
                           children: [
-                            FilterChip(
-                              label: Text("Alle"),
-                              onSelected: (isNowActive) {},
-                              selected: widget.notSelectedTeams.isEmpty,
-                            ),
-                            ...(userData.value?["names"]
-                                    as LinkedHashMap<String, dynamic>)
-                                .entries
-                                .map((entry) {
-                                  return FilterChip(
-                                    label: Text(entry.value),
-                                    onSelected: (isNowActive) {
-                                      setState(() {
-                                        if (isNowActive) {
-                                          widget.notSelectedTeams.remove(
-                                            entry.key,
-                                          );
-                                        } else {
-                                          widget.notSelectedTeams.add(
-                                            entry.key,
-                                          );
-                                        }
-                                      });
-                                    },
-                                    selected:
-                                        !widget.notSelectedTeams.contains(
-                                          entry.key,
-                                        ),
-                                  );
-                                }),
+                            Icon(filter.icon),
+                            const SizedBox(width: 16),
+                            Text(filter.name),
                           ],
                         ),
+                        Divider(),
+                        switch (filter) {
+                          ChipFilter() => throw UnimplementedError(),
+                        },
                       ],
+                    );
+                  }).toList(),
             ),
             const SizedBox(height: 30),
             Row(
@@ -433,13 +331,6 @@ class FilterDialogState extends State<FilterDialog> {
                 FilledButton.icon(
                   onPressed: () {
                     context.pop();
-                    ref.read(teamsFilterProvider.notifier).state =
-                        allTeams.where((id) {
-                          return !widget.notSelectedTeams.contains(id);
-                        }).toList();
-                    ref
-                        .read(userListControllerProvider.notifier)
-                        .fetchInitial();
                   },
                   icon: Icon(Icons.check),
                   label: const Text('Anwenden'),
