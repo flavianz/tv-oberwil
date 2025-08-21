@@ -32,7 +32,6 @@ final callableProvider = FutureProvider.autoDispose
       ref,
       args,
     ) async {
-      print("called");
       return (await FirebaseFunctions.instanceFor(
         region: "europe-west3",
       ).httpsCallable(args.name).call(args.data));
