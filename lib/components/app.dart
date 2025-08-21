@@ -62,6 +62,7 @@ class _AppState extends ConsumerState<App> {
     }
 
     if (memberData.hasError) {
+      print(memberData.error);
       return Center(child: Text("An error occurred loading your data."));
     }
     if (memberData.value?["assign"] == true) {

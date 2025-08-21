@@ -770,20 +770,33 @@ class _PlayerEventsState extends ConsumerState<PlayerEvents> {
                   query: FirebaseFirestore.instance
                       .collection("teams")
                       .doc(widget.teamId)
-                      .collection("events")
-                      .where("date", isGreaterThanOrEqualTo: today)
-                      .orderBy("date"),
-                  maxQueryLimit: 5,
+                      .collection("events"),
+                  collectionKey: "teams/${widget.teamId}/events",
+                  filter: (data) {
+                    return data.where((doc) {
+                      final data = castMap(doc.data());
+                      return data["date"] != null &&
+                          (data["date"] as Timestamp).millisecondsSinceEpoch >=
+                              today.millisecondsSinceEpoch;
+                    }).toList();
+                  },
                 ),
                 PaginatedList(
                   builder: builder,
                   query: FirebaseFirestore.instance
                       .collection("teams")
                       .doc(widget.teamId)
-                      .collection("events")
-                      .where("date", isLessThan: today)
-                      .orderBy("date"),
-                  maxQueryLimit: 5,
+                      .collection("events"),
+
+                  collectionKey: "teams/${widget.teamId}/events",
+                  filter: (data) {
+                    return data.where((doc) {
+                      final data = castMap(doc.data());
+                      return data["date"] != null &&
+                          (data["date"] as Timestamp).millisecondsSinceEpoch <
+                              today.millisecondsSinceEpoch;
+                    }).toList();
+                  },
                 ),
               ],
             ),

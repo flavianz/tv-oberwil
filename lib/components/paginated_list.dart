@@ -7,13 +7,18 @@ import 'package:equatable/equatable.dart';
 class PaginatedList extends ConsumerStatefulWidget {
   final Widget Function(DocumentSnapshot<Object?>) builder;
   final Query<Map<String, dynamic>> query;
-  final int maxQueryLimit;
+  final String collectionKey;
+  final List<DocumentSnapshot<Object?>> Function(
+    List<DocumentSnapshot<Object?>>,
+  )?
+  filter;
 
   const PaginatedList({
     super.key,
     required this.builder,
     required this.query,
-    this.maxQueryLimit = 10,
+    required this.collectionKey,
+    this.filter,
   });
 
   @override
@@ -22,54 +27,31 @@ class PaginatedList extends ConsumerStatefulWidget {
 
 class PaginatedParams extends Equatable {
   final Query<Map<String, dynamic>> query;
-  final int maxQuerySize;
+  final String collectionKey;
 
-  const PaginatedParams(this.query, this.maxQuerySize);
+  const PaginatedParams(this.query, this.collectionKey);
 
   @override
-  List<Object?> get props => [query, maxQuerySize];
+  List<Object?> get props => [query, collectionKey];
 }
-
-final paginatedListProvider = StateNotifierProvider.autoDispose.family<
-  PaginatedListController,
-  AsyncValue<List<DocumentSnapshot>>,
-  PaginatedParams
->(
-  (ref, params) =>
-      PaginatedListController(ref, params.query, params.maxQuerySize),
-);
 
 class _PaginatedListState extends ConsumerState<PaginatedList> {
   @override
   Widget build(BuildContext context) {
-    final provider = paginatedListProvider(
-      PaginatedParams(widget.query, widget.maxQueryLimit),
-    );
+    final provider = getCollectionProvider(widget.collectionKey, widget.query);
     final docs = ref.watch(provider);
     return docs.when(
       data: (data) {
         if (data.isEmpty) {
           return const Center(child: Text('Nichts gefunden!'));
         }
-        final controller = ref.read(provider.notifier);
         return ListView(
           children:
-              data.map((doc) => widget.builder(doc)).toList()..add(
-                controller.isLoading
-                    ? const Padding(
-                      padding: EdgeInsets.all(16),
-                      child: Center(child: CircularProgressIndicator()),
-                    )
-                    : controller.hasMore
-                    ? FilledButton.icon(
-                      onPressed: () {
-                        ref.read(provider.notifier).fetchMore();
-                      },
-                      label: Text("Mehr laden"),
-                      icon: Icon(Icons.add),
-                    )
-                    : Container(),
-              ),
+              widget.filter != null
+                  ? widget.filter!(data)
+                      .map((doc) => widget.builder(doc))
+                      .toList()
+                  : data.map((doc) => widget.builder(doc)).toList(),
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),

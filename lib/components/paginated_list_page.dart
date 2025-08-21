@@ -49,6 +49,7 @@ class ChipFilterProperty extends FilterProperty {
 class PaginatedListPage extends StatefulWidget {
   final Widget Function(DocumentSnapshot<Object?>)? builder;
   final Query<Map<String, dynamic>> query;
+  final String collectionKey;
   final int maxQueryLimit;
   final List<String>? searchFields;
   final bool isFilterable;
@@ -63,6 +64,7 @@ class PaginatedListPage extends StatefulWidget {
     super.key,
     this.builder,
     required this.query,
+    required this.collectionKey,
     this.title,
     this.maxQueryLimit = 10,
     this.searchFields,
@@ -267,6 +269,7 @@ class _PaginatedListPageState extends State<PaginatedListPage> {
                           })
                           : widget.builder!,
                   query: generatedQuery!,
+                  collectionKey: widget.collectionKey,
                 ),
               ),
             ],

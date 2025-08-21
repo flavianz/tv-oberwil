@@ -20,6 +20,7 @@ class CoachTeamMembers extends StatelessWidget {
           .collection("teams")
           .doc(teamId)
           .collection("team_members"),
+      collectionKey: "teams/$teamId/team_members",
       tableOptions: TableOptions(
         [
           TableColumn("last", "Nachname", (data) => Text(data), 1),

@@ -2,103 +2,114 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-StateNotifierProvider<
-  PaginatedListController,
-  AsyncValue<List<DocumentSnapshot>>
->
-paginatedListProvider(
+CollectionProvider paginatedListProvider(
   Query<Map<String, dynamic>> query,
-  String orderBy, [
-  int maxQuerySize = 10,
-]) {
+  String collectionKey,
+) {
   return StateNotifierProvider<
     PaginatedListController,
     AsyncValue<List<DocumentSnapshot>>
-  >((ref) => PaginatedListController(ref, query, maxQuerySize));
+  >((ref) => PaginatedListController(query, collectionKey));
 }
 
 class PaginatedListController
     extends StateNotifier<AsyncValue<List<DocumentSnapshot>>> {
   final Query<Map<String, dynamic>> query;
-  final int maxQuerySize;
+  final String collectionKey;
+  bool isLoading = true;
 
-  final Ref ref;
-  DocumentSnapshot? _lastDoc;
-  bool _hasMore = true;
-  bool _isLoading = false;
-  List<DocumentSnapshot> _allDocs = [];
-
-  PaginatedListController(this.ref, this.query, this.maxQuerySize)
-    : super(const AsyncLoading()) {
-    fetchInitial();
+  PaginatedListController(this.query, this.collectionKey)
+    : super(AsyncLoading()) {
+    init();
   }
 
-  @override
-  void dispose() {
-    _subscription?.cancel();
-    super.dispose();
-  }
-
-  StreamSubscription? _subscription;
-
-  Future<void> fetchInitial() async {
-    _lastDoc = null;
-    _hasMore = true;
-    _allDocs = [];
-    _isLoading = true;
-    state = const AsyncLoading();
-
-    // Cancel any existing listener
-    await _subscription?.cancel();
-
-    Query<Map<String, dynamic>> query = this.query.limit(maxQuerySize);
-
-    _subscription = query.snapshots().listen(
-      (snapshot) {
-        _allDocs = snapshot.docs;
-        _lastDoc = snapshot.docs.isNotEmpty ? snapshot.docs.last : null;
-        _hasMore = snapshot.size == maxQuerySize;
-        state = AsyncData([..._allDocs]);
-      },
-      onError: (error, stack) {
-        state = AsyncError(error, stack);
-      },
+  void init() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final int? lastFetched = prefs.getInt(collectionKey);
+    if (lastFetched == null) {
+      print("loading collection $collectionKey from server");
+      await query
+          .get()
+          .then((fetchedCollection) {
+            state = AsyncData(fetchedCollection.docs);
+            print(
+              "loaded ${fetchedCollection.docs.length} docs in $collectionKey from server",
+            );
+            prefs.setInt(collectionKey, DateTime.now().millisecondsSinceEpoch);
+          })
+          .onError((error, stackTrace) {
+            state = AsyncError(error ?? {}, stackTrace);
+          });
+    } else {
+      print("loading collection $collectionKey from cache");
+      await query
+          .get(GetOptions(source: Source.cache))
+          .then((fetchedCollection) {
+            print(
+              "loaded ${fetchedCollection.docs.length} docs in $collectionKey from cache",
+            );
+            state = AsyncData(fetchedCollection.docs);
+          })
+          .onError((error, stackTrace) {
+            state = AsyncError(error ?? {}, stackTrace);
+          });
+    }
+    print(
+      "last fetched $collectionKey at ${DateTime.fromMillisecondsSinceEpoch(lastFetched!).toString()}",
     );
+    query
+        .where("lU", isGreaterThanOrEqualTo: lastFetched)
+        .snapshots()
+        .listen(
+          (fetchedCollection) {
+            if (!state.hasValue) {
+              print(
+                "received ${fetchedCollection.size} new docs in $collectionKey from server but local data did not exist",
+              );
+              return;
+            }
 
-    _isLoading = false;
+            final mergedList = state.value!;
+            for (final addedDoc in fetchedCollection.docs) {
+              mergedList
+                ..removeWhere((doc) => doc.id == addedDoc.id)
+                ..add(addedDoc);
+            }
+            state = AsyncData(mergedList);
+            print(
+              "received ${fetchedCollection.docChanges.length} new docs in $collectionKey from server via snapshot listener",
+            );
+            prefs.setInt(collectionKey, DateTime.now().millisecondsSinceEpoch);
+          },
+          onError: (error, stackTrace) {
+            state = AsyncError(error ?? {}, stackTrace);
+          },
+        )
+        .onDone(() => print("closing snapshot listener to $collectionKey"));
   }
+}
 
-  Future<void> fetchMore() async {
-    if (!_hasMore || _isLoading) return;
+typedef CollectionProvider =
+    StateNotifierProvider<
+      PaginatedListController,
+      AsyncValue<List<DocumentSnapshot>>
+    >;
 
-    _isLoading = true;
-    final snapshot = await _fetchQuery(_lastDoc);
-    final newDocs = snapshot.docs;
+final Map<String, CollectionProvider> collectionProviders = {};
 
-    if (newDocs.isNotEmpty) {
-      _lastDoc = newDocs.last;
-      _allDocs.addAll(newDocs);
-      state = AsyncData([..._allDocs]);
-    }
-
-    _hasMore = newDocs.length == maxQuerySize;
-    _isLoading = false;
+CollectionProvider getCollectionProvider(
+  String collectionKey,
+  Query<Map<String, dynamic>> query,
+) {
+  if (collectionProviders.containsKey(collectionKey)) {
+    return collectionProviders[collectionKey]!;
+  } else {
+    collectionProviders[collectionKey] = paginatedListProvider(
+      query,
+      collectionKey,
+    );
+    return collectionProviders[collectionKey]!;
   }
-
-  Future<QuerySnapshot<Map<String, dynamic>>> _fetchQuery(
-    DocumentSnapshot? startAfter,
-  ) {
-    Query<Map<String, dynamic>> firestoreQuery = query.limit(maxQuerySize);
-
-    if (startAfter != null) {
-      firestoreQuery = firestoreQuery.startAfterDocument(startAfter);
-    }
-
-    return firestoreQuery.get();
-  }
-
-  bool get isLoading => _isLoading;
-
-  bool get hasMore => _hasMore;
 }

@@ -79,6 +79,7 @@ class TeamDetailsScreen extends StatelessWidget {
                 .collection("teams")
                 .doc(uid)
                 .collection("team_members"),
+            collectionKey: "teams/$uid/team_members",
             tableOptions: TableOptions(
               [
                 TableColumn("last", "Nachname", (data) => Text(data), 1),

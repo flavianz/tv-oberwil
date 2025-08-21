@@ -630,9 +630,8 @@ class PlayerEventDetails extends ConsumerWidget {
                       ],
                     );
                   },
-                  query: FirebaseFirestore.instance
-                      .collection("members")
-                      .where("roles.player", arrayContains: teamId),
+                  query: FirebaseFirestore.instance.collection("members"),
+                  collectionKey: "members",
                 ),
               ],
             ),

@@ -15,9 +15,8 @@ class MembersScreen extends StatelessWidget {
       builder: (doc) {
         return Text(doc.get("first"));
       },
-      query: FirebaseFirestore.instance
-          .collection("members")
-          .orderBy("search_last"),
+      query: FirebaseFirestore.instance.collection("members"),
+      collectionKey: "members",
       searchFields: ["search_last", "search_first"],
       title: "Mitglieder",
       tableOptions: TableOptions(

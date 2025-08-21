@@ -14,6 +14,7 @@ class TeamsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return PaginatedListPage(
       query: FirebaseFirestore.instance.collection("teams"),
+      collectionKey: "teams",
       title: "Teams",
       searchFields: ["search_name"],
       tableOptions: TableOptions(
