@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:tv_oberwil/components/paginated_list.dart';
+import 'package:tv_oberwil/firestore_providers/firestore_tools.dart';
 import 'package:tv_oberwil/utils.dart';
 
 class TableColumn {
@@ -81,7 +82,6 @@ class PaginatedListPage extends StatefulWidget {
 }
 
 class _PaginatedListPageState extends State<PaginatedListPage> {
-  Query<Map<String, dynamic>>? generatedQuery;
   String? searchText;
   final TextEditingController searchController = TextEditingController();
   FilterProperty? activeFilter;
@@ -91,33 +91,8 @@ class _PaginatedListPageState extends State<PaginatedListPage> {
     if (widget.builder == null && widget.tableOptions == null) {
       throw ErrorDescription("No builder or table specified");
     }
-    generatedQuery = widget.query;
-    final isScreenWide = MediaQuery.of(context).size.aspectRatio > 1;
 
-    if (widget.searchFields != null &&
-        widget.searchFields!.isNotEmpty &&
-        searchText != null &&
-        searchText!.isNotEmpty) {
-      if (widget.searchFields!.length > 2) {
-        throw ErrorDescription("Too many search fields");
-      }
-      List<Filter> filters = [];
-      for (final key in widget.searchFields!) {
-        filters.add(
-          Filter.and(
-            Filter(key, isGreaterThanOrEqualTo: searchText),
-            Filter(key, isLessThan: "${searchText}zz"),
-          ),
-        );
-      }
-      if (filters.length == 1) {
-        generatedQuery = generatedQuery!.where(filters[0]);
-      } else {
-        generatedQuery = generatedQuery!.where(
-          Filter.or(filters[0], filters[1]),
-        );
-      }
-    }
+    final isScreenWide = MediaQuery.of(context).size.aspectRatio > 1;
     final showAppBar =
         widget.title != null ||
         (widget.actions != null && !widget.actionsInSearchBar);
@@ -147,6 +122,11 @@ class _PaginatedListPageState extends State<PaginatedListPage> {
                       Expanded(
                         child: TextField(
                           controller: searchController,
+                          onChanged: (newSearchText) {
+                            setState(() {
+                              searchText = newSearchText;
+                            });
+                          },
                           decoration: InputDecoration(
                             labelText: 'Suchen...',
                             border: OutlineInputBorder(
@@ -268,8 +248,27 @@ class _PaginatedListPageState extends State<PaginatedListPage> {
                             );
                           })
                           : widget.builder!,
-                  query: generatedQuery!,
+                  query: widget.query,
                   collectionKey: widget.collectionKey,
+                  filter:
+                      searchText == null || searchText!.isEmpty
+                          ? (docs) => docs
+                          : (docs) {
+                            return docs.where((doc) {
+                              final data = castMap(doc.data());
+                              return (data["search_last"] != null &&
+                                      (data["search_last"] as String).contains(
+                                        searchify(searchText!),
+                                      )) ||
+                                  (data["search_middle"] != null &&
+                                      (data["search_middle"] as String)
+                                          .contains(searchify(searchText!))) ||
+                                  (data["search_first"] != null &&
+                                      (data["search_first"] as String).contains(
+                                        searchify(searchText!),
+                                      ));
+                            }).toList();
+                          },
                 ),
               ),
             ],
