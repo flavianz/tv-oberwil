@@ -140,22 +140,6 @@ class _PaginatedListPageState extends State<PaginatedListPage> {
                               child: const Icon(Icons.search),
                             ),
                             prefixIconConstraints: BoxConstraints(),
-                            suffixIconConstraints: BoxConstraints(),
-                            suffixIcon: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                              ),
-                              child: TextButton.icon(
-                                iconAlignment: IconAlignment.end,
-                                onPressed: () {
-                                  setState(() {
-                                    searchText = searchController.text;
-                                  });
-                                },
-                                icon: Icon(Icons.arrow_forward),
-                                label: Text("Suchen"),
-                              ),
-                            ),
                           ),
                           onSubmitted: (_) {
                             setState(() {

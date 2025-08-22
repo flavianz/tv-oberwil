@@ -68,7 +68,6 @@ class _AppState extends ConsumerState<App> {
     if (memberData.value?["assign"] == true) {
       return Assignment();
     }
-
     final Map<String, dynamic> roles = Map<String, dynamic>.from(
       memberData.value?["roles"] ?? {},
     );

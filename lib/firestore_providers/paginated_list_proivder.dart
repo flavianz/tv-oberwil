@@ -45,7 +45,7 @@ class PaginatedListController
           });
     } else {
       print(
-        "last fetched $collectionKey at ${DateTime.fromMillisecondsSinceEpoch(lastFetched!).toString()}",
+        "last fetched $collectionKey at ${DateTime.fromMillisecondsSinceEpoch(lastFetched).toString()}",
       );
       print("loading collection $collectionKey from cache");
       await query
@@ -61,28 +61,45 @@ class PaginatedListController
           });
     }
     query
-        .where("lU", isGreaterThanOrEqualTo: lastFetched)
+        .where(
+          "lU",
+          isGreaterThanOrEqualTo: Timestamp.fromMillisecondsSinceEpoch(
+            lastFetched!,
+          ),
+        )
         .snapshots()
         .listen(
           (fetchedCollection) {
             if (!state.hasValue) {
               print(
-                "received ${fetchedCollection.size} new docs in $collectionKey from server but local data did not exist",
+                "received ${fetchedCollection.docChanges.length} new docs in $collectionKey from server but local data did not exist",
               );
               return;
             }
 
-            final mergedList = state.value!;
-            for (final addedDoc in fetchedCollection.docs) {
+            final mergedList = [...state.value!];
+            for (final addedDoc in fetchedCollection.docChanges) {
               mergedList
-                ..removeWhere((doc) => doc.id == addedDoc.id)
-                ..add(addedDoc);
+                ..removeWhere((doc) => doc.id == addedDoc.doc.id)
+                ..add(addedDoc.doc);
             }
+
             state = AsyncData(mergedList);
             print(
-              "received ${fetchedCollection.size} new docs in $collectionKey from server via snapshot listener",
+              "received ${fetchedCollection.docChanges.length} new docs in $collectionKey from server via snapshot listener",
             );
-            prefs.setInt(collectionKey, DateTime.now().millisecondsSinceEpoch);
+            if (fetchedCollection.docChanges.isNotEmpty) {
+              prefs.setInt(
+                collectionKey,
+                (fetchedCollection.docChanges[0].doc.get("lU") as Timestamp)
+                    .millisecondsSinceEpoch,
+              );
+            } else {
+              prefs.setInt(
+                collectionKey,
+                DateTime.now().millisecondsSinceEpoch,
+              );
+            }
           },
           onError: (error, stackTrace) {
             state = AsyncError(error ?? {}, stackTrace);

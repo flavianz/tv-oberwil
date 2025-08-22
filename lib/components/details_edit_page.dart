@@ -270,13 +270,18 @@ class _DetailsEditPageState extends ConsumerState<DetailsEditPage> {
                           }
 
                           if (widget.created) {
-                            widget.doc.set(inputs).whenComplete(() {
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text('Erstellt!')),
-                                );
-                              }
-                            });
+                            widget.doc
+                                .set({
+                                  ...inputs,
+                                  "lU": FieldValue.serverTimestamp(),
+                                })
+                                .whenComplete(() {
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text('Erstellt!')),
+                                    );
+                                  }
+                                });
                           } else {
                             for (final entry in inputs.entries) {
                               if (data[entry.key] != entry.value) {
@@ -284,15 +289,22 @@ class _DetailsEditPageState extends ConsumerState<DetailsEditPage> {
                               }
                             }
                             if (changedData.isNotEmpty) {
-                              await widget.doc.update(changedData).whenComplete(
-                                () {
-                                  if (context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(content: Text('Aktualisiert!')),
-                                    );
-                                  }
-                                },
-                              );
+                              await widget.doc
+                                  .update({
+                                    ...changedData,
+                                    "lU": FieldValue.serverTimestamp(),
+                                  })
+                                  .whenComplete(() {
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        SnackBar(
+                                          content: Text('Aktualisiert!'),
+                                        ),
+                                      );
+                                    }
+                                  });
                             }
                           }
 
