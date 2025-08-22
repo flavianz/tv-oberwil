@@ -28,7 +28,11 @@ class MemberDetailsScreen extends StatelessWidget {
               "Vorname",
               TextPropertyType(isSearchable: true),
             ),
-            DetailsEditProperty("middle", "2. Vorname", TextPropertyType()),
+            DetailsEditProperty(
+              "middle",
+              "2. Vorname",
+              TextPropertyType(isSearchable: true),
+            ),
             DetailsEditProperty(
               "last",
               "Nachname",

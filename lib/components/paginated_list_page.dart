@@ -251,11 +251,36 @@ class _PaginatedListPageState extends State<PaginatedListPage> {
                   query: widget.query,
                   collectionKey: widget.collectionKey,
                   filter:
-                      searchText == null || searchText!.isEmpty
+                      searchText == null ||
+                              searchText!.isEmpty ||
+                              widget.searchFields == null
                           ? (docs) => docs
                           : (docs) {
                             return docs.where((doc) {
                               final data = castMap(doc.data());
+                              bool searchTextContainsAllSearchKeys = true;
+                              for (final searchKey in searchText!.split(" ")) {
+                                if (searchKey.isEmpty) {
+                                  continue;
+                                }
+                                bool searchKeyInAnySearchField = false;
+                                for (final searchField
+                                    in widget.searchFields!) {
+                                  if (data[searchField] != null &&
+                                      (data[searchField] as String).contains(
+                                        searchify(searchKey),
+                                      )) {
+                                    searchKeyInAnySearchField = true;
+                                    break;
+                                  }
+                                }
+                                if (!searchKeyInAnySearchField) {
+                                  searchTextContainsAllSearchKeys = false;
+                                  break;
+                                }
+                              }
+                              return searchTextContainsAllSearchKeys;
+
                               return (data["search_last"] != null &&
                                       (data["search_last"] as String).contains(
                                         searchify(searchText!),
