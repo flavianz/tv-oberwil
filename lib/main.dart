@@ -16,6 +16,7 @@ import 'package:tv_oberwil/router.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  FirebaseFirestore.instance.settings = Settings(persistenceEnabled: true);
 
   if (kDebugMode && false) {
     try {

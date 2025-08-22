@@ -27,7 +27,7 @@ class PaginatedListController
 
   void init() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final int? lastFetched = prefs.getInt(collectionKey);
+    int? lastFetched = prefs.getInt(collectionKey);
     if (lastFetched == null) {
       print("loading collection $collectionKey from server");
       await query
@@ -38,11 +38,15 @@ class PaginatedListController
               "loaded ${fetchedCollection.docs.length} docs in $collectionKey from server",
             );
             prefs.setInt(collectionKey, DateTime.now().millisecondsSinceEpoch);
+            lastFetched = DateTime.now().millisecondsSinceEpoch;
           })
           .onError((error, stackTrace) {
             state = AsyncError(error ?? {}, stackTrace);
           });
     } else {
+      print(
+        "last fetched $collectionKey at ${DateTime.fromMillisecondsSinceEpoch(lastFetched!).toString()}",
+      );
       print("loading collection $collectionKey from cache");
       await query
           .get(GetOptions(source: Source.cache))
@@ -56,9 +60,6 @@ class PaginatedListController
             state = AsyncError(error ?? {}, stackTrace);
           });
     }
-    print(
-      "last fetched $collectionKey at ${DateTime.fromMillisecondsSinceEpoch(lastFetched!).toString()}",
-    );
     query
         .where("lU", isGreaterThanOrEqualTo: lastFetched)
         .snapshots()
@@ -79,7 +80,7 @@ class PaginatedListController
             }
             state = AsyncData(mergedList);
             print(
-              "received ${fetchedCollection.docChanges.length} new docs in $collectionKey from server via snapshot listener",
+              "received ${fetchedCollection.size} new docs in $collectionKey from server via snapshot listener",
             );
             prefs.setInt(collectionKey, DateTime.now().millisecondsSinceEpoch);
           },
