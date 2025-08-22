@@ -280,18 +280,6 @@ class _PaginatedListPageState extends State<PaginatedListPage> {
                                 }
                               }
                               return searchTextContainsAllSearchKeys;
-
-                              return (data["search_last"] != null &&
-                                      (data["search_last"] as String).contains(
-                                        searchify(searchText!),
-                                      )) ||
-                                  (data["search_middle"] != null &&
-                                      (data["search_middle"] as String)
-                                          .contains(searchify(searchText!))) ||
-                                  (data["search_first"] != null &&
-                                      (data["search_first"] as String).contains(
-                                        searchify(searchText!),
-                                      ));
                             }).toList();
                           },
                 ),
