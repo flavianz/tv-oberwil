@@ -631,6 +631,17 @@ class PlayerEventDetails extends ConsumerWidget {
                     );
                   },
                   query: FirebaseFirestore.instance.collection("members"),
+                  filter:
+                      (docs) =>
+                          docs.where((doc) {
+                            final data = castMap(doc.data());
+                            return data["roles"] != null &&
+                                data["roles"] is Map &&
+                                data["roles"]!["player"] != null &&
+                                data["roles"]!["player"] is List &&
+                                (data["roles"]!["player"]! as List<dynamic>)
+                                    .contains(teamId);
+                          }).toList(),
                   collectionKey: "members",
                 ),
               ],
