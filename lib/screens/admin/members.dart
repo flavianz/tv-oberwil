@@ -19,6 +19,7 @@ class MembersScreen extends StatelessWidget {
       collectionKey: "members",
       searchFields: ["search_last", "search_first", "search_middle"],
       title: "Mitglieder",
+      filtersProperties: [BoolFilter("user", "Ist verknüpft", Icons.link)],
       tableOptions: TableOptions(
         [
           TableColumn("last", "Nachname", (data) {

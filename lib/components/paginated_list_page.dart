@@ -35,6 +35,10 @@ class ChipFilter extends FilterType {
   ChipFilter(super.key, super.name, super.icon, this.options);
 }
 
+class BoolFilter extends FilterType {
+  BoolFilter(super.key, super.name, super.icon);
+}
+
 sealed class FilterProperty {
   final String key;
 
@@ -53,7 +57,6 @@ class PaginatedListPage extends StatefulWidget {
   final String collectionKey;
   final int maxQueryLimit;
   final List<String>? searchFields;
-  final bool isFilterable;
   final List<Widget>? actions;
   final String? title;
   final TableOptions? tableOptions;
@@ -69,7 +72,6 @@ class PaginatedListPage extends StatefulWidget {
     this.title,
     this.maxQueryLimit = 10,
     this.searchFields,
-    this.isFilterable = true,
     this.actions,
     this.tableOptions,
     this.showBackButton = true,
@@ -312,6 +314,7 @@ class FilterDialogState extends State<FilterDialog> {
                         Divider(),
                         switch (filter) {
                           ChipFilter() => throw UnimplementedError(),
+                          BoolFilter() => Center(),
                         },
                       ],
                     );
