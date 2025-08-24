@@ -21,21 +21,21 @@ class TableOptions {
   const TableOptions(this.columns, this.rowOnTap);
 }
 
-sealed class FilterType {
+sealed class Filter {
   final String name;
   final String key;
   final IconData icon;
 
-  const FilterType(this.key, this.name, this.icon);
+  const Filter(this.key, this.name, this.icon);
 }
 
-class ChipFilter extends FilterType {
+class ChipFilter extends Filter {
   final Map<String, String> options;
 
   ChipFilter(super.key, super.name, super.icon, this.options);
 }
 
-class BoolFilter extends FilterType {
+class BoolFilter extends Filter {
   BoolFilter(super.key, super.name, super.icon);
 }
 
@@ -62,7 +62,7 @@ class PaginatedListPage extends StatefulWidget {
   final TableOptions? tableOptions;
   final bool showBackButton;
   final bool actionsInSearchBar;
-  final List<FilterType>? filtersProperties;
+  final List<Filter>? filters;
 
   const PaginatedListPage({
     super.key,
@@ -76,7 +76,7 @@ class PaginatedListPage extends StatefulWidget {
     this.tableOptions,
     this.showBackButton = true,
     this.actionsInSearchBar = false,
-    this.filtersProperties,
+    this.filters,
   });
 
   @override
@@ -153,13 +153,18 @@ class _PaginatedListPageState extends State<PaginatedListPage> {
                       (widget.actionsInSearchBar && widget.actions != null)
                           ? Row(children: widget.actions!)
                           : SizedBox.shrink(),
-                      widget.filtersProperties != null
+                      widget.filters != null
                           ? TextButton.icon(
                             onPressed: () {
                               if (isScreenWide) {
                                 showDialog<String>(
                                   context: context,
-                                  builder: (BuildContext context) => Dialog(),
+                                  builder:
+                                      (BuildContext context) => Dialog(
+                                        child: FilterDialog(
+                                          availableFilters: widget.filters!,
+                                        ),
+                                      ),
                                 );
                               } else {
                                 showModalBottomSheet(
@@ -279,7 +284,7 @@ class _PaginatedListPageState extends State<PaginatedListPage> {
 }
 
 class FilterDialog extends StatefulWidget {
-  final List<FilterType> availableFilters;
+  final List<Filter> availableFilters;
 
   const FilterDialog({super.key, required this.availableFilters});
 
@@ -314,7 +319,25 @@ class FilterDialogState extends State<FilterDialog> {
                         Divider(),
                         switch (filter) {
                           ChipFilter() => throw UnimplementedError(),
-                          BoolFilter() => Center(),
+                          BoolFilter() => Row(
+                            children: [
+                              Radio(
+                                value: true,
+                                groupValue: true,
+                                onChanged: (bool? value) {},
+                              ),
+                              Radio(
+                                value: false,
+                                groupValue: true,
+                                onChanged: (bool? value) {},
+                              ),
+                              Radio(
+                                value: true,
+                                groupValue: false,
+                                onChanged: (bool? value) {},
+                              ),
+                            ],
+                          ),
                         },
                       ],
                     );
