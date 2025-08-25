@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:tv_oberwil/components/misc.dart';
 import 'package:tv_oberwil/components/paginated_list.dart';
 import 'package:tv_oberwil/firestore_providers/firestore_tools.dart';
 import 'package:tv_oberwil/utils.dart';
@@ -51,6 +52,12 @@ class ChipFilterProperty extends FilterProperty {
   const ChipFilterProperty(super.key, this.selectedKeys);
 }
 
+class BoolFilterProperty extends FilterProperty {
+  final bool? value;
+
+  const BoolFilterProperty(super.key, this.value);
+}
+
 class PaginatedListPage extends StatefulWidget {
   final Widget Function(DocumentSnapshot<Object?>)? builder;
   final Query<Map<String, dynamic>> query;
@@ -64,7 +71,7 @@ class PaginatedListPage extends StatefulWidget {
   final bool actionsInSearchBar;
   final List<Filter>? filters;
 
-  const PaginatedListPage({
+  PaginatedListPage({
     super.key,
     this.builder,
     required this.query,
@@ -87,6 +94,26 @@ class _PaginatedListPageState extends State<PaginatedListPage> {
   String? searchText;
   final TextEditingController searchController = TextEditingController();
   FilterProperty? activeFilter;
+  Map<String, FilterProperty>? filterProperties;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.filters != null) {
+      print("init");
+      filterProperties = Map.fromEntries(
+        widget.filters!.map((filter) {
+          return MapEntry(filter.key, switch (filter) {
+            BoolFilter() => BoolFilterProperty(filter.key, null),
+            ChipFilter() => ChipFilterProperty(
+              filter.key,
+              filter.options.keys.toList(),
+            ),
+          });
+        }),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -98,6 +125,51 @@ class _PaginatedListPageState extends State<PaginatedListPage> {
     final showAppBar =
         widget.title != null ||
         (widget.actions != null && !widget.actionsInSearchBar);
+
+    final List<bool Function(DocumentSnapshot<Object?>)> filterFunctions = [];
+
+    // text search
+    if (searchText != null &&
+        searchText!.isNotEmpty &&
+        widget.searchFields != null) {
+      filterFunctions.add((doc) {
+        final data = castMap(doc.data());
+        bool searchTextContainsAllSearchKeys = true;
+        for (final searchKey in searchText!.split(" ")) {
+          if (searchKey.isEmpty) {
+            continue;
+          }
+          bool searchKeyInAnySearchField = false;
+          for (final searchField in widget.searchFields!) {
+            if (data[searchField] != null &&
+                (data[searchField] as String).contains(searchify(searchKey))) {
+              searchKeyInAnySearchField = true;
+              break;
+            }
+          }
+          if (!searchKeyInAnySearchField) {
+            searchTextContainsAllSearchKeys = false;
+            break;
+          }
+        }
+        return searchTextContainsAllSearchKeys;
+      });
+    }
+
+    if (filterProperties != null) {
+      for (final filterProperty in filterProperties!.values) {
+        filterFunctions.add((doc) {
+          final data = castMap(doc.data());
+          switch (filterProperty) {
+            case BoolFilterProperty():
+              return data[filterProperty.key] == filterProperty.value;
+            case ChipFilterProperty():
+              throw UnimplementedError();
+          }
+        });
+      }
+    }
+
     return Padding(
       padding: EdgeInsets.symmetric(
         horizontal: isScreenWide ? 35 : 0,
@@ -163,6 +235,7 @@ class _PaginatedListPageState extends State<PaginatedListPage> {
                                       (BuildContext context) => Dialog(
                                         child: FilterDialog(
                                           availableFilters: widget.filters!,
+                                          filterProperties: filterProperties!,
                                         ),
                                       ),
                                 );
@@ -242,37 +315,13 @@ class _PaginatedListPageState extends State<PaginatedListPage> {
                   query: widget.query,
                   collectionKey: widget.collectionKey,
                   filter:
-                      searchText == null ||
-                              searchText!.isEmpty ||
-                              widget.searchFields == null
-                          ? (docs) => docs
-                          : (docs) {
-                            return docs.where((doc) {
-                              final data = castMap(doc.data());
-                              bool searchTextContainsAllSearchKeys = true;
-                              for (final searchKey in searchText!.split(" ")) {
-                                if (searchKey.isEmpty) {
-                                  continue;
-                                }
-                                bool searchKeyInAnySearchField = false;
-                                for (final searchField
-                                    in widget.searchFields!) {
-                                  if (data[searchField] != null &&
-                                      (data[searchField] as String).contains(
-                                        searchify(searchKey),
-                                      )) {
-                                    searchKeyInAnySearchField = true;
-                                    break;
-                                  }
-                                }
-                                if (!searchKeyInAnySearchField) {
-                                  searchTextContainsAllSearchKeys = false;
-                                  break;
-                                }
-                              }
-                              return searchTextContainsAllSearchKeys;
-                            }).toList();
-                          },
+                      (docs) =>
+                          docs
+                              .where(
+                                (doc) =>
+                                    filterFunctions.every((test) => test(doc)),
+                              )
+                              .toList(),
                 ),
               ),
             ],
@@ -285,8 +334,13 @@ class _PaginatedListPageState extends State<PaginatedListPage> {
 
 class FilterDialog extends StatefulWidget {
   final List<Filter> availableFilters;
+  final Map<String, FilterProperty> filterProperties;
 
-  const FilterDialog({super.key, required this.availableFilters});
+  const FilterDialog({
+    super.key,
+    required this.availableFilters,
+    required this.filterProperties,
+  });
 
   @override
   FilterDialogState createState() => FilterDialogState();
@@ -321,21 +375,50 @@ class FilterDialogState extends State<FilterDialog> {
                           ChipFilter() => throw UnimplementedError(),
                           BoolFilter() => Row(
                             children: [
+                              Radio<bool?>(
+                                value: null,
+                                groupValue:
+                                    ((widget.filterProperties[filter.key])
+                                            as BoolFilterProperty?)
+                                        ?.value,
+                                onChanged: (bool? value) {
+                                  setState(() {
+                                    widget.filterProperties[filter.key] =
+                                        BoolFilterProperty(filter.key, null);
+                                  });
+                                },
+                              ),
+                              getPill("Beide", Colors.amber, true),
+                              SizedBox(width: 25),
                               Radio(
                                 value: true,
-                                groupValue: true,
-                                onChanged: (bool? value) {},
+                                groupValue:
+                                    ((widget.filterProperties[filter.key])
+                                            as BoolFilterProperty?)
+                                        ?.value,
+                                onChanged: (bool? value) {
+                                  setState(() {
+                                    widget.filterProperties[filter.key] =
+                                        BoolFilterProperty(filter.key, true);
+                                  });
+                                },
                               ),
+                              getPill("Ja", Colors.green, true),
+                              SizedBox(width: 25),
                               Radio(
                                 value: false,
-                                groupValue: true,
-                                onChanged: (bool? value) {},
+                                groupValue:
+                                    ((widget.filterProperties[filter.key])
+                                            as BoolFilterProperty?)
+                                        ?.value,
+                                onChanged: (bool? value) {
+                                  setState(() {
+                                    widget.filterProperties[filter.key] =
+                                        BoolFilterProperty(filter.key, false);
+                                  });
+                                },
                               ),
-                              Radio(
-                                value: true,
-                                groupValue: false,
-                                onChanged: (bool? value) {},
-                              ),
+                              getPill("Nein", Colors.red, true),
                             ],
                           ),
                         },
