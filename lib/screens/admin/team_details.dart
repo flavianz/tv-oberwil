@@ -128,11 +128,7 @@ class TeamDetailsScreen extends StatelessWidget {
               },
             ),
             actions: [
-              FilledButton.icon(
-                onPressed: () {},
-                label: Text("Hinzufügen"),
-                icon: Icon(Icons.add),
-              ),
+              IconButton.filled(onPressed: () {}, icon: Icon(Icons.add)),
             ],
           ),
         ),

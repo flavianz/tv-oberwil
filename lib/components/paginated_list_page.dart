@@ -200,6 +200,38 @@ class _PaginatedListPageState extends State<PaginatedListPage> {
         });
       }
     }
+    openFilterFunction() async {
+      if (isScreenWide) {
+        await showDialog<String>(
+          context: context,
+          builder:
+              (BuildContext context) => Dialog(
+                child: FilterDialog(
+                  availableFilters: widget.filters!,
+                  filterProperties: filterProperties!,
+                ),
+              ),
+        );
+      } else {
+        await showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          // Allows modal to expand beyond default limits
+          builder:
+              (context) => FractionallySizedBox(
+                heightFactor: 0.7, // 90% of screen height
+                child: FilterDialog(
+                  availableFilters: widget.filters!,
+                  filterProperties: filterProperties!,
+                ),
+              ),
+        );
+      }
+      setState(() {
+        filterProperties =
+            filterProperties == null ? null : {...filterProperties!};
+      });
+    }
 
     return Padding(
       padding: EdgeInsets.symmetric(
@@ -253,49 +285,21 @@ class _PaginatedListPageState extends State<PaginatedListPage> {
                           },
                         ),
                       ),
+
+                      widget.filters != null
+                          ? (isScreenWide
+                              ? TextButton.icon(
+                                onPressed: openFilterFunction,
+                                label: Text("Filter"),
+                                icon: Icon(Icons.filter_list),
+                              )
+                              : IconButton.filledTonal(
+                                onPressed: openFilterFunction,
+                                icon: Icon(Icons.filter_list),
+                              ))
+                          : SizedBox.shrink(),
                       (widget.actionsInSearchBar && widget.actions != null)
                           ? Row(children: widget.actions!)
-                          : SizedBox.shrink(),
-                      widget.filters != null
-                          ? TextButton.icon(
-                            onPressed: () async {
-                              if (isScreenWide) {
-                                await showDialog<String>(
-                                  context: context,
-                                  builder:
-                                      (BuildContext context) => Dialog(
-                                        child: FilterDialog(
-                                          availableFilters: widget.filters!,
-                                          filterProperties: filterProperties!,
-                                        ),
-                                      ),
-                                );
-                              } else {
-                                await showModalBottomSheet(
-                                  context: context,
-                                  isScrollControlled: true,
-                                  // Allows modal to expand beyond default limits
-                                  builder:
-                                      (context) => FractionallySizedBox(
-                                        heightFactor:
-                                            0.7, // 90% of screen height
-                                        child: FilterDialog(
-                                          availableFilters: widget.filters!,
-                                          filterProperties: filterProperties!,
-                                        ),
-                                      ),
-                                );
-                              }
-                              setState(() {
-                                filterProperties =
-                                    filterProperties == null
-                                        ? null
-                                        : {...filterProperties!};
-                              });
-                            },
-                            label: Text("Filter"),
-                            icon: Icon(Icons.filter_list),
-                          )
                           : SizedBox.shrink(),
                     ],
                   )
