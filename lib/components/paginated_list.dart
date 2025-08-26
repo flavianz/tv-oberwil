@@ -42,17 +42,16 @@ class _PaginatedListState extends ConsumerState<PaginatedList> {
     final docs = ref.watch(provider);
     return docs.when(
       data: (data) {
-        if (data.isEmpty) {
+        final List<Widget> children =
+            widget.filter != null
+                ? widget.filter!(data)
+                    .map((doc) => widget.builder(doc))
+                    .toList()
+                : data.map((doc) => widget.builder(doc)).toList();
+        if (children.isEmpty) {
           return const Center(child: Text('Nichts gefunden!'));
         }
-        return ListView(
-          children:
-              widget.filter != null
-                  ? widget.filter!(data)
-                      .map((doc) => widget.builder(doc))
-                      .toList()
-                  : data.map((doc) => widget.builder(doc)).toList(),
-        );
+        return ListView(children: children);
       },
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (e, _) {
