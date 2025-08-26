@@ -210,33 +210,36 @@ class _AppState extends ConsumerState<App> {
                     : Column(
                       children: [
                         Expanded(child: widget.child),
-                        DropdownButton(
-                          items:
-                              roles.keys.map((role) {
-                                return DropdownMenuItem(
-                                  value: role,
-                                  child: Text(role),
-                                );
-                              }).toList(),
-                          onChanged: (selectedRole) {
-                            setState(() {
-                              this.selectedRole = selectedRole;
-                              context.go("/");
-                              selectedIndex = 0;
-                            });
-                          },
-                          value: selectedRole,
-                        ),
                         NavigationBar(
                           destinations:
                               destinations.map((element) {
-                                return NavigationDestination(
-                                  icon: element["icon"],
-                                  label: element["label"],
-                                );
-                              }).toList(),
+                                  return NavigationDestination(
+                                    icon: element["icon"],
+                                    label: element["label"],
+                                  );
+                                }).toList()
+                                ..add(
+                                  NavigationDestination(
+                                    icon: Icon(Icons.change_circle_outlined),
+                                    label: "Change role",
+                                  ),
+                                ),
                           selectedIndex: selectedIndex,
                           onDestinationSelected: (i) {
+                            if (i == destinations.length) {
+                              setState(() {
+                                final rolesList = roles.keys.toList();
+                                final currentIndex = rolesList.indexOf(
+                                  selectedRole ?? "",
+                                );
+                                this.selectedRole =
+                                    rolesList[(currentIndex + 1) %
+                                        rolesList.length];
+                                context.go("/");
+                                selectedIndex = 0;
+                              });
+                              return;
+                            }
                             setState(() {
                               selectedIndex = i;
                               context.pushReplacement(destinations[i]["url"]);
