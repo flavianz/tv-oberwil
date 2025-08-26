@@ -68,6 +68,7 @@ class TeamsScreen extends StatelessWidget {
           icon: Icon(Icons.add),
         ),
       ],
+      defaultOrderData: OrderData(OrderPropertyType.text, "first", false),
     );
   }
 }

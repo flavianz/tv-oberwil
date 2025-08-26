@@ -232,7 +232,7 @@ class _AppState extends ConsumerState<App> {
                                 final currentIndex = rolesList.indexOf(
                                   selectedRole ?? "",
                                 );
-                                this.selectedRole =
+                                selectedRole =
                                     rolesList[(currentIndex + 1) %
                                         rolesList.length];
                                 context.go("/");

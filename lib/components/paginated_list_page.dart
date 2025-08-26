@@ -69,6 +69,16 @@ class BoolFilterProperty extends FilterProperty {
   const BoolFilterProperty(super.key, this.value, {this.filterApplyFunction});
 }
 
+enum OrderPropertyType { text }
+
+class OrderData {
+  OrderPropertyType type;
+  String key;
+  bool direction; // true = descending, false = ascending
+
+  OrderData(this.type, this.key, this.direction);
+}
+
 class PaginatedListPage extends StatefulWidget {
   final Widget Function(DocumentSnapshot<Object?>)? builder;
   final Query<Map<String, dynamic>> query;
@@ -81,6 +91,7 @@ class PaginatedListPage extends StatefulWidget {
   final bool showBackButton;
   final bool actionsInSearchBar;
   final List<Filter>? filters;
+  final OrderData defaultOrderData;
 
   const PaginatedListPage({
     super.key,
@@ -95,6 +106,7 @@ class PaginatedListPage extends StatefulWidget {
     this.showBackButton = true,
     this.actionsInSearchBar = false,
     this.filters,
+    required this.defaultOrderData,
   });
 
   @override
@@ -106,6 +118,7 @@ class _PaginatedListPageState extends State<PaginatedListPage> {
   final TextEditingController searchController = TextEditingController();
   FilterProperty? activeFilter;
   Map<String, FilterProperty>? filterProperties;
+  late OrderData orderData;
 
   @override
   void initState() {
@@ -128,6 +141,7 @@ class _PaginatedListPageState extends State<PaginatedListPage> {
         }),
       );
     }
+    orderData = widget.defaultOrderData;
   }
 
   @override
@@ -200,6 +214,7 @@ class _PaginatedListPageState extends State<PaginatedListPage> {
         });
       }
     }
+
     openFilterFunction() async {
       if (isScreenWide) {
         await showDialog<String>(
@@ -314,7 +329,38 @@ class _PaginatedListPageState extends State<PaginatedListPage> {
                           widget.tableOptions!.columns.map((column) {
                             return Expanded(
                               flex: column.space,
-                              child: Text(column.name),
+                              child: GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    if (orderData.key == column.key) {
+                                      orderData.direction =
+                                          !orderData.direction;
+                                    } else {
+                                      orderData.key = column.key;
+                                    }
+                                  });
+                                },
+                                child: MouseRegion(
+                                  cursor: SystemMouseCursors.click,
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(column.name),
+                                      Padding(
+                                        padding: EdgeInsets.only(right: 10),
+                                        child: Icon(
+                                          orderData.key == column.key
+                                              ? (orderData.direction
+                                                  ? Icons.arrow_drop_down
+                                                  : Icons.arrow_drop_up)
+                                              : Icons.swap_vert_sharp,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
                             );
                           }).toList(),
                     ),
@@ -371,7 +417,22 @@ class _PaginatedListPageState extends State<PaginatedListPage> {
                                 (doc) =>
                                     filterFunctions.every((test) => test(doc)),
                               )
-                              .toList(),
+                              .toList()
+                            ..sort(switch (orderData.type) {
+                              OrderPropertyType.text => (
+                                DocumentSnapshot<Object?> a,
+                                DocumentSnapshot<Object?> b,
+                              ) {
+                                final value = (searchify(
+                                  castMap(a.data())[orderData.key] ?? "",
+                                )).compareTo(
+                                  searchify(
+                                    castMap(b.data())[orderData.key] ?? "",
+                                  ),
+                                );
+                                return orderData.direction ? -1 * value : value;
+                              },
+                            }),
                 ),
               ),
             ],

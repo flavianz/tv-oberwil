@@ -130,6 +130,7 @@ class TeamDetailsScreen extends StatelessWidget {
             actions: [
               IconButton.filled(onPressed: () {}, icon: Icon(Icons.add)),
             ],
+            defaultOrderData: OrderData(OrderPropertyType.text, "first", false),
           ),
         ),
       ],

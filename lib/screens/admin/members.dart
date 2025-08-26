@@ -54,6 +54,7 @@ class MembersScreen extends StatelessWidget {
           label: Text("Neu"),
         ),
       ],
+      defaultOrderData: OrderData(OrderPropertyType.text, "search_last", false),
     );
   }
 }
