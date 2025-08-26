@@ -36,6 +36,13 @@ class TeamsScreen extends StatelessWidget {
           context.push("/admin/team/${doc.id}");
         },
       ),
+      filters: [
+        BoolFilter(
+          "plays_in_league",
+          "Spielt in Liga",
+          Icons.format_list_numbered,
+        ),
+      ],
       actions: [
         FilledButton.icon(
           onPressed:

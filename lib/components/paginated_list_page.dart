@@ -391,7 +391,53 @@ class FilterDialogState extends State<FilterDialog> {
                         ),
                         Divider(),
                         switch (filter) {
-                          ChipFilter() => throw UnimplementedError(),
+                          ChipFilter() => Wrap(
+                            children: [
+                              FilterChip(
+                                selected:
+                                    ((widget.filterProperties[filter.key])
+                                            as ChipFilterProperty?)
+                                        ?.selectedKeys
+                                        .length ==
+                                    filter.options.length,
+                                label: Text("Alle"),
+                                onSelected: (bool isSelectedNow) {
+                                  if (isSelectedNow) {
+                                    setState(() {
+                                      widget.filterProperties[filter
+                                          .key] = ChipFilterProperty(
+                                        filter.key,
+                                        filter.options.keys.toList(),
+                                      );
+                                    });
+                                  } else {
+                                    setState(() {
+                                      widget.filterProperties[filter.key] =
+                                          ChipFilterProperty(filter.key, []);
+                                    });
+                                  }
+                                },
+                              ),
+                              ...filter.options.entries.map(
+                                (option) => FilterChip(
+                                  label: Text(option.value),
+                                  onSelected: (isSelectedNow) {
+                                    if (isSelectedNow) {
+                                      ((widget.filterProperties[filter.key])
+                                              as ChipFilterProperty?)
+                                          ?.selectedKeys
+                                          .add(option.key);
+                                    } else {
+                                      ((widget.filterProperties[filter.key])
+                                              as ChipFilterProperty?)
+                                          ?.selectedKeys
+                                          .remove(option.key);
+                                    }
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
                           BoolFilter() => Row(
                             children: [
                               Radio<bool?>(
