@@ -254,20 +254,28 @@ class _PaginatedListPageState extends State<PaginatedListPage> {
                                         ),
                                       ),
                                 );
-                                setState(() {
-                                  filterProperties =
-                                      filterProperties == null
-                                          ? null
-                                          : {...filterProperties!};
-                                });
                               } else {
-                                showModalBottomSheet(
+                                await showModalBottomSheet(
                                   context: context,
-                                  builder: (BuildContext context) {
-                                    return Center();
-                                  },
+                                  isScrollControlled: true,
+                                  // Allows modal to expand beyond default limits
+                                  builder:
+                                      (context) => FractionallySizedBox(
+                                        heightFactor:
+                                            0.7, // 90% of screen height
+                                        child: FilterDialog(
+                                          availableFilters: widget.filters!,
+                                          filterProperties: filterProperties!,
+                                        ),
+                                      ),
                                 );
                               }
+                              setState(() {
+                                filterProperties =
+                                    filterProperties == null
+                                        ? null
+                                        : {...filterProperties!};
+                              });
                             },
                             label: Text("Filter"),
                             icon: Icon(Icons.filter_list),
@@ -372,154 +380,177 @@ class FilterDialogState extends State<FilterDialog> {
   Widget build(BuildContext context) {
     return ConstrainedBox(
       constraints: BoxConstraints(maxWidth: 800),
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(32),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children:
-                  widget.availableFilters.map((filter) {
-                    return Column(
-                      children: [
-                        Row(
-                          children: [
-                            Icon(filter.icon),
-                            const SizedBox(width: 16),
-                            Text(filter.name),
-                          ],
-                        ),
-                        Divider(),
-                        switch (filter) {
-                          ChipFilter() => Wrap(
-                            spacing: 5,
-                            children: [
-                              FilterChip(
-                                selected:
-                                    ((widget.filterProperties[filter.key])
-                                            as ChipFilterProperty?)
-                                        ?.selectedKeys
-                                        .length ==
-                                    filter.options.length,
-                                label: Text("Alle"),
-                                onSelected: (bool isSelectedNow) {
-                                  if (isSelectedNow) {
-                                    setState(() {
-                                      widget.filterProperties[filter
-                                          .key] = ChipFilterProperty(
-                                        filter.key,
-                                        filter.options.keys.toList(),
-                                      );
-                                    });
-                                  } else {
-                                    setState(() {
-                                      widget.filterProperties[filter.key] =
-                                          ChipFilterProperty(filter.key, []);
-                                    });
-                                  }
-                                },
-                              ),
-                              ...filter.options.entries.map(
-                                (option) => FilterChip(
-                                  selected: ((widget.filterProperties[filter
-                                              .key])
-                                          as ChipFilterProperty?)!
-                                      .selectedKeys
-                                      .contains(option.key),
-                                  label: Text(option.value),
-                                  onSelected: (isSelectedNow) {
-                                    if (isSelectedNow) {
-                                      setState(() {
-                                        ((widget.filterProperties[filter.key])
-                                                as ChipFilterProperty?)
-                                            ?.selectedKeys
-                                            .add(option.key);
-                                      });
-                                    } else {
-                                      setState(() {
-                                        ((widget.filterProperties[filter.key])
-                                                as ChipFilterProperty?)
-                                            ?.selectedKeys
-                                            .remove(option.key);
-                                      });
-                                    }
-                                  },
+            Expanded(
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children:
+                          widget.availableFilters.map((filter) {
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(filter.icon),
+                                    const SizedBox(width: 16),
+                                    Text(filter.name),
+                                  ],
                                 ),
-                              ),
-                            ],
-                          ),
-                          BoolFilter() => Row(
-                            children: [
-                              Radio<bool?>(
-                                value: null,
-                                groupValue:
-                                    ((widget.filterProperties[filter.key])
-                                            as BoolFilterProperty?)
-                                        ?.value,
-                                onChanged: (bool? value) {
-                                  setState(() {
-                                    widget.filterProperties[filter
-                                        .key] = BoolFilterProperty(
-                                      filter.key,
-                                      null,
-                                      filterApplyFunction:
-                                          filter.filterApplyFunction,
-                                    );
-                                  });
+                                Divider(),
+                                switch (filter) {
+                                  ChipFilter() => Wrap(
+                                    alignment: WrapAlignment.start,
+                                    spacing: 5,
+                                    children: [
+                                      FilterChip(
+                                        selected:
+                                            ((widget.filterProperties[filter
+                                                        .key])
+                                                    as ChipFilterProperty?)
+                                                ?.selectedKeys
+                                                .length ==
+                                            filter.options.length,
+                                        label: Text("Alle"),
+                                        onSelected: (bool isSelectedNow) {
+                                          if (isSelectedNow) {
+                                            setState(() {
+                                              widget.filterProperties[filter
+                                                  .key] = ChipFilterProperty(
+                                                filter.key,
+                                                filter.options.keys.toList(),
+                                              );
+                                            });
+                                          } else {
+                                            setState(() {
+                                              widget.filterProperties[filter
+                                                  .key] = ChipFilterProperty(
+                                                filter.key,
+                                                [],
+                                              );
+                                            });
+                                          }
+                                        },
+                                      ),
+                                      ...filter.options.entries.map(
+                                        (option) => FilterChip(
+                                          selected: ((widget
+                                                      .filterProperties[filter
+                                                      .key])
+                                                  as ChipFilterProperty?)!
+                                              .selectedKeys
+                                              .contains(option.key),
+                                          label: Text(option.value),
+                                          onSelected: (isSelectedNow) {
+                                            if (isSelectedNow) {
+                                              setState(() {
+                                                ((widget.filterProperties[filter
+                                                            .key])
+                                                        as ChipFilterProperty?)
+                                                    ?.selectedKeys
+                                                    .add(option.key);
+                                              });
+                                            } else {
+                                              setState(() {
+                                                ((widget.filterProperties[filter
+                                                            .key])
+                                                        as ChipFilterProperty?)
+                                                    ?.selectedKeys
+                                                    .remove(option.key);
+                                              });
+                                            }
+                                          },
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  BoolFilter() => SingleChildScrollView(
+                                    scrollDirection: Axis.horizontal,
+                                    child: Row(
+                                      children: [
+                                        Radio<bool?>(
+                                          value: null,
+                                          groupValue:
+                                              ((widget.filterProperties[filter
+                                                          .key])
+                                                      as BoolFilterProperty?)
+                                                  ?.value,
+                                          onChanged: (bool? value) {
+                                            setState(() {
+                                              widget.filterProperties[filter
+                                                  .key] = BoolFilterProperty(
+                                                filter.key,
+                                                null,
+                                                filterApplyFunction:
+                                                    filter.filterApplyFunction,
+                                              );
+                                            });
+                                          },
+                                        ),
+                                        getPill("Beide", Colors.amber, true),
+                                        SizedBox(width: 15),
+                                        Radio(
+                                          value: true,
+                                          groupValue:
+                                              ((widget.filterProperties[filter
+                                                          .key])
+                                                      as BoolFilterProperty?)
+                                                  ?.value,
+                                          onChanged: (bool? value) {
+                                            setState(() {
+                                              widget.filterProperties[filter
+                                                  .key] = BoolFilterProperty(
+                                                filter.key,
+                                                true,
+                                                filterApplyFunction:
+                                                    filter.filterApplyFunction,
+                                              );
+                                            });
+                                          },
+                                        ),
+                                        getPill("Ja", Colors.green, true),
+                                        SizedBox(width: 15),
+                                        Radio(
+                                          value: false,
+                                          groupValue:
+                                              ((widget.filterProperties[filter
+                                                          .key])
+                                                      as BoolFilterProperty?)
+                                                  ?.value,
+                                          onChanged: (bool? value) {
+                                            setState(() {
+                                              widget.filterProperties[filter
+                                                  .key] = BoolFilterProperty(
+                                                filter.key,
+                                                false,
+                                                filterApplyFunction:
+                                                    filter.filterApplyFunction,
+                                              );
+                                            });
+                                          },
+                                        ),
+                                        getPill("Nein", Colors.red, true),
+                                      ],
+                                    ),
+                                  ),
                                 },
-                              ),
-                              getPill("Beide", Colors.amber, true),
-                              SizedBox(width: 25),
-                              Radio(
-                                value: true,
-                                groupValue:
-                                    ((widget.filterProperties[filter.key])
-                                            as BoolFilterProperty?)
-                                        ?.value,
-                                onChanged: (bool? value) {
-                                  setState(() {
-                                    widget.filterProperties[filter
-                                        .key] = BoolFilterProperty(
-                                      filter.key,
-                                      true,
-                                      filterApplyFunction:
-                                          filter.filterApplyFunction,
-                                    );
-                                  });
-                                },
-                              ),
-                              getPill("Ja", Colors.green, true),
-                              SizedBox(width: 25),
-                              Radio(
-                                value: false,
-                                groupValue:
-                                    ((widget.filterProperties[filter.key])
-                                            as BoolFilterProperty?)
-                                        ?.value,
-                                onChanged: (bool? value) {
-                                  setState(() {
-                                    widget.filterProperties[filter
-                                        .key] = BoolFilterProperty(
-                                      filter.key,
-                                      false,
-                                      filterApplyFunction:
-                                          filter.filterApplyFunction,
-                                    );
-                                  });
-                                },
-                              ),
-                              getPill("Nein", Colors.red, true),
-                            ],
-                          ),
-                        },
-                        SizedBox(height: 25),
-                      ],
-                    );
-                  }).toList(),
+                                SizedBox(height: 25),
+                              ],
+                            );
+                          }).toList(),
+                    ),
+                  ],
+                ),
+              ),
             ),
-            const SizedBox(height: 30),
+            const SizedBox(height: 10),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
