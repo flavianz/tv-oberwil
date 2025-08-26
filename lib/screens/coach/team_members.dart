@@ -23,30 +23,54 @@ class CoachTeamMembers extends StatelessWidget {
       collectionKey: "teams/$teamId/team_members",
       tableOptions: TableOptions(
         [
-          TableColumn("last", "Nachname", (data) => Text(data), 1),
-          TableColumn("first", "Vorname", (data) => Text(data), 1),
-          TableColumn("roles", "Rolle", (data) {
-            return SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children:
-                    castList(data).map((role) {
-                      return getRolePill(role);
-                    }).toList(),
-              ),
-            );
-          }, 1),
-          TableColumn("positions", "Position", (data) {
-            return SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children:
-                    castList(data).map((role) {
-                      return getPositionPill(role);
-                    }).toList(),
-              ),
-            );
-          }, 1),
+          TableColumn(
+            "last",
+            "Nachname",
+            (data) => Text(data),
+            1,
+            OrderPropertyType.text,
+          ),
+          TableColumn(
+            "first",
+            "Vorname",
+            (data) => Text(data),
+            1,
+            OrderPropertyType.text,
+          ),
+          TableColumn(
+            "roles",
+            "Rolle",
+            (data) {
+              return SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children:
+                      castList(data).map((role) {
+                        return getRolePill(role);
+                      }).toList(),
+                ),
+              );
+            },
+            1,
+            OrderPropertyType.text,
+          ),
+          TableColumn(
+            "positions",
+            "Position",
+            (data) {
+              return SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children:
+                      castList(data).map((role) {
+                        return getPositionPill(role);
+                      }).toList(),
+                ),
+              );
+            },
+            1,
+            OrderPropertyType.text,
+          ),
         ],
         (doc) {
           context.push("./team_member/${doc.id}");

@@ -19,23 +19,47 @@ class TeamsScreen extends StatelessWidget {
       searchFields: ["search_name"],
       tableOptions: TableOptions(
         [
-          TableColumn("name", "Name", (data) {
-            return Text(data ?? "");
-          }, 1),
-          TableColumn("sport_type", "Sportart", (data) {
-            return Text(switch (data) {
-              "floorball" => "Unihockey",
-              "volleyball" => "Volleyball",
-              "riege" => "Riege",
-              _ => "Keine Angabe",
-            });
-          }, 1),
-          TableColumn("plays_in_league", "Spielt in Liga", (data) {
-            return getBoolPill(data);
-          }, 1),
-          TableColumn("genders", "Geschlecht", (data) {
-            return getGenderPill(data);
-          }, 1),
+          TableColumn(
+            "name",
+            "Name",
+            (data) {
+              return Text(data ?? "");
+            },
+            1,
+            OrderPropertyType.text,
+          ),
+          TableColumn(
+            "sport_type",
+            "Sportart",
+            (data) {
+              return Text(switch (data) {
+                "floorball" => "Unihockey",
+                "volleyball" => "Volleyball",
+                "riege" => "Riege",
+                _ => "Keine Angabe",
+              });
+            },
+            1,
+            OrderPropertyType.text,
+          ),
+          TableColumn(
+            "plays_in_league",
+            "Spielt in Liga",
+            (data) {
+              return getBoolPill(data);
+            },
+            1,
+            OrderPropertyType.text,
+          ),
+          TableColumn(
+            "genders",
+            "Geschlecht",
+            (data) {
+              return getGenderPill(data);
+            },
+            1,
+            OrderPropertyType.text,
+          ),
         ],
         (doc) {
           context.push("/admin/team/${doc.id}");

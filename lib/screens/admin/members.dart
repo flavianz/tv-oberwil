@@ -31,15 +31,33 @@ class MembersScreen extends StatelessWidget {
       ],
       tableOptions: TableOptions(
         [
-          TableColumn("last", "Nachname", (data) {
-            return Text(data);
-          }, 2),
-          TableColumn("first", "Vorname", (data) {
-            return Text(data);
-          }, 2),
-          TableColumn("user", "Ist verknüpft", (data) {
-            return getBoolPill(data != null);
-          }, 1),
+          TableColumn(
+            "last",
+            "Nachname",
+            (data) {
+              return Text(data);
+            },
+            2,
+            OrderPropertyType.text,
+          ),
+          TableColumn(
+            "first",
+            "Vorname",
+            (data) {
+              return Text(data);
+            },
+            2,
+            OrderPropertyType.text,
+          ),
+          TableColumn(
+            "user",
+            "Ist verknüpft",
+            (data) {
+              return getBoolPill(data != null);
+            },
+            1,
+            OrderPropertyType.text,
+          ),
         ],
         (doc) {
           context.push("/admin/member/${doc.id}");

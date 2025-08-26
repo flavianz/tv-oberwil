@@ -11,8 +11,15 @@ class TableColumn {
   final String name;
   final Widget Function(dynamic data) builder;
   final int space;
+  final OrderPropertyType orderType;
 
-  const TableColumn(this.key, this.name, this.builder, this.space);
+  const TableColumn(
+    this.key,
+    this.name,
+    this.builder,
+    this.space,
+    this.orderType,
+  );
 }
 
 class TableOptions {
@@ -338,6 +345,7 @@ class _PaginatedListPageState extends State<PaginatedListPage> {
                                     } else {
                                       orderData.key = column.key;
                                     }
+                                    orderData.type = column.orderType;
                                   });
                                 },
                                 child: MouseRegion(
