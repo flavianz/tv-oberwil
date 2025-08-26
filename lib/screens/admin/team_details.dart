@@ -80,6 +80,22 @@ class TeamDetailsScreen extends StatelessWidget {
                 .doc(uid)
                 .collection("team_members"),
             collectionKey: "teams/$uid/team_members",
+            filters: [
+              ChipFilter("roles", "Rollen", Icons.person_outline, {
+                "player": "Spieler",
+                "no_licence": "Keine Lizenz",
+                "coach": "Trainer",
+                "assistant_coach": "Assistentstrainer",
+                "null": "Keine",
+              }, isList: true),
+              ChipFilter("positions", "Positionen", Icons.location_searching, {
+                "forward": "Stürmer",
+                "center": "Center",
+                "defense": "Verteidigung",
+                "keeper": "Torhüter",
+                "null": "Keine",
+              }, isList: true),
+            ],
             tableOptions: TableOptions(
               [
                 TableColumn("last", "Nachname", (data) => Text(data), 1),

@@ -32,8 +32,15 @@ sealed class Filter {
 
 class ChipFilter extends Filter {
   final Map<String, String> options;
+  final bool isList;
 
-  ChipFilter(super.key, super.name, super.icon, this.options);
+  ChipFilter(
+    super.key,
+    super.name,
+    super.icon,
+    this.options, {
+    this.isList = false,
+  });
 }
 
 class BoolFilter extends Filter {
@@ -50,8 +57,9 @@ sealed class FilterProperty {
 
 class ChipFilterProperty extends FilterProperty {
   final List<String> selectedKeys;
+  final bool isList;
 
-  const ChipFilterProperty(super.key, this.selectedKeys);
+  const ChipFilterProperty(super.key, this.selectedKeys, this.isList);
 }
 
 class BoolFilterProperty extends FilterProperty {
@@ -114,6 +122,7 @@ class _PaginatedListPageState extends State<PaginatedListPage> {
             ChipFilter() => ChipFilterProperty(
               filter.key,
               filter.options.keys.toList(),
+              filter.isList,
             ),
           });
         }),
@@ -177,9 +186,16 @@ class _PaginatedListPageState extends State<PaginatedListPage> {
                         data[filterProperty.key],
                       ));
             case ChipFilterProperty():
-              return filterProperty.selectedKeys.contains(
-                data[filterProperty.key],
-              );
+              if (filterProperty.isList) {
+                return filterProperty.selectedKeys.any(
+                  (option) =>
+                      (data[filterProperty.key] as List).contains(option),
+                );
+              } else {
+                return filterProperty.selectedKeys.contains(
+                  data[filterProperty.key],
+                );
+              }
           }
         });
       }
@@ -426,6 +442,7 @@ class FilterDialogState extends State<FilterDialog> {
                                                   .key] = ChipFilterProperty(
                                                 filter.key,
                                                 filter.options.keys.toList(),
+                                                filter.isList,
                                               );
                                             });
                                           } else {
@@ -434,6 +451,7 @@ class FilterDialogState extends State<FilterDialog> {
                                                   .key] = ChipFilterProperty(
                                                 filter.key,
                                                 [],
+                                                filter.isList,
                                               );
                                             });
                                           }
