@@ -49,7 +49,7 @@ class TeamsScreen extends StatelessWidget {
               return getBoolPill(data);
             },
             1,
-            OrderPropertyType.text,
+            OrderPropertyType.bool,
           ),
           TableColumn(
             "genders",

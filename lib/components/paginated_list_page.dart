@@ -76,7 +76,7 @@ class BoolFilterProperty extends FilterProperty {
   const BoolFilterProperty(super.key, this.value, {this.filterApplyFunction});
 }
 
-enum OrderPropertyType { text }
+enum OrderPropertyType { text, bool }
 
 class OrderData {
   OrderPropertyType type;
@@ -438,6 +438,28 @@ class _PaginatedListPageState extends State<PaginatedListPage> {
                                     castMap(b.data())[orderData.key] ?? "",
                                   ),
                                 );
+                                return orderData.direction ? -1 * value : value;
+                              },
+                              OrderPropertyType.bool => (
+                                DocumentSnapshot<Object?> a,
+                                DocumentSnapshot<Object?> b,
+                              ) {
+                                final boolA =
+                                    ((
+                                          castMap(a.data())[orderData.key] ??
+                                              (true,),
+                                        )
+                                        as (bool,));
+                                final boolB =
+                                    ((
+                                          castMap(b.data())[orderData.key] ??
+                                              (true,),
+                                        )
+                                        as (bool,));
+                                final value =
+                                    boolA.$1 == boolB.$1
+                                        ? 0
+                                        : (boolA.$1 && !boolB.$1 ? 1 : -1);
                                 return orderData.direction ? -1 * value : value;
                               },
                             }),
