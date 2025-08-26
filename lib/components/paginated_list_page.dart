@@ -37,7 +37,9 @@ class ChipFilter extends Filter {
 }
 
 class BoolFilter extends Filter {
-  BoolFilter(super.key, super.name, super.icon);
+  final bool Function(bool, dynamic data)? filterApplyFunction;
+
+  BoolFilter(super.key, super.name, super.icon, {this.filterApplyFunction});
 }
 
 sealed class FilterProperty {
@@ -54,8 +56,9 @@ class ChipFilterProperty extends FilterProperty {
 
 class BoolFilterProperty extends FilterProperty {
   final bool? value;
+  final bool Function(bool, dynamic data)? filterApplyFunction;
 
-  const BoolFilterProperty(super.key, this.value);
+  const BoolFilterProperty(super.key, this.value, {this.filterApplyFunction});
 }
 
 class PaginatedListPage extends StatefulWidget {
@@ -71,7 +74,7 @@ class PaginatedListPage extends StatefulWidget {
   final bool actionsInSearchBar;
   final List<Filter>? filters;
 
-  PaginatedListPage({
+  const PaginatedListPage({
     super.key,
     this.builder,
     required this.query,
@@ -100,11 +103,14 @@ class _PaginatedListPageState extends State<PaginatedListPage> {
   void initState() {
     super.initState();
     if (widget.filters != null) {
-      print("init");
       filterProperties = Map.fromEntries(
         widget.filters!.map((filter) {
           return MapEntry(filter.key, switch (filter) {
-            BoolFilter() => BoolFilterProperty(filter.key, null),
+            BoolFilter() => BoolFilterProperty(
+              filter.key,
+              null,
+              filterApplyFunction: filter.filterApplyFunction,
+            ),
             ChipFilter() => ChipFilterProperty(
               filter.key,
               filter.options.keys.toList(),
@@ -162,7 +168,14 @@ class _PaginatedListPageState extends State<PaginatedListPage> {
           final data = castMap(doc.data());
           switch (filterProperty) {
             case BoolFilterProperty():
-              return data[filterProperty.key] == filterProperty.value;
+              return filterProperty.value == null
+                  ? true
+                  : (filterProperty.filterApplyFunction == null
+                      ? data[filterProperty.key] == filterProperty.value
+                      : filterProperty.filterApplyFunction!(
+                        filterProperty.value!,
+                        data[filterProperty.key],
+                      ));
             case ChipFilterProperty():
               throw UnimplementedError();
           }
@@ -389,8 +402,13 @@ class FilterDialogState extends State<FilterDialog> {
                                         ?.value,
                                 onChanged: (bool? value) {
                                   setState(() {
-                                    widget.filterProperties[filter.key] =
-                                        BoolFilterProperty(filter.key, null);
+                                    widget.filterProperties[filter
+                                        .key] = BoolFilterProperty(
+                                      filter.key,
+                                      null,
+                                      filterApplyFunction:
+                                          filter.filterApplyFunction,
+                                    );
                                   });
                                 },
                               ),
@@ -404,8 +422,13 @@ class FilterDialogState extends State<FilterDialog> {
                                         ?.value,
                                 onChanged: (bool? value) {
                                   setState(() {
-                                    widget.filterProperties[filter.key] =
-                                        BoolFilterProperty(filter.key, true);
+                                    widget.filterProperties[filter
+                                        .key] = BoolFilterProperty(
+                                      filter.key,
+                                      true,
+                                      filterApplyFunction:
+                                          filter.filterApplyFunction,
+                                    );
                                   });
                                 },
                               ),
@@ -419,8 +442,13 @@ class FilterDialogState extends State<FilterDialog> {
                                         ?.value,
                                 onChanged: (bool? value) {
                                   setState(() {
-                                    widget.filterProperties[filter.key] =
-                                        BoolFilterProperty(filter.key, false);
+                                    widget.filterProperties[filter
+                                        .key] = BoolFilterProperty(
+                                      filter.key,
+                                      false,
+                                      filterApplyFunction:
+                                          filter.filterApplyFunction,
+                                    );
                                   });
                                 },
                               ),
