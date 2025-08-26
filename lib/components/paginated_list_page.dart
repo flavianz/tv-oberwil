@@ -227,9 +227,9 @@ class _PaginatedListPageState extends State<PaginatedListPage> {
                           : SizedBox.shrink(),
                       widget.filters != null
                           ? TextButton.icon(
-                            onPressed: () {
+                            onPressed: () async {
                               if (isScreenWide) {
-                                showDialog<String>(
+                                await showDialog<String>(
                                   context: context,
                                   builder:
                                       (BuildContext context) => Dialog(
@@ -239,6 +239,12 @@ class _PaginatedListPageState extends State<PaginatedListPage> {
                                         ),
                                       ),
                                 );
+                                setState(() {
+                                  filterProperties =
+                                      filterProperties == null
+                                          ? null
+                                          : {...filterProperties!};
+                                });
                               } else {
                                 showModalBottomSheet(
                                   context: context,
@@ -430,16 +436,8 @@ class FilterDialogState extends State<FilterDialog> {
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                TextButton.icon(
-                  onPressed: () => context.pop(),
-                  icon: Icon(Icons.close),
-                  label: const Text('Abbrechen'),
-                ),
-                const SizedBox(width: 16),
                 FilledButton.icon(
-                  onPressed: () {
-                    context.pop();
-                  },
+                  onPressed: () => context.pop(),
                   icon: Icon(Icons.check),
                   label: const Text('Anwenden'),
                 ),
