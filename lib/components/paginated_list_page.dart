@@ -177,7 +177,9 @@ class _PaginatedListPageState extends State<PaginatedListPage> {
                         data[filterProperty.key],
                       ));
             case ChipFilterProperty():
-              throw UnimplementedError();
+              return filterProperty.selectedKeys.contains(
+                data[filterProperty.key],
+              );
           }
         });
       }
@@ -392,6 +394,7 @@ class FilterDialogState extends State<FilterDialog> {
                         Divider(),
                         switch (filter) {
                           ChipFilter() => Wrap(
+                            spacing: 5,
                             children: [
                               FilterChip(
                                 selected:
@@ -420,18 +423,27 @@ class FilterDialogState extends State<FilterDialog> {
                               ),
                               ...filter.options.entries.map(
                                 (option) => FilterChip(
+                                  selected: ((widget.filterProperties[filter
+                                              .key])
+                                          as ChipFilterProperty?)!
+                                      .selectedKeys
+                                      .contains(option.key),
                                   label: Text(option.value),
                                   onSelected: (isSelectedNow) {
                                     if (isSelectedNow) {
-                                      ((widget.filterProperties[filter.key])
-                                              as ChipFilterProperty?)
-                                          ?.selectedKeys
-                                          .add(option.key);
+                                      setState(() {
+                                        ((widget.filterProperties[filter.key])
+                                                as ChipFilterProperty?)
+                                            ?.selectedKeys
+                                            .add(option.key);
+                                      });
                                     } else {
-                                      ((widget.filterProperties[filter.key])
-                                              as ChipFilterProperty?)
-                                          ?.selectedKeys
-                                          .remove(option.key);
+                                      setState(() {
+                                        ((widget.filterProperties[filter.key])
+                                                as ChipFilterProperty?)
+                                            ?.selectedKeys
+                                            .remove(option.key);
+                                      });
                                     }
                                   },
                                 ),
@@ -502,6 +514,7 @@ class FilterDialogState extends State<FilterDialog> {
                             ],
                           ),
                         },
+                        SizedBox(height: 25),
                       ],
                     );
                   }).toList(),

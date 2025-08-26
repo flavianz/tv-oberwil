@@ -23,7 +23,12 @@ class TeamsScreen extends StatelessWidget {
             return Text(data ?? "");
           }, 1),
           TableColumn("sport_type", "Sportart", (data) {
-            return Text(data ?? "");
+            return Text(switch (data) {
+              "floorball" => "Unihockey",
+              "volleyball" => "Volleyball",
+              "riege" => "Riege",
+              _ => "Keine Angabe",
+            });
           }, 1),
           TableColumn("plays_in_league", "Spielt in Liga", (data) {
             return getBoolPill(data);
@@ -42,6 +47,18 @@ class TeamsScreen extends StatelessWidget {
           "Spielt in Liga",
           Icons.format_list_numbered,
         ),
+        ChipFilter("sport_type", "Sportart", Icons.sports, {
+          "floorball": "Unihockey",
+          "volleyball": "Volleyball",
+          "riege": "Riege",
+          "null": "Keine Angabe",
+        }),
+        ChipFilter("genders", "Geschlecht", Icons.transgender, {
+          "women": "Damen",
+          "men": "Herren",
+          "mixed": "Gemischt",
+          "null": "Keine Angabe",
+        }),
       ],
       actions: [
         FilledButton.icon(
