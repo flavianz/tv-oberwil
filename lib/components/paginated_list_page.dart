@@ -76,7 +76,7 @@ class BoolFilterProperty extends FilterProperty {
   const BoolFilterProperty(super.key, this.value, {this.filterApplyFunction});
 }
 
-enum OrderPropertyType { text, bool }
+enum OrderPropertyType { text, bool, date }
 
 class OrderData {
   OrderPropertyType type;
@@ -344,6 +344,7 @@ class _PaginatedListPageState extends State<PaginatedListPage> {
                                           !orderData.direction;
                                     } else {
                                       orderData.key = column.key;
+                                      orderData.direction = false;
                                     }
                                     orderData.type = column.orderType;
                                   });
@@ -460,6 +461,22 @@ class _PaginatedListPageState extends State<PaginatedListPage> {
                                     boolA.$1 == boolB.$1
                                         ? 0
                                         : (boolA.$1 && !boolB.$1 ? 1 : -1);
+                                return orderData.direction ? -1 * value : value;
+                              },
+                              OrderPropertyType.date => (
+                                DocumentSnapshot<Object?> a,
+                                DocumentSnapshot<Object?> b,
+                              ) {
+                                final value = ((castMap(
+                                              a.data(),
+                                            )["birthdate"] ??
+                                            Timestamp.now())
+                                        as Timestamp)
+                                    .compareTo(
+                                      (castMap(b.data())["birthdate"] ??
+                                              Timestamp.now())
+                                          as Timestamp,
+                                    );
                                 return orderData.direction ? -1 * value : value;
                               },
                             }),

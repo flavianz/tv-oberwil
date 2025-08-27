@@ -50,6 +50,18 @@ class MembersScreen extends StatelessWidget {
             OrderPropertyType.text,
           ),
           TableColumn(
+            "birthdate",
+            "Geburtstdatum",
+            (data) {
+              final date = DateTime.fromMillisecondsSinceEpoch(
+                (data as Timestamp).millisecondsSinceEpoch,
+              );
+              return Text("${date.day}. ${date.month}. ${date.year}");
+            },
+            2,
+            OrderPropertyType.date,
+          ),
+          TableColumn(
             "user",
             "Ist verknüpft",
             (data) {
