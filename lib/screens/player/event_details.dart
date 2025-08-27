@@ -634,14 +634,35 @@ class PlayerEventDetails extends ConsumerWidget {
                   filter:
                       (docs) =>
                           docs.where((doc) {
-                            final data = castMap(doc.data());
-                            return data["roles"] != null &&
-                                data["roles"] is Map &&
-                                data["roles"]!["player"] != null &&
-                                data["roles"]!["player"] is List &&
-                                (data["roles"]!["player"]! as List<dynamic>)
-                                    .contains(teamId);
-                          }).toList(),
+                              final data = castMap(doc.data());
+                              return data["roles"] != null &&
+                                  data["roles"] is Map &&
+                                  data["roles"]!["player"] != null &&
+                                  data["roles"]!["player"] is List &&
+                                  (data["roles"]!["player"]! as List<dynamic>)
+                                      .contains(teamId);
+                            }).toList()
+                            ..sort((a, b) {
+                              convert(String c) => switch (c) {
+                                "a" => "c",
+                                "u" => "b",
+                                "p" => "a",
+                                _ => c,
+                              };
+
+                              final aValue = convert(
+                                eventData["presence"]?[a.id]?["value"]
+                                        as String? ??
+                                    "z",
+                              );
+                              final bValue = convert(
+                                eventData["presence"]?[b.id]?["value"]
+                                        as String? ??
+                                    "z",
+                              );
+
+                              return aValue.compareTo(bValue);
+                            }),
                   collectionKey: "members",
                 ),
               ],
