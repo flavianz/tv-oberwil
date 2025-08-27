@@ -76,7 +76,7 @@ class CoachTeamMembers extends StatelessWidget {
           context.push("./team_member/${doc.id}");
         },
       ),
-      defaultOrderData: OrderData(OrderPropertyType.text, "first", false),
+      defaultOrderData: OrderData(OrderPropertyType.text, "last", false),
     );
   }
 }

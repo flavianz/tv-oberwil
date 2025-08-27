@@ -774,11 +774,45 @@ class _PlayerEventsState extends ConsumerState<PlayerEvents> {
                   collectionKey: "teams/${widget.teamId}/events",
                   filter: (data) {
                     return data.where((doc) {
-                      final data = castMap(doc.data());
-                      return data["date"] != null &&
-                          (data["date"] as Timestamp).millisecondsSinceEpoch >=
-                              today.millisecondsSinceEpoch;
-                    }).toList();
+                        final data = castMap(doc.data());
+                        return data["date"] != null &&
+                            (data["date"] as Timestamp)
+                                    .millisecondsSinceEpoch >=
+                                today.millisecondsSinceEpoch;
+                      }).toList()
+                      ..sort((a, b) {
+                        final aDate =
+                            ((castMap(a.data())["date"] ?? Timestamp.now())
+                                    as Timestamp)
+                                .toDate();
+                        final bDate =
+                            ((castMap(b.data())["date"] ?? Timestamp.now())
+                                    as Timestamp)
+                                .toDate();
+                        final aStart =
+                            ((castMap(a.data())["start"] ?? Timestamp.now())
+                                    as Timestamp)
+                                .toDate();
+                        final bStart =
+                            ((castMap(b.data())["start"] ?? Timestamp.now())
+                                    as Timestamp)
+                                .toDate();
+                        return DateTime(
+                          aDate.year,
+                          aDate.month,
+                          aDate.day,
+                          aStart.hour,
+                          aStart.minute,
+                        ).compareTo(
+                          DateTime(
+                            bDate.year,
+                            bDate.month,
+                            bDate.day,
+                            bStart.hour,
+                            bStart.minute,
+                          ),
+                        );
+                      });
                   },
                 ),
                 PaginatedList(
@@ -791,11 +825,45 @@ class _PlayerEventsState extends ConsumerState<PlayerEvents> {
                   collectionKey: "teams/${widget.teamId}/events",
                   filter: (data) {
                     return data.where((doc) {
-                      final data = castMap(doc.data());
-                      return data["date"] != null &&
-                          (data["date"] as Timestamp).millisecondsSinceEpoch <
-                              today.millisecondsSinceEpoch;
-                    }).toList();
+                        final data = castMap(doc.data());
+                        return data["date"] != null &&
+                            (data["date"] as Timestamp).millisecondsSinceEpoch <
+                                today.millisecondsSinceEpoch;
+                      }).toList()
+                      ..sort((a, b) {
+                        final aDate =
+                            ((castMap(a.data())["date"] ?? Timestamp.now())
+                                    as Timestamp)
+                                .toDate();
+                        final bDate =
+                            ((castMap(b.data())["date"] ?? Timestamp.now())
+                                    as Timestamp)
+                                .toDate();
+                        final aStart =
+                            ((castMap(a.data())["start"] ?? Timestamp.now())
+                                    as Timestamp)
+                                .toDate();
+                        final bStart =
+                            ((castMap(b.data())["start"] ?? Timestamp.now())
+                                    as Timestamp)
+                                .toDate();
+                        return DateTime(
+                              aDate.year,
+                              aDate.month,
+                              aDate.day,
+                              aStart.hour,
+                              aStart.minute,
+                            ).compareTo(
+                              DateTime(
+                                bDate.year,
+                                bDate.month,
+                                bDate.day,
+                                bStart.hour,
+                                bStart.minute,
+                              ),
+                            ) *
+                            -1;
+                      });
                   },
                 ),
               ],
