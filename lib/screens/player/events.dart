@@ -241,135 +241,133 @@ class _PlayerEventsState extends ConsumerState<PlayerEvents> {
                 ),
               ),
             ),
-            IntrinsicWidth(
-              child: Column(
-                spacing: 5,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  FilledButton(
-                    onPressed: () {
-                      if (isLateToVote) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Du bist zu spät!')),
-                        );
-                        return;
-                      }
-                      showStringInputDialog(
-                        title: "Unsicher melden",
-                        hintText: "Gib einen Grund an",
-                        context: context,
-                        onSubmit: (input) async {
-                          await FirebaseFirestore.instance
-                              .collection('teams')
-                              .doc(widget.teamId)
-                              .collection("events")
-                              .doc(doc.id)
-                              .update({
-                                'presence.$localMemberUid': {
-                                  "value": 'u',
-                                  "reason": input,
-                                },
-                                // only this key inside the map is updated
-                              });
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Du bist als unsicher gemeldet!'),
-                              ),
-                            );
-                          }
-                        },
+            Column(
+              spacing: 5,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                FilledButton(
+                  onPressed: () {
+                    if (isLateToVote) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Du bist zu spät!')),
                       );
-                    },
-                    style: FilledButton.styleFrom(
-                      backgroundColor:
-                          castMap(presence[localMemberUid])["value"] == "u"
-                              ? Colors.amber
-                              : Colors.grey,
-                      // set your desired color
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(
-                          10,
-                        ), // less round corners
-                      ),
-                    ),
-                    child: Row(
-                      spacing: 5,
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text("Unsicher"),
-                        Text(
-                          presence.values
-                              .where((value) => castMap(value)["value"] == "u")
-                              .length
-                              .toString(),
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                      ],
+                      return;
+                    }
+                    showStringInputDialog(
+                      title: "Unsicher melden",
+                      hintText: "Gib einen Grund an",
+                      context: context,
+                      onSubmit: (input) async {
+                        await FirebaseFirestore.instance
+                            .collection('teams')
+                            .doc(widget.teamId)
+                            .collection("events")
+                            .doc(doc.id)
+                            .update({
+                              'presence.$localMemberUid': {
+                                "value": 'u',
+                                "reason": input,
+                              },
+                              // only this key inside the map is updated
+                            });
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Du bist als unsicher gemeldet!'),
+                            ),
+                          );
+                        }
+                      },
+                    );
+                  },
+                  style: FilledButton.styleFrom(
+                    backgroundColor:
+                        castMap(presence[localMemberUid])["value"] == "u"
+                            ? Colors.amber
+                            : Colors.grey,
+                    // set your desired color
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(
+                        10,
+                      ), // less round corners
                     ),
                   ),
-                  FilledButton(
-                    onPressed: () {
-                      if (isLateToVote) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Du bist zu spät!')),
-                        );
-                        return;
-                      }
-                      showStringInputDialog(
-                        title: "Abmelden",
-                        hintText: "Gib einen Grund an",
-                        context: context,
-                        onSubmit: (input) async {
-                          await FirebaseFirestore.instance
-                              .collection('teams')
-                              .doc(widget.teamId)
-                              .collection("events")
-                              .doc(doc.id)
-                              .update({
-                                'presence.$localMemberUid': {
-                                  "value": 'a',
-                                  "reason": input,
-                                },
-                                // only this key inside the map is updated
-                              });
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Du bist abgemeldet!')),
-                            );
-                          }
-                        },
-                      );
-                    },
-                    style: FilledButton.styleFrom(
-                      backgroundColor:
-                          castMap(presence[localMemberUid])["value"] == "a"
-                              ? Colors.redAccent
-                              : Colors.grey,
-                      // set your desired color
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(
-                          10,
-                        ), // less round corners
+                  child: Row(
+                    spacing: 5,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text("Unsicher"),
+                      Text(
+                        presence.values
+                            .where((value) => castMap(value)["value"] == "u")
+                            .length
+                            .toString(),
+                        style: TextStyle(fontWeight: FontWeight.bold),
                       ),
-                    ),
-                    child: Row(
-                      spacing: 5,
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text("Abwesend"),
-                        Text(
-                          presence.values
-                              .where((value) => castMap(value)["value"] == "a")
-                              .length
-                              .toString(),
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                      ],
+                    ],
+                  ),
+                ),
+                FilledButton(
+                  onPressed: () {
+                    if (isLateToVote) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Du bist zu spät!')),
+                      );
+                      return;
+                    }
+                    showStringInputDialog(
+                      title: "Abmelden",
+                      hintText: "Gib einen Grund an",
+                      context: context,
+                      onSubmit: (input) async {
+                        await FirebaseFirestore.instance
+                            .collection('teams')
+                            .doc(widget.teamId)
+                            .collection("events")
+                            .doc(doc.id)
+                            .update({
+                              'presence.$localMemberUid': {
+                                "value": 'a',
+                                "reason": input,
+                              },
+                              // only this key inside the map is updated
+                            });
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Du bist abgemeldet!')),
+                          );
+                        }
+                      },
+                    );
+                  },
+                  style: FilledButton.styleFrom(
+                    backgroundColor:
+                        castMap(presence[localMemberUid])["value"] == "a"
+                            ? Colors.redAccent
+                            : Colors.grey,
+                    // set your desired color
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(
+                        10,
+                      ), // less round corners
                     ),
                   ),
-                ],
-              ),
+                  child: Row(
+                    spacing: 5,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text("Abwesend"),
+                      Text(
+                        presence.values
+                            .where((value) => castMap(value)["value"] == "a")
+                            .length
+                            .toString(),
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -391,20 +389,27 @@ class _PlayerEventsState extends ConsumerState<PlayerEvents> {
               padding: EdgeInsets.all(15),
               child:
                   isWideEnough
-                      ? IntrinsicHeight(
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            dateBox,
-                            VerticalDivider(width: 20),
-                            Expanded(child: nameBox),
-                            VerticalDivider(width: 20),
-                            timesBox,
-                            VerticalDivider(width: 20),
-                            voteBox,
-                          ],
-                        ),
+                      ? Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          dateBox,
+                          SizedBox(
+                            height: 65,
+                            child: VerticalDivider(width: 20),
+                          ),
+                          Expanded(child: nameBox),
+                          SizedBox(
+                            height: 65,
+                            child: VerticalDivider(width: 20),
+                          ),
+                          timesBox,
+                          SizedBox(
+                            height: 65,
+                            child: VerticalDivider(width: 20),
+                          ),
+                          voteBox,
+                        ],
                       )
                       : Column(
                         children: [
@@ -419,314 +424,320 @@ class _PlayerEventsState extends ConsumerState<PlayerEvents> {
                             ],
                           ),
                           SizedBox(height: 20),
-                          IntrinsicHeight(
-                            child: Padding(
-                              padding: EdgeInsets.symmetric(
-                                vertical: 10,
-                                horizontal: 10,
-                              ),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Column(
-                                    children: [
-                                      Text(
-                                        "Treffen",
-                                        style: TextStyle(fontSize: 12),
-                                      ),
-                                      Text(
-                                        "${meetDate.hour.toString().padLeft(2, '0')}:${meetDate.minute.toString().padLeft(2, '0')}",
-                                      ),
-                                    ],
-                                  ),
-                                  VerticalDivider(thickness: 0.5, width: 30),
-                                  Column(
-                                    children: [
-                                      Text(
-                                        "Start",
-                                        style: TextStyle(fontSize: 12),
-                                      ),
-                                      Text(
-                                        "${startDate.hour.toString().padLeft(2, '0')}:${startDate.minute.toString().padLeft(2, '0')}",
-                                      ),
-                                    ],
-                                  ),
-                                  VerticalDivider(thickness: 0.5, width: 30),
-                                  Column(
-                                    children: [
-                                      Text(
-                                        "Ende",
-                                        style: TextStyle(fontSize: 12),
-                                      ),
-                                      Text(
-                                        "${endDate.hour.toString().padLeft(2, '0')}:${endDate.minute.toString().padLeft(2, '0')}",
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
+                          Padding(
+                            padding: EdgeInsets.symmetric(
+                              vertical: 10,
+                              horizontal: 10,
                             ),
-                          ),
-                          SizedBox(height: 10),
-                          IntrinsicHeight(
                             child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              spacing: 5,
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                Flexible(
-                                  fit: FlexFit.loose,
-                                  child: FittedBox(
-                                    fit: BoxFit.scaleDown,
-                                    child: FilledButton(
-                                      onPressed: () async {
-                                        if (isLateToVote) {
-                                          ScaffoldMessenger.of(
-                                            context,
-                                          ).showSnackBar(
-                                            SnackBar(
-                                              content: Text('Du bist zu spät!'),
-                                            ),
-                                          );
-                                          return;
-                                        }
-                                        await FirebaseFirestore.instance
-                                            .collection('teams')
-                                            .doc(widget.teamId)
-                                            .collection("events")
-                                            .doc(doc.id)
-                                            .update({
-                                              'presence.$localMemberUid': {
-                                                "value": 'p',
-                                                "reason": "",
-                                              },
-                                              // only this key inside the map is updated
-                                            });
-                                        if (context.mounted) {
-                                          ScaffoldMessenger.of(
-                                            context,
-                                          ).showSnackBar(
-                                            SnackBar(
-                                              content: Text(
-                                                'Du bist angemeldet!',
-                                              ),
-                                            ),
-                                          );
-                                        }
-                                      },
-                                      style: FilledButton.styleFrom(
-                                        backgroundColor:
-                                            castMap(
-                                                      presence[localMemberUid],
-                                                    )["value"] ==
-                                                    "p"
-                                                ? Colors.green
-                                                : Colors.grey,
-                                        // set your desired color
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            10,
-                                          ), // less round corners
-                                        ),
-                                      ),
-                                      child: Center(
-                                        child: Wrap(
-                                          spacing: 5,
-                                          children: [
-                                            Text("Dabei"),
-                                            Text(
-                                              presence.values
-                                                  .where(
-                                                    (value) =>
-                                                        castMap(
-                                                          value,
-                                                        )["value"] ==
-                                                        "p",
-                                                  )
-                                                  .length
-                                                  .toString(),
-                                              style: TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
+                                Column(
+                                  children: [
+                                    Text(
+                                      "Treffen",
+                                      style: TextStyle(fontSize: 12),
                                     ),
+                                    Text(
+                                      "${meetDate.hour.toString().padLeft(2, '0')}:${meetDate.minute.toString().padLeft(2, '0')}",
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(
+                                  height: 35,
+                                  child: VerticalDivider(
+                                    thickness: 0.5,
+                                    width: 30,
                                   ),
                                 ),
-
-                                Flexible(
-                                  fit: FlexFit.loose,
-                                  child: FittedBox(
-                                    fit: BoxFit.scaleDown,
-                                    child: FilledButton(
-                                      onPressed: () {
-                                        if (isLateToVote) {
-                                          ScaffoldMessenger.of(
-                                            context,
-                                          ).showSnackBar(
-                                            SnackBar(
-                                              content: Text('Du bist zu spät!'),
-                                            ),
-                                          );
-                                          return;
-                                        }
-                                        showStringInputDialog(
-                                          title: "Unsicher melden",
-                                          hintText: "Gib einen Grund an",
-                                          context: context,
-                                          onSubmit: (input) async {
-                                            await FirebaseFirestore.instance
-                                                .collection('teams')
-                                                .doc(widget.teamId)
-                                                .collection("events")
-                                                .doc(doc.id)
-                                                .update({
-                                                  'presence.$localMemberUid': {
-                                                    "value": 'u',
-                                                    "reason": input,
-                                                  },
-                                                  // only this key inside the map is updated
-                                                });
-                                            if (context.mounted) {
-                                              ScaffoldMessenger.of(
-                                                context,
-                                              ).showSnackBar(
-                                                SnackBar(
-                                                  content: Text(
-                                                    'Du bist als unsicher gemeldet!',
-                                                  ),
-                                                ),
-                                              );
-                                            }
-                                          },
-                                        );
-                                      },
-                                      style: FilledButton.styleFrom(
-                                        backgroundColor:
-                                            castMap(
-                                                      presence[localMemberUid],
-                                                    )["value"] ==
-                                                    "u"
-                                                ? Colors.amber
-                                                : Colors.grey,
-                                        // set your desired color
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            10,
-                                          ), // less round corners
-                                        ),
-                                      ),
-                                      child: Wrap(
-                                        spacing: 5,
-                                        children: [
-                                          Text("Unsicher"),
-                                          Text(
-                                            presence.values
-                                                .where(
-                                                  (value) =>
-                                                      castMap(value)["value"] ==
-                                                      "u",
-                                                )
-                                                .length
-                                                .toString(),
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
+                                Column(
+                                  children: [
+                                    Text(
+                                      "Start",
+                                      style: TextStyle(fontSize: 12),
                                     ),
+                                    Text(
+                                      "${startDate.hour.toString().padLeft(2, '0')}:${startDate.minute.toString().padLeft(2, '0')}",
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(
+                                  height: 35,
+                                  child: VerticalDivider(
+                                    thickness: 0.5,
+                                    width: 30,
                                   ),
                                 ),
-                                Flexible(
-                                  fit: FlexFit.loose,
-                                  child: FittedBox(
-                                    fit: BoxFit.scaleDown,
-                                    child: FilledButton(
-                                      onPressed: () {
-                                        if (isLateToVote) {
-                                          ScaffoldMessenger.of(
-                                            context,
-                                          ).showSnackBar(
-                                            SnackBar(
-                                              content: Text('Du bist zu spät!'),
-                                            ),
-                                          );
-                                          return;
-                                        }
-                                        showStringInputDialog(
-                                          title: "Abmelden",
-                                          hintText: "Gib einen Grund an",
-                                          context: context,
-                                          onSubmit: (input) async {
-                                            await FirebaseFirestore.instance
-                                                .collection('teams')
-                                                .doc(widget.teamId)
-                                                .collection("events")
-                                                .doc(doc.id)
-                                                .update({
-                                                  'presence.$localMemberUid': {
-                                                    "value": 'a',
-                                                    "reason": input,
-                                                  },
-                                                  // only this key inside the map is updated
-                                                });
-                                            if (context.mounted) {
-                                              ScaffoldMessenger.of(
-                                                context,
-                                              ).showSnackBar(
-                                                SnackBar(
-                                                  content: Text(
-                                                    'Du bist abgemeldet!',
-                                                  ),
-                                                ),
-                                              );
-                                            }
-                                          },
-                                        );
-                                      },
-                                      style: FilledButton.styleFrom(
-                                        backgroundColor:
-                                            castMap(
-                                                      presence[localMemberUid],
-                                                    )["value"] ==
-                                                    "a"
-                                                ? Colors.redAccent
-                                                : Colors.grey,
-                                        // set your desired color
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            10,
-                                          ), // less round corners
-                                        ),
-                                      ),
-                                      child: Wrap(
-                                        spacing: 5,
-                                        children: [
-                                          Text("Abwesend"),
-                                          Text(
-                                            presence.values
-                                                .where(
-                                                  (value) =>
-                                                      castMap(value)["value"] ==
-                                                      "a",
-                                                )
-                                                .length
-                                                .toString(),
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
+                                Column(
+                                  children: [
+                                    Text(
+                                      "Ende",
+                                      style: TextStyle(fontSize: 12),
                                     ),
-                                  ),
+                                    Text(
+                                      "${endDate.hour.toString().padLeft(2, '0')}:${endDate.minute.toString().padLeft(2, '0')}",
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
+                          ),
+
+                          SizedBox(height: 10),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            spacing: 5,
+                            children: [
+                              Flexible(
+                                fit: FlexFit.loose,
+                                child: FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  child: FilledButton(
+                                    onPressed: () async {
+                                      if (isLateToVote) {
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          SnackBar(
+                                            content: Text('Du bist zu spät!'),
+                                          ),
+                                        );
+                                        return;
+                                      }
+                                      await FirebaseFirestore.instance
+                                          .collection('teams')
+                                          .doc(widget.teamId)
+                                          .collection("events")
+                                          .doc(doc.id)
+                                          .update({
+                                            'presence.$localMemberUid': {
+                                              "value": 'p',
+                                              "reason": "",
+                                            },
+                                            // only this key inside the map is updated
+                                          });
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          SnackBar(
+                                            content: Text(
+                                              'Du bist angemeldet!',
+                                            ),
+                                          ),
+                                        );
+                                      }
+                                    },
+                                    style: FilledButton.styleFrom(
+                                      backgroundColor:
+                                          castMap(
+                                                    presence[localMemberUid],
+                                                  )["value"] ==
+                                                  "p"
+                                              ? Colors.green
+                                              : Colors.grey,
+                                      // set your desired color
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(
+                                          10,
+                                        ), // less round corners
+                                      ),
+                                    ),
+                                    child: Center(
+                                      child: Wrap(
+                                        spacing: 5,
+                                        children: [
+                                          Text("Dabei"),
+                                          Text(
+                                            presence.values
+                                                .where(
+                                                  (value) =>
+                                                      castMap(value)["value"] ==
+                                                      "p",
+                                                )
+                                                .length
+                                                .toString(),
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+
+                              Flexible(
+                                fit: FlexFit.loose,
+                                child: FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  child: FilledButton(
+                                    onPressed: () {
+                                      if (isLateToVote) {
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          SnackBar(
+                                            content: Text('Du bist zu spät!'),
+                                          ),
+                                        );
+                                        return;
+                                      }
+                                      showStringInputDialog(
+                                        title: "Unsicher melden",
+                                        hintText: "Gib einen Grund an",
+                                        context: context,
+                                        onSubmit: (input) async {
+                                          await FirebaseFirestore.instance
+                                              .collection('teams')
+                                              .doc(widget.teamId)
+                                              .collection("events")
+                                              .doc(doc.id)
+                                              .update({
+                                                'presence.$localMemberUid': {
+                                                  "value": 'u',
+                                                  "reason": input,
+                                                },
+                                                // only this key inside the map is updated
+                                              });
+                                          if (context.mounted) {
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).showSnackBar(
+                                              SnackBar(
+                                                content: Text(
+                                                  'Du bist als unsicher gemeldet!',
+                                                ),
+                                              ),
+                                            );
+                                          }
+                                        },
+                                      );
+                                    },
+                                    style: FilledButton.styleFrom(
+                                      backgroundColor:
+                                          castMap(
+                                                    presence[localMemberUid],
+                                                  )["value"] ==
+                                                  "u"
+                                              ? Colors.amber
+                                              : Colors.grey,
+                                      // set your desired color
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(
+                                          10,
+                                        ), // less round corners
+                                      ),
+                                    ),
+                                    child: Wrap(
+                                      spacing: 5,
+                                      children: [
+                                        Text("Unsicher"),
+                                        Text(
+                                          presence.values
+                                              .where(
+                                                (value) =>
+                                                    castMap(value)["value"] ==
+                                                    "u",
+                                              )
+                                              .length
+                                              .toString(),
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Flexible(
+                                fit: FlexFit.loose,
+                                child: FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  child: FilledButton(
+                                    onPressed: () {
+                                      if (isLateToVote) {
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          SnackBar(
+                                            content: Text('Du bist zu spät!'),
+                                          ),
+                                        );
+                                        return;
+                                      }
+                                      showStringInputDialog(
+                                        title: "Abmelden",
+                                        hintText: "Gib einen Grund an",
+                                        context: context,
+                                        onSubmit: (input) async {
+                                          await FirebaseFirestore.instance
+                                              .collection('teams')
+                                              .doc(widget.teamId)
+                                              .collection("events")
+                                              .doc(doc.id)
+                                              .update({
+                                                'presence.$localMemberUid': {
+                                                  "value": 'a',
+                                                  "reason": input,
+                                                },
+                                                // only this key inside the map is updated
+                                              });
+                                          if (context.mounted) {
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).showSnackBar(
+                                              SnackBar(
+                                                content: Text(
+                                                  'Du bist abgemeldet!',
+                                                ),
+                                              ),
+                                            );
+                                          }
+                                        },
+                                      );
+                                    },
+                                    style: FilledButton.styleFrom(
+                                      backgroundColor:
+                                          castMap(
+                                                    presence[localMemberUid],
+                                                  )["value"] ==
+                                                  "a"
+                                              ? Colors.redAccent
+                                              : Colors.grey,
+                                      // set your desired color
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(
+                                          10,
+                                        ), // less round corners
+                                      ),
+                                    ),
+                                    child: Wrap(
+                                      spacing: 5,
+                                      children: [
+                                        Text("Abwesend"),
+                                        Text(
+                                          presence.values
+                                              .where(
+                                                (value) =>
+                                                    castMap(value)["value"] ==
+                                                    "a",
+                                              )
+                                              .length
+                                              .toString(),
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
