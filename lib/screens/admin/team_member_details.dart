@@ -26,7 +26,7 @@ class TeamMemberDetails extends StatelessWidget {
           .doc(teamMemberId),
       created: created,
       tabs: [
-        DetailsTab(null, DetailsTabType.details, [
+        DetailsTabType(null, [
           [
             DetailsEditProperty(
               "first",

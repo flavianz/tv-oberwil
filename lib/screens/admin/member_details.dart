@@ -21,7 +21,7 @@ class MemberDetailsScreen extends StatelessWidget {
     return DetailsEditPage(
       doc: FirebaseFirestore.instance.collection("members").doc(uid),
       tabs: [
-        DetailsTab(null, DetailsTabType.details, [
+        DetailsTabType(null, [
           [
             DetailsEditProperty(
               "first",

@@ -67,14 +67,28 @@ class MultiSelectPropertyType extends PropertyType {
   const MultiSelectPropertyType(this.optionBuilder, this.options);
 }
 
-enum DetailsTabType { details, list }
-
-class DetailsTab {
+sealed class TabType {
   final Tab? tab;
-  final DetailsTabType type;
-  final dynamic data;
 
-  const DetailsTab(this.tab, this.type, this.data);
+  TabType(this.tab);
+}
+
+class DetailsTabType extends TabType {
+  final List<List<DetailsEditProperty>> properties;
+
+  DetailsTabType(super.tab, this.properties);
+}
+
+class CustomTabType extends TabType {
+  final Widget widget;
+
+  CustomTabType(super.tab, this.widget);
+}
+
+class CustomDetailsTabType extends TabType {
+  final Widget Function(DocumentSnapshot<Object?>) builder;
+
+  CustomDetailsTabType(super.tab, this.builder);
 }
 
 class DetailsEditProperty {
@@ -94,7 +108,7 @@ class DetailsEditProperty {
 class DetailsEditPage extends ConsumerStatefulWidget {
   final DocumentReference<Map<String, dynamic>> doc;
   final bool created;
-  final List<DetailsTab> tabs;
+  final List<TabType> tabs;
   final String titleKey;
   final bool defaultEdit;
 
@@ -134,12 +148,10 @@ class _DetailsEditPageState extends ConsumerState<DetailsEditPage> {
   void resetInputs(Map<String, dynamic> data) {
     properties =
         widget.tabs
-            .where((tab) => tab.type == DetailsTabType.details)
-            .map((tab) => tab.data) // Iterable<List<DetailsEditProperty>>
+            .whereType<DetailsTabType>()
+            .map((tab) => tab.properties)
             .expand((list) => list)
-            .cast<
-              List<DetailsEditProperty>
-            >() // flattens to Iterable<DetailsEditProperty>
+            .cast<List<DetailsEditProperty>>()
             .toList();
     expandedProperties = properties!.expand((element) => element).toList();
     for (var property in expandedProperties) {
@@ -395,166 +407,146 @@ class _DetailsEditPageState extends ConsumerState<DetailsEditPage> {
             child: TabBarView(
               children:
                   widget.tabs.map((tab) {
-                    switch (tab.type) {
-                      case DetailsTabType.details:
+                    switch (tab) {
+                      case DetailsTabType():
                         {
-                          final personalInfoBoxes = (tab.data
-                                  as List<List<DetailsEditProperty>>)
-                              .map((list) {
-                                return list.map((property) {
-                                  switch (property.type) {
-                                    case TextPropertyType():
-                                      return TextInputBox(
-                                        controller:
-                                            values[property.key] ??
-                                            TextEditingController(),
-                                        title: property.name,
-                                        isEditMode:
-                                            property.readOnly
-                                                ? false
-                                                : isEditMode,
-                                      );
-                                    case DatePropertyType():
-                                      return DateInputBox(
-                                        title: property.name,
-                                        onDateSelected: (s) {
-                                          setState(() {
-                                            values = {
-                                              ...values,
-                                              property.key:
-                                                  Timestamp.fromMillisecondsSinceEpoch(
-                                                    s.millisecondsSinceEpoch,
-                                                  ),
-                                            };
-                                          });
-                                        },
-                                        defaultDate:
-                                            DateTime.fromMillisecondsSinceEpoch(
-                                              values[property.key]
-                                                  .millisecondsSinceEpoch,
-                                            ),
-                                        isEditMode:
-                                            property.readOnly
-                                                ? false
-                                                : isEditMode,
-                                      );
-                                    case TimePropertyType():
-                                      return TimeInputBox(
-                                        title: property.name,
-                                        onTimeSelected: (s) {
-                                          setState(() {
-                                            values = {
-                                              ...values,
-                                              property.key:
-                                                  Timestamp.fromMillisecondsSinceEpoch(
-                                                    s.millisecondsSinceEpoch,
-                                                  ),
-                                            };
-                                          });
-                                        },
-                                        defaultTime:
-                                            DateTime.fromMillisecondsSinceEpoch(
-                                              values[property.key]
-                                                  .millisecondsSinceEpoch,
-                                            ),
-                                        isEditMode:
-                                            property.readOnly
-                                                ? false
-                                                : isEditMode,
-                                      );
-                                    case SelectionPropertyType():
-                                      return SelectionInputBox(
-                                        title: property.name,
-                                        isEditMode:
-                                            property.readOnly
-                                                ? false
-                                                : isEditMode,
-                                        options:
-                                            (property.type
-                                                    as SelectionPropertyType)
-                                                .options,
-                                        selected: values[property.key],
-                                        defaultKey: "none",
-                                        onSelected: (s) {
-                                          setState(() {
-                                            values = {
-                                              ...values,
-                                              property.key: s,
-                                            };
-                                          });
-                                        },
-                                      );
-                                    case BoolPropertyType():
-                                      return SelectionInputBox(
-                                        title: property.name,
-                                        isEditMode:
-                                            property.readOnly
-                                                ? false
-                                                : isEditMode,
-                                        options: {true: "Ja", false: "Nein"},
-                                        selected: values[property.key],
-                                        defaultKey: false,
-                                        onSelected: (s) {
-                                          setState(() {
-                                            values = {
-                                              ...values,
-                                              property.key: s,
-                                            };
-                                          });
-                                        },
-                                      );
-                                    case DialogPropertyType():
-                                      DialogPropertyType dialogInputBoxData =
-                                          property.type as DialogPropertyType;
-                                      return DialogInputBox(
-                                        dialogBuilder:
-                                            dialogInputBoxData.dialogBuilder,
-                                        isEditMode: isEditMode,
-                                        boxContent: Padding(
-                                          padding: EdgeInsets.symmetric(
-                                            horizontal: 12,
-                                          ),
-                                          child: Text(
-                                            dialogInputBoxData.boxTextBuilder(
-                                              values[property.key],
-                                            ),
-                                          ),
+                          final personalInfoBoxes = tab.properties.map((list) {
+                            return list.map((property) {
+                              switch (property.type) {
+                                case TextPropertyType():
+                                  return TextInputBox(
+                                    controller:
+                                        values[property.key] ??
+                                        TextEditingController(),
+                                    title: property.name,
+                                    isEditMode:
+                                        property.readOnly ? false : isEditMode,
+                                  );
+                                case DatePropertyType():
+                                  return DateInputBox(
+                                    title: property.name,
+                                    onDateSelected: (s) {
+                                      setState(() {
+                                        values = {
+                                          ...values,
+                                          property.key:
+                                              Timestamp.fromMillisecondsSinceEpoch(
+                                                s.millisecondsSinceEpoch,
+                                              ),
+                                        };
+                                      });
+                                    },
+                                    defaultDate:
+                                        DateTime.fromMillisecondsSinceEpoch(
+                                          values[property.key]
+                                              .millisecondsSinceEpoch,
                                         ),
-                                        title: property.name,
-                                        onUpdate: (newValue) {
-                                          setState(() {
-                                            values = {
-                                              ...values,
-                                              property.key: newValue,
-                                            };
-                                          });
-                                        },
-                                        openDialogInNonEditMode:
-                                            dialogInputBoxData
-                                                .openDialogInNonEditMode,
-                                      );
-                                    case MultiSelectPropertyType():
-                                      MultiSelectPropertyType data =
-                                          property.type
-                                              as MultiSelectPropertyType;
-                                      return MultiSelectInputBox(
-                                        title: property.name,
-                                        isEditMode: isEditMode,
-                                        options: data.options,
-                                        selected: values[property.key],
-                                        onSelected: (newValue) {
-                                          setState(() {
-                                            values = {
-                                              ...values,
-                                              property.key: newValue,
-                                            };
-                                          });
-                                        },
-                                        optionBuilder: data.optionBuilder,
-                                      );
-                                  }
-                                });
-                              });
+                                    isEditMode:
+                                        property.readOnly ? false : isEditMode,
+                                  );
+                                case TimePropertyType():
+                                  return TimeInputBox(
+                                    title: property.name,
+                                    onTimeSelected: (s) {
+                                      setState(() {
+                                        values = {
+                                          ...values,
+                                          property.key:
+                                              Timestamp.fromMillisecondsSinceEpoch(
+                                                s.millisecondsSinceEpoch,
+                                              ),
+                                        };
+                                      });
+                                    },
+                                    defaultTime:
+                                        DateTime.fromMillisecondsSinceEpoch(
+                                          values[property.key]
+                                              .millisecondsSinceEpoch,
+                                        ),
+                                    isEditMode:
+                                        property.readOnly ? false : isEditMode,
+                                  );
+                                case SelectionPropertyType():
+                                  return SelectionInputBox(
+                                    title: property.name,
+                                    isEditMode:
+                                        property.readOnly ? false : isEditMode,
+                                    options:
+                                        (property.type as SelectionPropertyType)
+                                            .options,
+                                    selected: values[property.key],
+                                    defaultKey: "none",
+                                    onSelected: (s) {
+                                      setState(() {
+                                        values = {...values, property.key: s};
+                                      });
+                                    },
+                                  );
+                                case BoolPropertyType():
+                                  return SelectionInputBox(
+                                    title: property.name,
+                                    isEditMode:
+                                        property.readOnly ? false : isEditMode,
+                                    options: {true: "Ja", false: "Nein"},
+                                    selected: values[property.key],
+                                    defaultKey: false,
+                                    onSelected: (s) {
+                                      setState(() {
+                                        values = {...values, property.key: s};
+                                      });
+                                    },
+                                  );
+                                case DialogPropertyType():
+                                  DialogPropertyType dialogInputBoxData =
+                                      property.type as DialogPropertyType;
+                                  return DialogInputBox(
+                                    dialogBuilder:
+                                        dialogInputBoxData.dialogBuilder,
+                                    isEditMode: isEditMode,
+                                    boxContent: Padding(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                      ),
+                                      child: Text(
+                                        dialogInputBoxData.boxTextBuilder(
+                                          values[property.key],
+                                        ),
+                                      ),
+                                    ),
+                                    title: property.name,
+                                    onUpdate: (newValue) {
+                                      setState(() {
+                                        values = {
+                                          ...values,
+                                          property.key: newValue,
+                                        };
+                                      });
+                                    },
+                                    openDialogInNonEditMode:
+                                        dialogInputBoxData
+                                            .openDialogInNonEditMode,
+                                  );
+                                case MultiSelectPropertyType():
+                                  MultiSelectPropertyType data =
+                                      property.type as MultiSelectPropertyType;
+                                  return MultiSelectInputBox(
+                                    title: property.name,
+                                    isEditMode: isEditMode,
+                                    options: data.options,
+                                    selected: values[property.key],
+                                    onSelected: (newValue) {
+                                      setState(() {
+                                        values = {
+                                          ...values,
+                                          property.key: newValue,
+                                        };
+                                      });
+                                    },
+                                    optionBuilder: data.optionBuilder,
+                                  );
+                              }
+                            });
+                          });
                           return ListView(
                             children: [
                               const SizedBox(height: 30),
@@ -603,10 +595,12 @@ class _DetailsEditPageState extends ConsumerState<DetailsEditPage> {
                             ],
                           );
                         }
-                      case DetailsTabType.list:
+                      case CustomTabType():
                         {
-                          return tab.data as Widget;
+                          return tab.widget;
                         }
+                      case CustomDetailsTabType():
+                        return tab.builder(teamData.value!);
                     }
                   }).toList(),
             ),

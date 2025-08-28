@@ -18,59 +18,54 @@ class TeamDetailsScreen extends StatelessWidget {
       doc: FirebaseFirestore.instance.collection("teams").doc(uid),
       created: created,
       tabs: [
-        DetailsTab(
-          Tab(text: "Infos", icon: Icon(Icons.info_outline)),
-          DetailsTabType.details,
+        DetailsTabType(Tab(text: "Infos", icon: Icon(Icons.info_outline)), [
           [
-            [
-              DetailsEditProperty(
-                "name",
-                "Name",
-                TextPropertyType(isSearchable: true),
-              ),
-              DetailsEditProperty(
-                "plays_in_league",
-                "Spielt in Liga",
-                BoolPropertyType(),
-              ),
-              DetailsEditProperty(
-                "genders",
-                "Geschlecht",
-                SelectionPropertyType({
-                  "women": "Damen",
-                  "men": "Herren",
-                  "mixed": "Gemischt",
-                  "null": "Keine Angabe",
-                }),
-              ),
-            ],
-            [
-              DetailsEditProperty(
-                "type",
-                "Teamart",
-                SelectionPropertyType({
-                  "juniors": "Junioren",
-                  "active": "Aktive",
-                  "fun": "Plausch",
-                  "null": "Keine Angabe",
-                }),
-              ),
-              DetailsEditProperty(
-                "sport_type",
-                "Sportart",
-                SelectionPropertyType({
-                  "floorball": "Unihockey",
-                  "volleyball": "Volleyball",
-                  "riege": "Riege",
-                  "null": "Keine Angabe",
-                }),
-              ),
-            ],
+            DetailsEditProperty(
+              "name",
+              "Name",
+              TextPropertyType(isSearchable: true),
+            ),
+            DetailsEditProperty(
+              "plays_in_league",
+              "Spielt in Liga",
+              BoolPropertyType(),
+            ),
+            DetailsEditProperty(
+              "genders",
+              "Geschlecht",
+              SelectionPropertyType({
+                "women": "Damen",
+                "men": "Herren",
+                "mixed": "Gemischt",
+                "null": "Keine Angabe",
+              }),
+            ),
           ],
-        ),
-        DetailsTab(
+          [
+            DetailsEditProperty(
+              "type",
+              "Teamart",
+              SelectionPropertyType({
+                "juniors": "Junioren",
+                "active": "Aktive",
+                "fun": "Plausch",
+                "null": "Keine Angabe",
+              }),
+            ),
+            DetailsEditProperty(
+              "sport_type",
+              "Sportart",
+              SelectionPropertyType({
+                "floorball": "Unihockey",
+                "volleyball": "Volleyball",
+                "riege": "Riege",
+                "null": "Keine Angabe",
+              }),
+            ),
+          ],
+        ]),
+        CustomTabType(
           Tab(text: "Mitglieder", icon: Icon(Icons.diversity_3)),
-          DetailsTabType.list,
           PaginatedListPage(
             showBackButton: false,
             actionsInSearchBar: true,

@@ -23,7 +23,7 @@ class SimpleEventDetailsEdit extends StatelessWidget {
           .collection("events")
           .doc(eventId),
       tabs: [
-        DetailsTab(null, DetailsTabType.details, [
+        DetailsTabType(null, [
           [
             DetailsEditProperty(
               "name",

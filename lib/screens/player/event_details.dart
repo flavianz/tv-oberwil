@@ -6,6 +6,7 @@ import 'package:tv_oberwil/components/paginated_list.dart';
 import 'package:tv_oberwil/utils.dart';
 
 import '../../components/app.dart';
+import '../../components/details_edit_page.dart';
 import '../../components/misc.dart';
 import '../../firestore_providers/basic_providers.dart';
 
@@ -670,6 +671,39 @@ class PlayerEventDetails extends ConsumerWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class EventDetailsNew extends StatelessWidget {
+  final String teamId;
+  final String eventId;
+  final bool isCoach;
+
+  const EventDetailsNew({
+    super.key,
+    required this.teamId,
+    required this.eventId,
+    required this.isCoach,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return DetailsEditPage(
+      doc: FirebaseFirestore.instance
+          .collection("teams")
+          .doc(teamId)
+          .collection("events")
+          .doc(teamId),
+      tabs: [
+        CustomDetailsTabType(
+          Tab(text: "Infos", icon: Icon(Icons.info_outline)),
+          (_) {
+            return Text("");
+          },
+        ),
+      ],
+      titleKey: 'name',
     );
   }
 }
