@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:tv_oberwil/components/paginated_list.dart';
+import 'package:tv_oberwil/firestore_providers/paginated_list_proivder.dart';
 import 'package:tv_oberwil/utils.dart';
 
 import '../../components/app.dart';
-import '../../components/details_edit_page.dart';
 import '../../components/misc.dart';
 import '../../firestore_providers/basic_providers.dart';
 
@@ -47,7 +47,8 @@ class PlayerEventDetails extends ConsumerWidget {
     }
 
     final recEventsProvider = ref.watch(
-      realtimeCollectionProvider(
+      getCollectionProvider(
+        "teams/$teamId/r_events",
         FirebaseFirestore.instance
             .collection("teams")
             .doc(teamId)
@@ -63,8 +64,7 @@ class PlayerEventDetails extends ConsumerWidget {
     }
 
     final recEvents = <String, Map<String, dynamic>>{
-      for (var doc in recEventsProvider.value!.docs)
-        doc.id: castMap(doc.data()),
+      for (var doc in recEventsProvider.value!) doc.id: castMap(doc.data()),
     };
 
     final eventData = castMap(eventDoc.value?.data());
@@ -671,39 +671,6 @@ class PlayerEventDetails extends ConsumerWidget {
           ),
         ),
       ),
-    );
-  }
-}
-
-class EventDetailsNew extends StatelessWidget {
-  final String teamId;
-  final String eventId;
-  final bool isCoach;
-
-  const EventDetailsNew({
-    super.key,
-    required this.teamId,
-    required this.eventId,
-    required this.isCoach,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return DetailsEditPage(
-      doc: FirebaseFirestore.instance
-          .collection("teams")
-          .doc(teamId)
-          .collection("events")
-          .doc(teamId),
-      tabs: [
-        CustomDetailsTabType(
-          Tab(text: "Infos", icon: Icon(Icons.info_outline)),
-          (_) {
-            return Text("");
-          },
-        ),
-      ],
-      titleKey: 'name',
     );
   }
 }

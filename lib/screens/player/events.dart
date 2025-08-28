@@ -5,8 +5,8 @@ import 'package:go_router/go_router.dart';
 import 'package:tv_oberwil/components/app.dart';
 import 'package:tv_oberwil/components/misc.dart';
 import 'package:tv_oberwil/components/paginated_list.dart';
-import 'package:tv_oberwil/firestore_providers/basic_providers.dart';
 
+import '../../firestore_providers/paginated_list_proivder.dart';
 import '../../utils.dart';
 
 class PlayerEvents extends ConsumerStatefulWidget {
@@ -25,7 +25,8 @@ class _PlayerEventsState extends ConsumerState<PlayerEvents> {
     final isScreenWide = MediaQuery.of(context).size.aspectRatio > 1;
 
     final recEventsProvider = ref.watch(
-      realtimeCollectionProvider(
+      getCollectionProvider(
+        "teams/${widget.teamId}/r_events",
         FirebaseFirestore.instance
             .collection("teams")
             .doc(widget.teamId)
@@ -41,8 +42,7 @@ class _PlayerEventsState extends ConsumerState<PlayerEvents> {
     }
 
     final recEvents = <String, Map<String, dynamic>>{
-      for (var doc in recEventsProvider.value!.docs)
-        doc.id: castMap(doc.data()),
+      for (var doc in recEventsProvider.value!) doc.id: castMap(doc.data()),
     };
 
     builder(DocumentSnapshot<Object?> doc) {

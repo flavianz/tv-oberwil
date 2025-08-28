@@ -38,8 +38,9 @@ class PaginatedParams extends Equatable {
 class _PaginatedListState extends ConsumerState<PaginatedList> {
   @override
   Widget build(BuildContext context) {
-    final provider = getCollectionProvider(widget.collectionKey, widget.query);
-    final docs = ref.watch(provider);
+    final docs = ref.watch(
+      getCollectionProvider(widget.collectionKey, widget.query),
+    );
     return docs.when(
       data: (data) {
         final List<DocumentSnapshot<Object?>> children =
