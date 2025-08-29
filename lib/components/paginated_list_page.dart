@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:tv_oberwil/components/input_boxes.dart';
 import 'package:tv_oberwil/components/misc.dart';
 import 'package:tv_oberwil/components/paginated_list.dart';
 import 'package:tv_oberwil/firestore_providers/firestore_tools.dart';
@@ -56,6 +57,13 @@ class BoolFilter extends Filter {
   BoolFilter(super.key, super.name, super.icon, {this.filterApplyFunction});
 }
 
+class DateFilter extends Filter {
+  final DateTime minDate;
+  final DateTime maxDate;
+
+  DateFilter(super.key, super.name, super.icon, this.minDate, this.maxDate);
+}
+
 sealed class FilterProperty {
   final String key;
 
@@ -74,6 +82,13 @@ class BoolFilterProperty extends FilterProperty {
   final bool Function(bool, dynamic data)? filterApplyFunction;
 
   const BoolFilterProperty(super.key, this.value, {this.filterApplyFunction});
+}
+
+class DateFilterProperty extends FilterProperty {
+  DateTime startDate;
+  DateTime endDate;
+
+  DateFilterProperty(super.key, this.startDate, this.endDate);
 }
 
 enum OrderPropertyType { text, bool, date }
@@ -143,6 +158,11 @@ class _PaginatedListPageState extends State<PaginatedListPage> {
               filter.key,
               filter.options.keys.toList(),
               filter.isList,
+            ),
+            DateFilter() => DateFilterProperty(
+              filter.key,
+              filter.minDate,
+              filter.maxDate,
             ),
           });
         }),
@@ -217,6 +237,39 @@ class _PaginatedListPageState extends State<PaginatedListPage> {
                   data[filterProperty.key],
                 );
               }
+            case DateFilterProperty():
+              print(filterProperty.startDate);
+              print(filterProperty.endDate);
+              print(
+                (filterProperty.startDate.isBefore(
+                          (data[filterProperty.key] as Timestamp).toDate(),
+                        ) &&
+                        filterProperty.endDate.isAfter(
+                          (data[filterProperty.key] as Timestamp).toDate(),
+                        )) ||
+                    isSameDate(
+                      (data[filterProperty.key] as Timestamp).toDate(),
+                      filterProperty.startDate,
+                    ) ||
+                    isSameDate(
+                      (data[filterProperty.key] as Timestamp).toDate(),
+                      filterProperty.endDate,
+                    ),
+              );
+              return (filterProperty.startDate.isBefore(
+                        (data[filterProperty.key] as Timestamp).toDate(),
+                      ) &&
+                      filterProperty.endDate.isAfter(
+                        (data[filterProperty.key] as Timestamp).toDate(),
+                      )) ||
+                  isSameDate(
+                    (data[filterProperty.key] as Timestamp).toDate(),
+                    filterProperty.startDate,
+                  ) ||
+                  isSameDate(
+                    (data[filterProperty.key] as Timestamp).toDate(),
+                    filterProperty.endDate,
+                  );
           }
         });
       }
@@ -670,6 +723,45 @@ class FilterDialogState extends State<FilterDialog> {
                                         getPill("Nein", Colors.red, true),
                                       ],
                                     ),
+                                  ),
+                                  DateFilter() => Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceEvenly,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    spacing: 15,
+                                    children: [
+                                      DateInputBox(
+                                        title: "Von",
+                                        onDateSelected:
+                                            (date) => setState(() {
+                                              (widget.filterProperties[filter
+                                                          .key]
+                                                      as DateFilterProperty)
+                                                  .startDate = date;
+                                            }),
+                                        defaultDate:
+                                            (widget.filterProperties[filter.key]
+                                                    as DateFilterProperty)
+                                                .startDate,
+                                        isEditMode: true,
+                                      ),
+                                      DateInputBox(
+                                        title: "Bis",
+                                        onDateSelected:
+                                            (date) => setState(() {
+                                              (widget.filterProperties[filter
+                                                          .key]
+                                                      as DateFilterProperty)
+                                                  .endDate = date;
+                                            }),
+                                        defaultDate:
+                                            (widget.filterProperties[filter.key]
+                                                    as DateFilterProperty)
+                                                .endDate,
+                                        isEditMode: true,
+                                      ),
+                                    ],
                                   ),
                                 },
                                 SizedBox(height: 25),

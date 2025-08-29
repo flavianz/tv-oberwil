@@ -69,7 +69,7 @@ String getTimeDistance(DateTime date) {
   }
 }
 
-bool isSameDay(DateTime first, DateTime second) {
+bool isSameDate(DateTime first, DateTime second) {
   return first.day == second.day &&
       first.month == second.month &&
       first.year == second.year;
@@ -77,10 +77,10 @@ bool isSameDay(DateTime first, DateTime second) {
 
 String? getNearbyTimeDifference(DateTime date) {
   final now = DateTime.now();
-  if (isSameDay(now, date)) {
+  if (isSameDate(now, date)) {
     return "Heute";
   }
-  if (isSameDay(
+  if (isSameDate(
     DateTime.fromMillisecondsSinceEpoch(
       now.millisecondsSinceEpoch + 1000 * 3600 * 24,
     ),

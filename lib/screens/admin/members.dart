@@ -28,6 +28,13 @@ class MembersScreen extends StatelessWidget {
               (filterValue, dataValue) =>
                   filterValue ? dataValue != null : dataValue == null,
         ),
+        DateFilter(
+          "birthdate",
+          "Geburtsdatum",
+          Icons.cake_outlined,
+          DateTime(1900),
+          DateTime(2100),
+        ),
       ],
       tableOptions: TableOptions(
         [

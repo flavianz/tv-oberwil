@@ -82,7 +82,7 @@ class PlayerEventDetails extends ConsumerWidget {
           final after = castDateTime(edit["after"]);
           final date = castDateTime(eventData["date"]);
           if (after.millisecondsSinceEpoch <= date.millisecondsSinceEpoch ||
-              isSameDay(after, date)) {
+              isSameDate(after, date)) {
             value = edit["fields"]?[key] ?? value;
           }
         }
@@ -212,10 +212,10 @@ class PlayerEventDetails extends ConsumerWidget {
                     : getNearbyTimeDifference(date) != null
                     ? getPill(
                       getNearbyTimeDifference(date)!,
-                      isSameDay(date, DateTime.now())
+                      isSameDate(date, DateTime.now())
                           ? Theme.of(context).primaryColor
                           : Theme.of(context).colorScheme.secondaryFixedDim,
-                      isSameDay(date, DateTime.now()),
+                      isSameDate(date, DateTime.now()),
                     )
                     : SizedBox.shrink(),
               ],
