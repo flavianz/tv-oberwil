@@ -238,24 +238,6 @@ class _PaginatedListPageState extends State<PaginatedListPage> {
                 );
               }
             case DateFilterProperty():
-              print(filterProperty.startDate);
-              print(filterProperty.endDate);
-              print(
-                (filterProperty.startDate.isBefore(
-                          (data[filterProperty.key] as Timestamp).toDate(),
-                        ) &&
-                        filterProperty.endDate.isAfter(
-                          (data[filterProperty.key] as Timestamp).toDate(),
-                        )) ||
-                    isSameDate(
-                      (data[filterProperty.key] as Timestamp).toDate(),
-                      filterProperty.startDate,
-                    ) ||
-                    isSameDate(
-                      (data[filterProperty.key] as Timestamp).toDate(),
-                      filterProperty.endDate,
-                    ),
-              );
               return (filterProperty.startDate.isBefore(
                         (data[filterProperty.key] as Timestamp).toDate(),
                       ) &&
