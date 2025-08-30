@@ -513,7 +513,7 @@ class PlayerEventDetails extends ConsumerWidget {
                   ],
                 ),
                 PaginatedList(
-                  builder: (doc) {
+                  builder: (doc, model) {
                     final playerData = castMap(doc.data());
                     return Column(
                       children: [

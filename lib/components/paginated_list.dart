@@ -13,9 +13,10 @@ class DocModel {
   factory DocModel.fromMap(Map<String, dynamic> map) {
     return DocModel(
       Map.fromEntries(
-        castMap(
-          map["fields"],
-        ).entries.map((entry) => MapEntry(entry.key, DataField.fromMap(map))),
+        castMap(map["fields"]).entries.map(
+          (entry) =>
+              MapEntry(entry.key, DataField.fromMap(map["fields"]?[entry.key])),
+        ),
       ),
     );
   }
@@ -29,6 +30,7 @@ sealed class DataField {
   const DataField(this.key, this.name, this.required);
 
   factory DataField.fromMap(Map<String, dynamic> map) {
+    print(map);
     final bool required = map["required"] ?? false;
     final String name = map["name"] ?? "Name";
     final String key = map["key"] ?? "key";
@@ -48,7 +50,7 @@ class TextDataField extends DataField {
 }
 
 class PaginatedList extends ConsumerStatefulWidget {
-  final Widget Function(DocumentSnapshot<Object?>) builder;
+  final Widget Function(DocumentSnapshot<Object?>, DocModel) builder;
   final Query<Map<String, dynamic>> query;
   final String collectionKey;
   final List<DocumentSnapshot<Object?>> Function(
@@ -87,12 +89,14 @@ class _PaginatedListState extends ConsumerState<PaginatedList> {
     return docs.when(
       data: (data) {
         final modelIndex = data.indexWhere((doc) => doc.id == "model");
-        final Map<String, dynamic>? model =
-            modelIndex == -1 ? null : castMap(data[modelIndex].data());
-        if (modelIndex != -1) {
-          data.removeAt(modelIndex);
+        if (modelIndex == -1) {
+          throw ErrorDescription("no doc model found");
         }
-        print(model);
+        final DocModel docModel = DocModel.fromMap(
+          castMap(data[modelIndex].data()),
+        );
+        data.removeAt(modelIndex);
+
         final List<DocumentSnapshot<Object?>> children =
             widget.filter != null
                 ? widget.filter!(data).toList()
@@ -103,7 +107,7 @@ class _PaginatedListState extends ConsumerState<PaginatedList> {
         return ListView.builder(
           itemCount: children.length,
           itemBuilder: (context, index) {
-            return widget.builder(children[index]);
+            return widget.builder(children[index], docModel);
           },
         );
       },

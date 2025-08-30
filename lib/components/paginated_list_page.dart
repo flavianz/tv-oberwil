@@ -102,7 +102,7 @@ class OrderData {
 }
 
 class PaginatedListPage extends StatefulWidget {
-  final Widget Function(DocumentSnapshot<Object?>)? builder;
+  final Widget Function(DocumentSnapshot<Object?>, DocModel)? builder;
   final Query<Map<String, dynamic>> query;
   final String collectionKey;
   final int maxQueryLimit;
@@ -415,7 +415,7 @@ class _PaginatedListPageState extends State<PaginatedListPage> {
                 child: PaginatedList(
                   builder:
                       widget.tableOptions != null
-                          ? ((doc) {
+                          ? ((doc, model) {
                             final data = castMap(doc.data());
                             return GestureDetector(
                               onTap: () => widget.tableOptions!.rowOnTap(doc),

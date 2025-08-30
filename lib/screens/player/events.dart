@@ -45,7 +45,7 @@ class _PlayerEventsState extends ConsumerState<PlayerEvents> {
       for (var doc in recEventsProvider.value!) doc.id: castMap(doc.data()),
     };
 
-    builder(DocumentSnapshot<Object?> doc) {
+    builder(DocumentSnapshot<Object?> doc, model) {
       final eventData = castMap(doc.data());
 
       dynamic getValue(String key, {dynamic defaultV}) {

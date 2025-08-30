@@ -12,9 +12,6 @@ class MembersScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PaginatedListPage(
-      builder: (doc) {
-        return Text(doc.get("first"));
-      },
       query: FirebaseFirestore.instance.collection("members"),
       collectionKey: "members",
       searchFields: ["search_last", "search_first", "search_middle"],
