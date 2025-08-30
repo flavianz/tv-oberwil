@@ -3,6 +3,49 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tv_oberwil/firestore_providers/paginated_list_proivder.dart';
 import 'package:equatable/equatable.dart';
+import 'package:tv_oberwil/utils.dart';
+
+class DocModel {
+  final Map<String, DataField> fields;
+
+  const DocModel(this.fields);
+
+  factory DocModel.fromMap(Map<String, dynamic> map) {
+    return DocModel(
+      Map.fromEntries(
+        castMap(
+          map["fields"],
+        ).entries.map((entry) => MapEntry(entry.key, DataField.fromMap(map))),
+      ),
+    );
+  }
+}
+
+sealed class DataField {
+  final bool required;
+  final String name;
+  final String key;
+
+  const DataField(this.key, this.name, this.required);
+
+  factory DataField.fromMap(Map<String, dynamic> map) {
+    final bool required = map["required"] ?? false;
+    final String name = map["name"] ?? "Name";
+    final String key = map["key"] ?? "key";
+    switch ((map["type"] ?? "") as String) {
+      case "text":
+        return TextDataField(key, name, required, map["searchable"] ?? false);
+      case _:
+        throw ErrorDescription("Unknown data field type");
+    }
+  }
+}
+
+class TextDataField extends DataField {
+  final bool isSearchable;
+
+  TextDataField(super.key, super.name, super.required, this.isSearchable);
+}
 
 class PaginatedList extends ConsumerStatefulWidget {
   final Widget Function(DocumentSnapshot<Object?>) builder;
@@ -43,6 +86,13 @@ class _PaginatedListState extends ConsumerState<PaginatedList> {
     );
     return docs.when(
       data: (data) {
+        final modelIndex = data.indexWhere((doc) => doc.id == "model");
+        final Map<String, dynamic>? model =
+            modelIndex == -1 ? null : castMap(data[modelIndex].data());
+        if (modelIndex != -1) {
+          data.removeAt(modelIndex);
+        }
+        print(model);
         final List<DocumentSnapshot<Object?>> children =
             widget.filter != null
                 ? widget.filter!(data).toList()
