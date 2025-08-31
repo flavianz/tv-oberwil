@@ -53,6 +53,14 @@ sealed class DataField {
           tableColumnWidth: tableColumnWidth,
           order: order,
         );
+      case "bool":
+        return BoolDataField(
+          key,
+          name,
+          required,
+          tableColumnWidth: tableColumnWidth,
+          order: order,
+        );
       case _:
         throw ErrorDescription("Unknown data field type");
     }
@@ -77,6 +85,16 @@ class TextDataField extends DataField {
     super.name,
     super.required,
     this.isSearchable, {
+    super.tableColumnWidth,
+    super.order,
+  });
+}
+
+class BoolDataField extends DataField {
+  const BoolDataField(
+    super.key,
+    super.name,
+    super.required, {
     super.tableColumnWidth,
     super.order,
   });

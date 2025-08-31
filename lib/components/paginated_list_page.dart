@@ -451,6 +451,11 @@ class _PaginatedListPageState extends State<PaginatedListPage> {
                                                         TextDataField() => Text(
                                                           data[field.key] ?? "",
                                                         ),
+                                                        BoolDataField() =>
+                                                          getBoolPill(
+                                                            data[field.key] ??
+                                                                false,
+                                                          ),
                                                       },
                                                     ),
                                                   ),
