@@ -429,7 +429,7 @@ class _PaginatedListPageState extends State<PaginatedListPage> {
                                       ),
                                       child: Row(
                                         children:
-                                            widget.tableOptions!.columns.map((
+                                            /*widget.tableOptions!.columns.map((
                                               column,
                                             ) {
                                               return Expanded(
@@ -442,7 +442,29 @@ class _PaginatedListPageState extends State<PaginatedListPage> {
                                                   ),
                                                 ),
                                               );
-                                            }).toList(),
+                                            }).toList(),*/
+                                            model.fields.values
+                                                .where(
+                                                  (field) =>
+                                                      field.tableColumnWidth !=
+                                                      null,
+                                                )
+                                                .map(
+                                                  (field) => Expanded(
+                                                    flex:
+                                                        field.tableColumnWidth!,
+                                                    child: Align(
+                                                      alignment:
+                                                          Alignment.centerLeft,
+                                                      child: switch (field) {
+                                                        TextDataField() => Text(
+                                                          data[field.key],
+                                                        ),
+                                                      },
+                                                    ),
+                                                  ),
+                                                )
+                                                .toList(),
                                       ),
                                     ),
                                     Divider(height: 20),

@@ -26,27 +26,50 @@ sealed class DataField {
   final bool required;
   final String name;
   final String key;
+  final int? tableColumnWidth;
 
-  const DataField(this.key, this.name, this.required);
+  const DataField(this.key, this.name, this.required, {this.tableColumnWidth});
 
   factory DataField.fromMap(Map<String, dynamic> map) {
-    print(map);
     final bool required = map["required"] ?? false;
     final String name = map["name"] ?? "Name";
     final String key = map["key"] ?? "key";
+    final int? tableColumnWidth = map["table_column_width"];
     switch ((map["type"] ?? "") as String) {
       case "text":
-        return TextDataField(key, name, required, map["searchable"] ?? false);
+        return TextDataField(
+          key,
+          name,
+          required,
+          map["searchable"] ?? false,
+          tableColumnWidth: tableColumnWidth,
+        );
       case _:
         throw ErrorDescription("Unknown data field type");
     }
+  }
+
+  @override
+  String toString() {
+    return {
+      "required": required,
+      "name": name,
+      "key": key,
+      "column_width": tableColumnWidth,
+    }.toString();
   }
 }
 
 class TextDataField extends DataField {
   final bool isSearchable;
 
-  TextDataField(super.key, super.name, super.required, this.isSearchable);
+  TextDataField(
+    super.key,
+    super.name,
+    super.required,
+    this.isSearchable, {
+    super.tableColumnWidth,
+  });
 }
 
 class PaginatedList extends ConsumerStatefulWidget {
@@ -95,12 +118,13 @@ class _PaginatedListState extends ConsumerState<PaginatedList> {
         final DocModel docModel = DocModel.fromMap(
           castMap(data[modelIndex].data()),
         );
-        data.removeAt(modelIndex);
+        final cleanData = [...data];
+        cleanData.removeAt(modelIndex);
 
         final List<DocumentSnapshot<Object?>> children =
             widget.filter != null
-                ? widget.filter!(data).toList()
-                : data.toList();
+                ? widget.filter!(cleanData).toList()
+                : cleanData.toList();
         if (children.isEmpty) {
           return const Center(child: Text('Nichts gefunden!'));
         }
