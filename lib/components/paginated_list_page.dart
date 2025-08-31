@@ -467,6 +467,12 @@ class _PaginatedListPageState extends State<PaginatedListPage> {
                                                             "${date.day}. ${date.month}. ${date.year}",
                                                           );
                                                         }(),
+                                                        SelectionDataField() =>
+                                                          Text(
+                                                            field.options[data[field
+                                                                    .key]] ??
+                                                                "",
+                                                          ),
                                                       },
                                                     ),
                                                   ),

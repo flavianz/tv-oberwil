@@ -69,6 +69,15 @@ sealed class DataField {
           tableColumnWidth: tableColumnWidth,
           order: order,
         );
+      case "selection":
+        return SelectionDataField(
+          key,
+          name,
+          required,
+          map["options"] ?? {},
+          tableColumnWidth: tableColumnWidth,
+          order: order,
+        );
       case _:
         throw ErrorDescription("Unknown data field type");
     }
@@ -113,6 +122,19 @@ class DateDataField extends DataField {
     super.key,
     super.name,
     super.required, {
+    super.tableColumnWidth,
+    super.order,
+  });
+}
+
+class SelectionDataField extends DataField {
+  final Map<String, dynamic> options;
+
+  SelectionDataField(
+    super.key,
+    super.name,
+    super.required,
+    this.options, {
     super.tableColumnWidth,
     super.order,
   });
