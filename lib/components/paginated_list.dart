@@ -61,6 +61,14 @@ sealed class DataField {
           tableColumnWidth: tableColumnWidth,
           order: order,
         );
+      case "date":
+        return DateDataField(
+          key,
+          name,
+          required,
+          tableColumnWidth: tableColumnWidth,
+          order: order,
+        );
       case _:
         throw ErrorDescription("Unknown data field type");
     }
@@ -92,6 +100,16 @@ class TextDataField extends DataField {
 
 class BoolDataField extends DataField {
   const BoolDataField(
+    super.key,
+    super.name,
+    super.required, {
+    super.tableColumnWidth,
+    super.order,
+  });
+}
+
+class DateDataField extends DataField {
+  const DateDataField(
     super.key,
     super.name,
     super.required, {

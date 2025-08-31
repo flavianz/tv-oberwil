@@ -456,6 +456,17 @@ class _PaginatedListPageState extends State<PaginatedListPage> {
                                                             data[field.key] ??
                                                                 false,
                                                           ),
+                                                        DateDataField() => () {
+                                                          final date = DateTime.fromMillisecondsSinceEpoch(
+                                                            ((data[field.key] ??
+                                                                        Timestamp.now())
+                                                                    as Timestamp)
+                                                                .millisecondsSinceEpoch,
+                                                          );
+                                                          return Text(
+                                                            "${date.day}. ${date.month}. ${date.year}",
+                                                          );
+                                                        }(),
                                                       },
                                                     ),
                                                   ),
