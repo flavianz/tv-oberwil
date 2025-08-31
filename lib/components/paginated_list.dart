@@ -27,14 +27,22 @@ sealed class DataField {
   final String name;
   final String key;
   final int? tableColumnWidth;
+  final int? order;
 
-  const DataField(this.key, this.name, this.required, {this.tableColumnWidth});
+  const DataField(
+    this.key,
+    this.name,
+    this.required, {
+    this.tableColumnWidth,
+    this.order,
+  });
 
   factory DataField.fromMap(Map<String, dynamic> map) {
     final bool required = map["required"] ?? false;
     final String name = map["name"] ?? "Name";
     final String key = map["key"] ?? "key";
     final int? tableColumnWidth = map["table_column_width"];
+    final int? order = map["order"];
     switch ((map["type"] ?? "") as String) {
       case "text":
         return TextDataField(
@@ -43,6 +51,7 @@ sealed class DataField {
           required,
           map["searchable"] ?? false,
           tableColumnWidth: tableColumnWidth,
+          order: order,
         );
       case _:
         throw ErrorDescription("Unknown data field type");
@@ -69,6 +78,7 @@ class TextDataField extends DataField {
     super.required,
     this.isSearchable, {
     super.tableColumnWidth,
+    super.order,
   });
 }
 

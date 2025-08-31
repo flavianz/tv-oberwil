@@ -417,6 +417,16 @@ class _PaginatedListPageState extends State<PaginatedListPage> {
                       widget.tableOptions != null
                           ? ((doc, model) {
                             final data = castMap(doc.data());
+                            final orderedFields =
+                                model.fields.values
+                                    .where(
+                                      (field) => field.tableColumnWidth != null,
+                                    )
+                                    .toList()
+                                  ..sort(
+                                    (a, b) =>
+                                        (a.order ?? 0).compareTo(b.order ?? 0),
+                                  );
                             return GestureDetector(
                               onTap: () => widget.tableOptions!.rowOnTap(doc),
                               child: MouseRegion(
@@ -429,26 +439,7 @@ class _PaginatedListPageState extends State<PaginatedListPage> {
                                       ),
                                       child: Row(
                                         children:
-                                            /*widget.tableOptions!.columns.map((
-                                              column,
-                                            ) {
-                                              return Expanded(
-                                                flex: column.space,
-                                                child: Align(
-                                                  alignment:
-                                                      Alignment.centerLeft,
-                                                  child: column.builder(
-                                                    data[column.key],
-                                                  ),
-                                                ),
-                                              );
-                                            }).toList(),*/
-                                            model.fields.values
-                                                .where(
-                                                  (field) =>
-                                                      field.tableColumnWidth !=
-                                                      null,
-                                                )
+                                            orderedFields
                                                 .map(
                                                   (field) => Expanded(
                                                     flex:
@@ -458,7 +449,7 @@ class _PaginatedListPageState extends State<PaginatedListPage> {
                                                           Alignment.centerLeft,
                                                       child: switch (field) {
                                                         TextDataField() => Text(
-                                                          data[field.key],
+                                                          data[field.key] ?? "",
                                                         ),
                                                       },
                                                     ),
