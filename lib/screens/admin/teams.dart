@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:tv_oberwil/components/misc.dart';
 import 'package:tv_oberwil/components/paginated_list_page.dart';
 import 'package:tv_oberwil/utils.dart';
 
@@ -19,54 +18,9 @@ class TeamsScreen extends StatelessWidget {
       collectionKey: "teams",
       title: "Teams",
       searchFields: ["search_name"],
-      tableOptions: TableOptions(
-        [
-          TableColumn(
-            "name",
-            "Name",
-            (data) {
-              return Text(data ?? "");
-            },
-            1,
-            OrderPropertyType.text,
-          ),
-          TableColumn(
-            "sport_type",
-            "Sportart",
-            (data) {
-              return Text(switch (data) {
-                "floorball" => "Unihockey",
-                "volleyball" => "Volleyball",
-                "riege" => "Riege",
-                _ => "Keine Angabe",
-              });
-            },
-            1,
-            OrderPropertyType.text,
-          ),
-          TableColumn(
-            "plays_in_league",
-            "Spielt in Liga",
-            (data) {
-              return getBoolPill(data);
-            },
-            1,
-            OrderPropertyType.bool,
-          ),
-          TableColumn(
-            "genders",
-            "Geschlecht",
-            (data) {
-              return getGenderPill(data);
-            },
-            1,
-            OrderPropertyType.text,
-          ),
-        ],
-        (doc) {
-          context.push("/admin/team/${doc.id}");
-        },
-      ),
+      tableOptions: TableOptions((doc) {
+        context.push("/admin/team/${doc.id}");
+      }),
       actions: [
         FilledButton.icon(
           onPressed:

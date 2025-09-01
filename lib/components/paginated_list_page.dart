@@ -10,61 +10,10 @@ import 'package:tv_oberwil/utils.dart';
 
 import '../firestore_providers/paginated_list_proivder.dart';
 
-class TableColumn {
-  final String key;
-  final String name;
-  final Widget Function(dynamic data) builder;
-  final int space;
-  final OrderPropertyType orderType;
-
-  const TableColumn(
-    this.key,
-    this.name,
-    this.builder,
-    this.space,
-    this.orderType,
-  );
-}
-
 class TableOptions {
-  final List<TableColumn> columns;
   final Function(DocumentSnapshot<Object?>) rowOnTap;
 
-  const TableOptions(this.columns, this.rowOnTap);
-}
-
-sealed class Filter {
-  final String name;
-  final String key;
-  final IconData icon;
-
-  const Filter(this.key, this.name, this.icon);
-}
-
-class ChipFilter extends Filter {
-  final Map<String, String> options;
-  final bool isList;
-
-  ChipFilter(
-    super.key,
-    super.name,
-    super.icon,
-    this.options, {
-    this.isList = false,
-  });
-}
-
-class BoolFilter extends Filter {
-  final bool Function(bool, dynamic data)? filterApplyFunction;
-
-  BoolFilter(super.key, super.name, super.icon, {this.filterApplyFunction});
-}
-
-class DateFilter extends Filter {
-  final DateTime minDate;
-  final DateTime maxDate;
-
-  DateFilter(super.key, super.name, super.icon, this.minDate, this.maxDate);
+  const TableOptions(this.rowOnTap);
 }
 
 sealed class FilterProperty {
@@ -92,8 +41,6 @@ class DateFilterProperty extends FilterProperty {
 
   DateFilterProperty(super.key, this.startDate, this.endDate);
 }
-
-enum OrderPropertyType { text, bool, date }
 
 class OrderData {
   DataField filterField;
@@ -200,6 +147,7 @@ class _PaginatedListPageState extends ConsumerState<PaginatedListPage> {
                   ? true
                   : data[filterProperty.key] == filterProperty.value;
             case ChipFilterProperty():
+              print(filterProperty.isList);
               if (filterProperty.isList) {
                 return filterProperty.selectedKeys.any(
                   (option) =>
@@ -311,6 +259,15 @@ class _PaginatedListPageState extends ConsumerState<PaginatedListPage> {
                                             field.options[data[field.key]] ??
                                                 "",
                                           ),
+                                          MultiSelectDataField() => Text(
+                                            (data[field.key] as List<dynamic>?)
+                                                    ?.map(
+                                                      (key) =>
+                                                          field.options[key],
+                                                    )
+                                                    .join(", ") ??
+                                                "",
+                                          ),
                                         },
                                       ),
                                     ),
@@ -353,6 +310,11 @@ class _PaginatedListPageState extends ConsumerState<PaginatedListPage> {
                   filter.key,
                   filter.options.keys.toList(),
                   false,
+                ),
+                MultiSelectDataField() => ChipFilterProperty(
+                  filter.key,
+                  filter.options.keys.toList(),
+                  true,
                 ),
                 DateDataField() => DateFilterProperty(
                   filter.key,
@@ -409,12 +371,32 @@ class _PaginatedListPageState extends ConsumerState<PaginatedListPage> {
                   DocumentSnapshot<Object?> a,
                   DocumentSnapshot<Object?> b,
                 ) {
-                  final value = ((castMap(a.data())["birthdate"] ??
+                  final value = ((castMap(a.data())[orderData
+                                  .filterField
+                                  .key] ??
                               Timestamp.now())
                           as Timestamp)
                       .compareTo(
-                        (castMap(b.data())["birthdate"] ?? Timestamp.now())
+                        (castMap(b.data())[orderData.filterField.key] ??
+                                Timestamp.now())
                             as Timestamp,
+                      );
+                  return orderData.direction ? -1 * value : value;
+                },
+                MultiSelectDataField() => (
+                  DocumentSnapshot<Object?> a,
+                  DocumentSnapshot<Object?> b,
+                ) {
+                  final value = ((castMap(a.data())[orderData
+                                  .filterField
+                                  .key] ??
+                              [])
+                          as List<dynamic>)
+                      .length
+                      .compareTo(
+                        ((castMap(b.data())[orderData.filterField.key] ?? [],)
+                                as List)
+                            .length,
                       );
                   return orderData.direction ? -1 * value : value;
                 },
@@ -612,73 +594,83 @@ class FilterDialogState extends State<FilterDialog> {
                                 Text(filter.name),
                                 Divider(),
                                 switch (filter) {
-                                  SelectionDataField() => Wrap(
-                                    alignment: WrapAlignment.start,
-                                    spacing: 5,
-                                    children: [
-                                      FilterChip(
-                                        selected:
-                                            ((widget.filterProperties[filter
-                                                        .key])
-                                                    as ChipFilterProperty?)
-                                                ?.selectedKeys
-                                                .length ==
-                                            filter.options.length,
-                                        label: Text("Alle"),
-                                        onSelected: (bool isSelectedNow) {
-                                          if (isSelectedNow) {
-                                            setState(() {
-                                              widget.filterProperties[filter
-                                                  .key] = ChipFilterProperty(
-                                                filter.key,
-                                                filter.options.keys.toList(),
-                                                false,
-                                              );
-                                            });
-                                          } else {
-                                            setState(() {
-                                              widget.filterProperties[filter
-                                                  .key] = ChipFilterProperty(
-                                                filter.key,
-                                                [],
-                                                false,
-                                              );
-                                            });
-                                          }
-                                        },
-                                      ),
-                                      ...filter.options.entries.map(
-                                        (option) => FilterChip(
-                                          selected: ((widget
-                                                      .filterProperties[filter
-                                                      .key])
-                                                  as ChipFilterProperty?)!
-                                              .selectedKeys
-                                              .contains(option.key),
-                                          label: Text(option.value),
-                                          onSelected: (isSelectedNow) {
+                                  SelectionDataField() ||
+                                  MultiSelectDataField() => () {
+                                    final options =
+                                        filter is SelectionDataField
+                                            ? filter.options
+                                            : (filter as MultiSelectDataField)
+                                                .options;
+                                    return Wrap(
+                                      alignment: WrapAlignment.start,
+                                      spacing: 5,
+                                      children: [
+                                        FilterChip(
+                                          selected:
+                                              ((widget.filterProperties[filter
+                                                          .key])
+                                                      as ChipFilterProperty?)
+                                                  ?.selectedKeys
+                                                  .length ==
+                                              options.length,
+                                          label: Text("Alle"),
+                                          onSelected: (bool isSelectedNow) {
                                             if (isSelectedNow) {
                                               setState(() {
-                                                ((widget.filterProperties[filter
-                                                            .key])
-                                                        as ChipFilterProperty?)
-                                                    ?.selectedKeys
-                                                    .add(option.key);
+                                                widget.filterProperties[filter
+                                                    .key] = ChipFilterProperty(
+                                                  filter.key,
+                                                  options.keys.toList(),
+                                                  filter
+                                                      is MultiSelectDataField,
+                                                );
                                               });
                                             } else {
                                               setState(() {
-                                                ((widget.filterProperties[filter
-                                                            .key])
-                                                        as ChipFilterProperty?)
-                                                    ?.selectedKeys
-                                                    .remove(option.key);
+                                                widget.filterProperties[filter
+                                                    .key] = ChipFilterProperty(
+                                                  filter.key,
+                                                  [],
+                                                  filter
+                                                      is MultiSelectDataField,
+                                                );
                                               });
                                             }
                                           },
                                         ),
-                                      ),
-                                    ],
-                                  ),
+                                        ...options.entries.map(
+                                          (option) => FilterChip(
+                                            selected: ((widget
+                                                        .filterProperties[filter
+                                                        .key])
+                                                    as ChipFilterProperty?)!
+                                                .selectedKeys
+                                                .contains(option.key),
+                                            label: Text(option.value),
+                                            onSelected: (isSelectedNow) {
+                                              if (isSelectedNow) {
+                                                setState(() {
+                                                  ((widget.filterProperties[filter
+                                                              .key])
+                                                          as ChipFilterProperty?)
+                                                      ?.selectedKeys
+                                                      .add(option.key);
+                                                });
+                                              } else {
+                                                setState(() {
+                                                  ((widget.filterProperties[filter
+                                                              .key])
+                                                          as ChipFilterProperty?)
+                                                      ?.selectedKeys
+                                                      .remove(option.key);
+                                                });
+                                              }
+                                            },
+                                          ),
+                                        ),
+                                      ],
+                                    );
+                                  }(),
                                   BoolDataField() => SingleChildScrollView(
                                     scrollDirection: Axis.horizontal,
                                     child: Row(

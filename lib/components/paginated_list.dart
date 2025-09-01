@@ -79,6 +79,15 @@ sealed class DataField {
           tableColumnWidth: tableColumnWidth,
           order: order,
         );
+      case "multi_select":
+        return MultiSelectDataField(
+          key,
+          name,
+          required,
+          map["options"] ?? {},
+          tableColumnWidth: tableColumnWidth,
+          order: order,
+        );
       case _:
         throw ErrorDescription("Unknown data field type");
     }
@@ -137,6 +146,19 @@ class SelectionDataField extends DataField {
   final Map<String, dynamic> options;
 
   SelectionDataField(
+    super.key,
+    super.name,
+    super.required,
+    this.options, {
+    super.tableColumnWidth,
+    super.order,
+  });
+}
+
+class MultiSelectDataField extends DataField {
+  final Map<String, dynamic> options;
+
+  MultiSelectDataField(
     super.key,
     super.name,
     super.required,
