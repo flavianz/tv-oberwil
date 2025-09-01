@@ -513,7 +513,7 @@ class PlayerEventDetails extends ConsumerWidget {
                   ],
                 ),
                 PaginatedList(
-                  builder: (doc, model) {
+                  builder: (doc) {
                     final playerData = castMap(doc.data());
                     return Column(
                       children: [
@@ -633,7 +633,7 @@ class PlayerEventDetails extends ConsumerWidget {
                   },
                   query: FirebaseFirestore.instance.collection("members"),
                   filter:
-                      (docs, _) =>
+                      (docs) =>
                           docs.where((doc) {
                               final data = castMap(doc.data());
                               return data["roles"] != null &&

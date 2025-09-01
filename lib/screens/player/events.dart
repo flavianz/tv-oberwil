@@ -45,7 +45,7 @@ class _PlayerEventsState extends ConsumerState<PlayerEvents> {
       for (var doc in recEventsProvider.value!) doc.id: castMap(doc.data()),
     };
 
-    builder(DocumentSnapshot<Object?> doc, model) {
+    builder(DocumentSnapshot<Object?> doc) {
       final eventData = castMap(doc.data());
 
       dynamic getValue(String key, {dynamic defaultV}) {
@@ -783,7 +783,7 @@ class _PlayerEventsState extends ConsumerState<PlayerEvents> {
                       .doc(widget.teamId)
                       .collection("events"),
                   collectionKey: "teams/${widget.teamId}/events",
-                  filter: (data, _) {
+                  filter: (data) {
                     return data.where((doc) {
                         final data = castMap(doc.data());
                         return data["date"] != null &&
@@ -834,7 +834,7 @@ class _PlayerEventsState extends ConsumerState<PlayerEvents> {
                       .collection("events"),
 
                   collectionKey: "teams/${widget.teamId}/events",
-                  filter: (data, _) {
+                  filter: (data) {
                     return data.where((doc) {
                         final data = castMap(doc.data());
                         return data["date"] != null &&

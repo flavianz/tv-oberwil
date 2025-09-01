@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tv_oberwil/firestore_providers/paginated_list_proivder.dart';
-import 'package:equatable/equatable.dart';
 import 'package:tv_oberwil/utils.dart';
 
 class DocModel {
@@ -66,6 +65,8 @@ sealed class DataField {
           key,
           name,
           required,
+          ((map["min_date"] ?? Timestamp.now()) as Timestamp).toDate(),
+          ((map["max_date"] ?? Timestamp.now()) as Timestamp).toDate(),
           tableColumnWidth: tableColumnWidth,
           order: order,
         );
@@ -118,10 +119,15 @@ class BoolDataField extends DataField {
 }
 
 class DateDataField extends DataField {
+  final DateTime minDate;
+  final DateTime maxDate;
+
   const DateDataField(
     super.key,
     super.name,
-    super.required, {
+    super.required,
+    this.minDate,
+    this.maxDate, {
     super.tableColumnWidth,
     super.order,
   });
@@ -141,15 +147,14 @@ class SelectionDataField extends DataField {
 }
 
 class PaginatedList extends ConsumerStatefulWidget {
-  final Widget Function(DocumentSnapshot<Object?>, DocModel) builder;
+  final Widget Function(DocumentSnapshot<Object?>) builder;
   final Query<Map<String, dynamic>> query;
   final String collectionKey;
   final List<DocumentSnapshot<Object?>> Function(
     List<DocumentSnapshot<Object?>>,
-    DocModel,
   )?
   filter;
-  final Function(DocModel)? modelGetter;
+  final bool removeModel;
 
   const PaginatedList({
     super.key,
@@ -157,21 +162,11 @@ class PaginatedList extends ConsumerStatefulWidget {
     required this.query,
     required this.collectionKey,
     this.filter,
-    this.modelGetter,
+    this.removeModel = false,
   });
 
   @override
   ConsumerState<PaginatedList> createState() => _PaginatedListState();
-}
-
-class PaginatedParams extends Equatable {
-  final Query<Map<String, dynamic>> query;
-  final String collectionKey;
-
-  const PaginatedParams(this.query, this.collectionKey);
-
-  @override
-  List<Object?> get props => [query, collectionKey];
 }
 
 class _PaginatedListState extends ConsumerState<PaginatedList> {
@@ -182,23 +177,14 @@ class _PaginatedListState extends ConsumerState<PaginatedList> {
     );
     return docs.when(
       data: (data) {
-        final modelIndex = data.indexWhere((doc) => doc.id == "model");
-        if (modelIndex == -1) {
-          throw ErrorDescription("no doc model found");
-        }
-        final DocModel docModel = DocModel.fromMap(
-          castMap(data[modelIndex].data()),
-        );
         final cleanData = [...data];
-        cleanData.removeAt(modelIndex);
-
-        if (widget.modelGetter != null) {
-          widget.modelGetter!(docModel);
+        if (widget.removeModel) {
+          cleanData.removeWhere((doc) => doc.id == "model");
         }
 
         final List<DocumentSnapshot<Object?>> children =
             widget.filter != null
-                ? widget.filter!(cleanData, docModel).toList()
+                ? widget.filter!(cleanData).toList()
                 : cleanData.toList();
         if (children.isEmpty) {
           return const Center(child: Text('Nichts gefunden!'));
@@ -206,7 +192,7 @@ class _PaginatedListState extends ConsumerState<PaginatedList> {
         return ListView.builder(
           itemCount: children.length,
           itemBuilder: (context, index) {
-            return widget.builder(children[index], docModel);
+            return widget.builder(children[index]);
           },
         );
       },

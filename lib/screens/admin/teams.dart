@@ -67,25 +67,6 @@ class TeamsScreen extends StatelessWidget {
           context.push("/admin/team/${doc.id}");
         },
       ),
-      filters: [
-        BoolFilter(
-          "plays_in_league",
-          "Spielt in Liga",
-          Icons.format_list_numbered,
-        ),
-        ChipFilter("sport_type", "Sportart", Icons.sports, {
-          "floorball": "Unihockey",
-          "volleyball": "Volleyball",
-          "riege": "Riege",
-          "null": "Keine Angabe",
-        }),
-        ChipFilter("genders", "Geschlecht", Icons.transgender, {
-          "women": "Damen",
-          "men": "Herren",
-          "mixed": "Gemischt",
-          "null": "Keine Angabe",
-        }),
-      ],
       actions: [
         FilledButton.icon(
           onPressed:
