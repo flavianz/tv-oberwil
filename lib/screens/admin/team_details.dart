@@ -6,6 +6,8 @@ import 'package:tv_oberwil/components/misc.dart';
 import 'package:tv_oberwil/components/paginated_list_page.dart';
 import 'package:tv_oberwil/utils.dart';
 
+import '../../components/paginated_list.dart';
+
 class TeamDetailsScreen extends StatelessWidget {
   final String uid;
   final bool created;
@@ -149,7 +151,10 @@ class TeamDetailsScreen extends StatelessWidget {
             actions: [
               IconButton.filled(onPressed: () {}, icon: Icon(Icons.add)),
             ],
-            defaultOrderData: OrderData(OrderPropertyType.text, "first", false),
+            defaultOrderData: OrderData(
+              TextDataField("search_last", "Nachname", true, false),
+              false,
+            ),
           ),
         ),
       ],

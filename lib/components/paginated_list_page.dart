@@ -94,11 +94,10 @@ class DateFilterProperty extends FilterProperty {
 enum OrderPropertyType { text, bool, date }
 
 class OrderData {
-  OrderPropertyType type;
-  String key;
+  DataField filterField;
   bool direction; // true = descending, false = ascending
 
-  OrderData(this.type, this.key, this.direction);
+  OrderData(this.filterField, this.direction);
 }
 
 class PaginatedListPage extends StatefulWidget {
@@ -141,6 +140,7 @@ class _PaginatedListPageState extends State<PaginatedListPage> {
   FilterProperty? activeFilter;
   Map<String, FilterProperty>? filterProperties;
   late OrderData orderData;
+  DocModel? model;
 
   @override
   void initState() {
@@ -367,52 +367,70 @@ class _PaginatedListPageState extends State<PaginatedListPage> {
                     padding: const EdgeInsets.only(top: 25, bottom: 7),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.start,
-                      children:
-                          widget.tableOptions!.columns.map((column) {
-                            return Expanded(
-                              flex: column.space,
-                              child: GestureDetector(
-                                onTap: () {
-                                  setState(() {
-                                    if (orderData.key == column.key) {
-                                      orderData.direction =
-                                          !orderData.direction;
-                                    } else {
-                                      orderData.key = column.key;
-                                      orderData.direction = false;
-                                    }
-                                    orderData.type = column.orderType;
-                                  });
-                                },
-                                child: MouseRegion(
-                                  cursor: SystemMouseCursors.click,
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text(column.name),
-                                      Padding(
-                                        padding: EdgeInsets.only(right: 10),
-                                        child: Icon(
-                                          orderData.key == column.key
-                                              ? (orderData.direction
-                                                  ? Icons.arrow_drop_down
-                                                  : Icons.arrow_drop_up)
-                                              : Icons.swap_vert_sharp,
-                                        ),
+                      children: () {
+                        final orderedFields =
+                            model?.fields.values
+                                .where(
+                                  (field) => field.tableColumnWidth != null,
+                                )
+                                .toList()
+                              ?..sort(
+                                (a, b) =>
+                                    (a.order ?? 0).compareTo(b.order ?? 0),
+                              );
+                        return (orderedFields ?? []).map((field) {
+                          return Expanded(
+                            flex: field.tableColumnWidth!,
+                            child: GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  if (orderData.filterField.key == field.key) {
+                                    orderData.direction = !orderData.direction;
+                                  } else {
+                                    orderData.filterField = field;
+                                    orderData.direction = false;
+                                  }
+                                });
+                              },
+                              child: MouseRegion(
+                                cursor: SystemMouseCursors.click,
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(field.name),
+                                    Padding(
+                                      padding: EdgeInsets.only(right: 10),
+                                      child: Icon(
+                                        orderData.filterField.key == field.key
+                                            ? (orderData.direction
+                                                ? Icons.arrow_drop_down
+                                                : Icons.arrow_drop_up)
+                                            : Icons.swap_vert_sharp,
                                       ),
-                                    ],
-                                  ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                            );
-                          }).toList(),
+                            ),
+                          );
+                        }).toList();
+                      }(),
                     ),
                   )
                   : SizedBox.shrink(),
               Divider(thickness: 2, color: Theme.of(context).primaryColor),
               Expanded(
                 child: PaginatedList(
+                  modelGetter:
+                      (model) =>
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            if (mounted) {
+                              setState(() {
+                                this.model = model;
+                              });
+                            }
+                          }),
                   builder:
                       widget.tableOptions != null
                           ? ((doc, model) {
@@ -490,40 +508,50 @@ class _PaginatedListPageState extends State<PaginatedListPage> {
                   query: widget.query,
                   collectionKey: widget.collectionKey,
                   filter:
-                      (docs) =>
+                      (docs, model) =>
                           docs
                               .where(
                                 (doc) =>
                                     filterFunctions.every((test) => test(doc)),
                               )
                               .toList()
-                            ..sort(switch (orderData.type) {
-                              OrderPropertyType.text => (
+                            ..sort(switch (orderData.filterField) {
+                              TextDataField() || SelectionDataField() => (
                                 DocumentSnapshot<Object?> a,
                                 DocumentSnapshot<Object?> b,
                               ) {
                                 final value = (searchify(
-                                  castMap(a.data())[orderData.key] ?? "",
+                                  castMap(a.data())[orderData
+                                          .filterField
+                                          .key] ??
+                                      "",
                                 )).compareTo(
                                   searchify(
-                                    castMap(b.data())[orderData.key] ?? "",
+                                    castMap(b.data())[orderData
+                                            .filterField
+                                            .key] ??
+                                        "",
                                   ),
                                 );
                                 return orderData.direction ? -1 * value : value;
                               },
-                              OrderPropertyType.bool => (
+                              BoolDataField() => (
                                 DocumentSnapshot<Object?> a,
                                 DocumentSnapshot<Object?> b,
                               ) {
                                 final boolA =
                                     ((
-                                          castMap(a.data())[orderData.key] ??
+                                          castMap(a.data())[orderData
+                                                  .filterField
+                                                  .key] ??
                                               (true,),
                                         )
                                         as (bool,));
                                 final boolB =
                                     ((
-                                          castMap(b.data())[orderData.key] ??
+                                          castMap(b.data())[orderData
+                                                  .filterField
+                                                  .key] ??
                                               (true,),
                                         )
                                         as (bool,));
@@ -533,7 +561,7 @@ class _PaginatedListPageState extends State<PaginatedListPage> {
                                         : (boolA.$1 && !boolB.$1 ? 1 : -1);
                                 return orderData.direction ? -1 * value : value;
                               },
-                              OrderPropertyType.date => (
+                              DateDataField() => (
                                 DocumentSnapshot<Object?> a,
                                 DocumentSnapshot<Object?> b,
                               ) {

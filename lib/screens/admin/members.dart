@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:tv_oberwil/components/misc.dart';
+import 'package:tv_oberwil/components/paginated_list.dart';
 import 'package:tv_oberwil/components/paginated_list_page.dart';
 
 import '../../utils.dart';
@@ -88,7 +89,10 @@ class MembersScreen extends StatelessWidget {
           label: Text("Neu"),
         ),
       ],
-      defaultOrderData: OrderData(OrderPropertyType.text, "search_last", false),
+      defaultOrderData: OrderData(
+        TextDataField("search_last", "Nachname", true, false),
+        false,
+      ),
     );
   }
 }

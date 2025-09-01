@@ -146,8 +146,10 @@ class PaginatedList extends ConsumerStatefulWidget {
   final String collectionKey;
   final List<DocumentSnapshot<Object?>> Function(
     List<DocumentSnapshot<Object?>>,
+    DocModel,
   )?
   filter;
+  final Function(DocModel)? modelGetter;
 
   const PaginatedList({
     super.key,
@@ -155,6 +157,7 @@ class PaginatedList extends ConsumerStatefulWidget {
     required this.query,
     required this.collectionKey,
     this.filter,
+    this.modelGetter,
   });
 
   @override
@@ -189,9 +192,13 @@ class _PaginatedListState extends ConsumerState<PaginatedList> {
         final cleanData = [...data];
         cleanData.removeAt(modelIndex);
 
+        if (widget.modelGetter != null) {
+          widget.modelGetter!(docModel);
+        }
+
         final List<DocumentSnapshot<Object?>> children =
             widget.filter != null
-                ? widget.filter!(cleanData).toList()
+                ? widget.filter!(cleanData, docModel).toList()
                 : cleanData.toList();
         if (children.isEmpty) {
           return const Center(child: Text('Nichts gefunden!'));

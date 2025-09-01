@@ -783,7 +783,7 @@ class _PlayerEventsState extends ConsumerState<PlayerEvents> {
                       .doc(widget.teamId)
                       .collection("events"),
                   collectionKey: "teams/${widget.teamId}/events",
-                  filter: (data) {
+                  filter: (data, _) {
                     return data.where((doc) {
                         final data = castMap(doc.data());
                         return data["date"] != null &&
@@ -834,7 +834,7 @@ class _PlayerEventsState extends ConsumerState<PlayerEvents> {
                       .collection("events"),
 
                   collectionKey: "teams/${widget.teamId}/events",
-                  filter: (data) {
+                  filter: (data, _) {
                     return data.where((doc) {
                         final data = castMap(doc.data());
                         return data["date"] != null &&

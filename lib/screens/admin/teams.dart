@@ -5,6 +5,8 @@ import 'package:tv_oberwil/components/misc.dart';
 import 'package:tv_oberwil/components/paginated_list_page.dart';
 import 'package:tv_oberwil/utils.dart';
 
+import '../../components/paginated_list.dart';
+
 class TeamsScreen extends StatelessWidget {
   final bool refresh;
 
@@ -92,7 +94,10 @@ class TeamsScreen extends StatelessWidget {
           icon: Icon(Icons.add),
         ),
       ],
-      defaultOrderData: OrderData(OrderPropertyType.text, "first", false),
+      defaultOrderData: OrderData(
+        TextDataField("search_name", "Nachname", true, false),
+        false,
+      ),
     );
   }
 }

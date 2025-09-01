@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:tv_oberwil/components/paginated_list_page.dart';
 
 import '../../components/misc.dart';
+import '../../components/paginated_list.dart';
 import '../../utils.dart';
 
 class CoachTeamMembers extends StatelessWidget {
@@ -76,7 +77,10 @@ class CoachTeamMembers extends StatelessWidget {
           context.push("./team_member/${doc.id}");
         },
       ),
-      defaultOrderData: OrderData(OrderPropertyType.text, "last", false),
+      defaultOrderData: OrderData(
+        TextDataField("search_last", "Nachname", true, false),
+        false,
+      ),
     );
   }
 }

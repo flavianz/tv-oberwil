@@ -633,7 +633,7 @@ class PlayerEventDetails extends ConsumerWidget {
                   },
                   query: FirebaseFirestore.instance.collection("members"),
                   filter:
-                      (docs) =>
+                      (docs, _) =>
                           docs.where((doc) {
                               final data = castMap(doc.data());
                               return data["roles"] != null &&
