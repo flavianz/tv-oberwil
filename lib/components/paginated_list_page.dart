@@ -147,7 +147,6 @@ class _PaginatedListPageState extends ConsumerState<PaginatedListPage> {
                   ? true
                   : data[filterProperty.key] == filterProperty.value;
             case ChipFilterProperty():
-              print(filterProperty.isList);
               if (filterProperty.isList) {
                 return filterProperty.selectedKeys.any(
                   (option) =>
@@ -301,7 +300,8 @@ class _PaginatedListPageState extends ConsumerState<PaginatedListPage> {
                         field.tableColumnWidth != null &&
                         field is! TextDataField,
                   )
-                  .toList();
+                  .toList()
+                ..sort((a, b) => (a.order ?? 0).compareTo(b.order ?? 0));
           filterProperties = Map.fromEntries(
             filters!.map((filter) {
               return MapEntry(filter.key, switch (filter) {
