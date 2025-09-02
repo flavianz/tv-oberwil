@@ -506,10 +506,10 @@ class _PaginatedListPageState extends ConsumerState<PaginatedListPage> {
                                       }
                                     });
                                   },
-                                  child: MouseRegion(
-                                    cursor: SystemMouseCursors.click,
-                                    child: SingleChildScrollView(
-                                      scrollDirection: Axis.horizontal,
+                                  child: SingleChildScrollView(
+                                    scrollDirection: Axis.horizontal,
+                                    child: MouseRegion(
+                                      cursor: SystemMouseCursors.click,
                                       child: Row(
                                         mainAxisAlignment:
                                             MainAxisAlignment.spaceBetween,

@@ -2,8 +2,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:tv_oberwil/components/details_edit_page.dart';
+import 'package:tv_oberwil/components/paginated_list.dart';
+import 'package:tv_oberwil/components/paginated_list_page.dart';
 import 'package:tv_oberwil/firestore_providers/basic_providers.dart';
 
 class MemberDetailsScreen extends StatelessWidget {
@@ -180,6 +183,54 @@ class _UserAssignDialogState extends ConsumerState<UserAssignDialog> {
                       ],
                     ),
                   ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class MemberSelector extends StatelessWidget {
+  final Function(DocumentSnapshot<Object?>) onSelect;
+
+  const MemberSelector({super.key, required this.onSelect});
+
+  @override
+  Widget build(BuildContext context) {
+    final isScreenWide = MediaQuery.of(context).size.aspectRatio > 1;
+    return ConstrainedBox(
+      constraints: BoxConstraints(maxWidth: 800),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                FilledButton.icon(
+                  onPressed: () => context.pop(),
+                  icon: Icon(Icons.check),
+                  label: const Text('Anwenden'),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Expanded(
+              child: SingleChildScrollView(
+                child: PaginatedListPage(
+                  query: FirebaseFirestore.instance.collection("members"),
+                  collectionKey: "members",
+                  defaultOrderData: OrderData(
+                    TextDataField("search_last", "Nachname", false, false),
+                    false,
+                  ),
+                  tableOptions: TableOptions((doc) {
+                    onSelect(doc);
+                    context.pop();
+                  }),
                 ),
               ),
             ),
