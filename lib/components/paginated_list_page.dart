@@ -24,9 +24,15 @@ sealed class FilterProperty {
 
 class ChipFilterProperty extends FilterProperty {
   final List<String> selectedKeys;
+  final List<String> possibleKeys;
   final bool isList;
 
-  const ChipFilterProperty(super.key, this.selectedKeys, this.isList);
+  const ChipFilterProperty(
+    super.key,
+    this.selectedKeys,
+    this.possibleKeys,
+    this.isList,
+  );
 }
 
 class BoolFilterProperty extends FilterProperty {
@@ -148,10 +154,16 @@ class _PaginatedListPageState extends ConsumerState<PaginatedListPage> {
                   : data[filterProperty.key] == filterProperty.value;
             case ChipFilterProperty():
               if (filterProperty.isList) {
-                return filterProperty.selectedKeys.any(
-                  (option) =>
-                      (data[filterProperty.key] as List).contains(option),
+                print(
+                  "sele ${filterProperty.selectedKeys}, ${(data[filterProperty.key] as List).length}",
                 );
+                return filterProperty.selectedKeys.length ==
+                        filterProperty.possibleKeys.length
+                    ? true
+                    : filterProperty.selectedKeys.any(
+                      (option) =>
+                          (data[filterProperty.key] as List).contains(option),
+                    );
               } else {
                 return filterProperty.selectedKeys.contains(
                   data[filterProperty.key],
@@ -309,10 +321,12 @@ class _PaginatedListPageState extends ConsumerState<PaginatedListPage> {
                 SelectionDataField() => ChipFilterProperty(
                   filter.key,
                   filter.options.keys.toList(),
+                  filter.options.keys.toList(),
                   false,
                 ),
                 MultiSelectDataField() => ChipFilterProperty(
                   filter.key,
+                  filter.options.keys.toList(),
                   filter.options.keys.toList(),
                   true,
                 ),
@@ -350,22 +364,13 @@ class _PaginatedListPageState extends ConsumerState<PaginatedListPage> {
                   DocumentSnapshot<Object?> b,
                 ) {
                   final boolA =
-                      ((
-                            castMap(a.data())[orderData.filterField.key] ??
-                                (true,),
-                          )
-                          as (bool,));
+                      ((castMap(a.data())[orderData.filterField.key] ?? true)
+                          as bool);
                   final boolB =
-                      ((
-                            castMap(b.data())[orderData.filterField.key] ??
-                                (true,),
-                          )
-                          as (bool,));
-                  final value =
-                      boolA.$1 == boolB.$1
-                          ? 0
-                          : (boolA.$1 && !boolB.$1 ? 1 : -1);
-                  return orderData.direction ? -1 * value : value;
+                      ((castMap(b.data())[orderData.filterField.key] ?? true)
+                          as bool);
+                  final value = boolA == boolB ? 0 : (boolA && !boolB ? 1 : -1);
+                  return orderData.direction ? (-1 * value) : value;
                 },
                 DateDataField() => (
                   DocumentSnapshot<Object?> a,
@@ -407,6 +412,7 @@ class _PaginatedListPageState extends ConsumerState<PaginatedListPage> {
             vertical: 15,
           ),
           child: Scaffold(
+            backgroundColor: Colors.transparent,
             appBar:
                 showAppBar
                     ? AppBar(
@@ -626,6 +632,7 @@ class FilterDialogState extends State<FilterDialog> {
                                                     .key] = ChipFilterProperty(
                                                   filter.key,
                                                   options.keys.toList(),
+                                                  options.keys.toList(),
                                                   filter
                                                       is MultiSelectDataField,
                                                 );
@@ -636,6 +643,7 @@ class FilterDialogState extends State<FilterDialog> {
                                                     .key] = ChipFilterProperty(
                                                   filter.key,
                                                   [],
+                                                  options.keys.toList(),
                                                   filter
                                                       is MultiSelectDataField,
                                                 );
