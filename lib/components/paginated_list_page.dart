@@ -508,23 +508,26 @@ class _PaginatedListPageState extends ConsumerState<PaginatedListPage> {
                                   },
                                   child: MouseRegion(
                                     cursor: SystemMouseCursors.click,
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text(field.name),
-                                        Padding(
-                                          padding: EdgeInsets.only(right: 10),
-                                          child: Icon(
-                                            orderData.filterField.key ==
-                                                    field.key
-                                                ? (orderData.direction
-                                                    ? Icons.arrow_drop_down
-                                                    : Icons.arrow_drop_up)
-                                                : Icons.swap_vert_sharp,
+                                    child: SingleChildScrollView(
+                                      scrollDirection: Axis.horizontal,
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text(field.name),
+                                          Padding(
+                                            padding: EdgeInsets.only(right: 10),
+                                            child: Icon(
+                                              orderData.filterField.key ==
+                                                      field.key
+                                                  ? (orderData.direction
+                                                      ? Icons.arrow_drop_down
+                                                      : Icons.arrow_drop_up)
+                                                  : Icons.swap_vert_sharp,
+                                            ),
                                           ),
-                                        ),
-                                      ],
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -572,6 +575,7 @@ class FilterDialog extends StatefulWidget {
 class FilterDialogState extends State<FilterDialog> {
   @override
   Widget build(BuildContext context) {
+    final isScreenWide = MediaQuery.of(context).size.aspectRatio > 1;
     return ConstrainedBox(
       constraints: BoxConstraints(maxWidth: 800),
       child: Padding(
@@ -604,6 +608,7 @@ class FilterDialogState extends State<FilterDialog> {
                                     return Wrap(
                                       alignment: WrapAlignment.start,
                                       spacing: 5,
+                                      runSpacing: 5,
                                       children: [
                                         FilterChip(
                                           selected:
@@ -734,13 +739,8 @@ class FilterDialogState extends State<FilterDialog> {
                                       ],
                                     ),
                                   ),
-                                  DateDataField() => Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceEvenly,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    spacing: 15,
-                                    children: [
+                                  DateDataField() => () {
+                                    final children = [
                                       DateInputBox(
                                         title: "Von",
                                         onDateSelected:
@@ -771,8 +771,25 @@ class FilterDialogState extends State<FilterDialog> {
                                                 .endDate,
                                         isEditMode: true,
                                       ),
-                                    ],
-                                  ),
+                                    ];
+                                    return isScreenWide
+                                        ? Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceEvenly,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
+                                          spacing: 15,
+                                          children: children,
+                                        )
+                                        : Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.stretch,
+                                          spacing: 10,
+                                          children: children,
+                                        );
+                                  }(),
                                   TextDataField() => throw UnimplementedError(),
                                 },
                                 SizedBox(height: 25),
