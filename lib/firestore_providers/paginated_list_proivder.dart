@@ -8,19 +8,18 @@ CollectionProvider paginatedListProvider(
   Query<Map<String, dynamic>> query,
   String collectionKey,
 ) {
-  return StateNotifierProvider<
-    PaginatedListController,
-    AsyncValue<List<DocumentSnapshot>>
-  >((ref) => PaginatedListController(query, collectionKey));
+  return CollectionProvider(
+    (ref) => RealtimeCollectionProvider(query, collectionKey),
+  );
 }
 
-class PaginatedListController
+class RealtimeCollectionProvider
     extends StateNotifier<AsyncValue<List<DocumentSnapshot>>> {
   final Query<Map<String, dynamic>> query;
   final String collectionKey;
   bool isLoading = true;
 
-  PaginatedListController(this.query, this.collectionKey)
+  RealtimeCollectionProvider(this.query, this.collectionKey)
     : super(AsyncLoading()) {
     init();
   }
@@ -111,7 +110,7 @@ class PaginatedListController
 
 typedef CollectionProvider =
     StateNotifierProvider<
-      PaginatedListController,
+      RealtimeCollectionProvider,
       AsyncValue<List<DocumentSnapshot>>
     >;
 
@@ -129,5 +128,21 @@ CollectionProvider getCollectionProvider(
       collectionKey,
     );
     return collectionProviders[collectionKey]!;
+  }
+}
+
+getDocFromLiveCollection(String collectionKey, String docId) async {
+  if (collectionProviders.containsKey(collectionKey)) {
+    return StreamProvider((ref) {
+      return ref
+          .watch(collectionProviders[collectionKey]!.notifier)
+          .stream
+          .map(
+            (value) => value.whenData((data) {
+              final modelIndex = data.indexWhere((doc) => doc.id == docId);
+              if (modelIndex == -1) {}
+            }),
+          );
+    });
   }
 }
