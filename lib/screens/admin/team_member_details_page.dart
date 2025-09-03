@@ -4,12 +4,12 @@ import 'package:tv_oberwil/components/details_edit_page.dart';
 
 import '../../components/misc.dart';
 
-class TeamMemberDetails extends StatelessWidget {
+class TeamMemberDetailsPage extends StatelessWidget {
   final String teamId;
   final String teamMemberId;
   final bool created;
 
-  const TeamMemberDetails({
+  const TeamMemberDetailsPage({
     super.key,
     required this.teamId,
     required this.teamMemberId,

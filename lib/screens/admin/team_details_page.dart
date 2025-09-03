@@ -2,17 +2,16 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:tv_oberwil/components/details_edit_page.dart';
-import 'package:tv_oberwil/components/input_boxes.dart';
-import 'package:tv_oberwil/components/paginated_list_page.dart';
+import 'package:tv_oberwil/components/collection_list_page.dart';
 import 'package:tv_oberwil/utils.dart';
 
-import '../../components/paginated_list.dart';
+import '../../components/collection_list_widget.dart';
 
-class TeamDetailsScreen extends StatelessWidget {
+class TeamDetailsPage extends StatelessWidget {
   final String teamId;
   final bool created;
 
-  const TeamDetailsScreen({
+  const TeamDetailsPage({
     super.key,
     required this.teamId,
     this.created = false,
@@ -73,7 +72,7 @@ class TeamDetailsScreen extends StatelessWidget {
         ]),
         CustomTabType(
           Tab(text: "Mitglieder", icon: Icon(Icons.diversity_3)),
-          PaginatedListPage(
+          CollectionListPage(
             showBackButton: false,
             actionsInSearchBar: true,
             searchFields: ["search_first", "search_last"],
@@ -132,7 +131,6 @@ class TeamDetailsScreen extends StatelessWidget {
                     await showModalBottomSheet(
                       context: context,
                       isScrollControlled: true,
-                      // Allows modal to expand beyond default limits
                       builder:
                           (context) => FractionallySizedBox(
                             heightFactor: 0.7, // 90% of screen height
@@ -186,7 +184,7 @@ class _MembersSelectorState extends State<MembersSelector> {
         child: Column(
           children: [
             Expanded(
-              child: PaginatedListPage(
+              child: CollectionListPage(
                 query: FirebaseFirestore.instance.collection("members"),
                 collectionKey: "members",
                 defaultOrderData: OrderData(

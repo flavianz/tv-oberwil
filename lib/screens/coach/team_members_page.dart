@@ -1,18 +1,18 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:tv_oberwil/components/paginated_list_page.dart';
+import 'package:tv_oberwil/components/collection_list_page.dart';
 
-import '../../components/paginated_list.dart';
+import '../../components/collection_list_widget.dart';
 
-class CoachTeamMembers extends StatelessWidget {
+class CoachTeamMembersPage extends StatelessWidget {
   final String teamId;
 
-  const CoachTeamMembers({super.key, required this.teamId});
+  const CoachTeamMembersPage({super.key, required this.teamId});
 
   @override
   Widget build(BuildContext context) {
-    return PaginatedListPage(
+    return CollectionListPage(
       title: "Teammitglieder",
       searchFields: ["search_first", "search_last"],
       query: FirebaseFirestore.instance

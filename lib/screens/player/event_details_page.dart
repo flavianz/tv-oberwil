@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:tv_oberwil/components/paginated_list.dart';
+import 'package:tv_oberwil/components/collection_list_widget.dart';
 import 'package:tv_oberwil/firestore_providers/paginated_list_proivder.dart';
 import 'package:tv_oberwil/utils.dart';
 
@@ -10,12 +10,12 @@ import '../../components/app.dart';
 import '../../components/misc.dart';
 import '../../firestore_providers/basic_providers.dart';
 
-class PlayerEventDetails extends ConsumerWidget {
+class PlayerEventDetailsPage extends ConsumerWidget {
   final String teamId;
   final String eventId;
   final bool isCoach;
 
-  const PlayerEventDetails({
+  const PlayerEventDetailsPage({
     super.key,
     required this.teamId,
     required this.eventId,
@@ -512,7 +512,7 @@ class PlayerEventDetails extends ConsumerWidget {
                     ),
                   ],
                 ),
-                PaginatedList(
+                CollectionListWidget(
                   builder: (doc) {
                     final playerData = castMap(doc.data());
                     return Column(

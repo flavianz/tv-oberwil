@@ -2,14 +2,14 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
-class Assignment extends StatefulWidget {
-  const Assignment({super.key});
+class AssignmentPage extends StatefulWidget {
+  const AssignmentPage({super.key});
 
   @override
-  State<Assignment> createState() => _AssignmentState();
+  State<AssignmentPage> createState() => _AssignmentPageState();
 }
 
-class _AssignmentState extends State<Assignment> {
+class _AssignmentPageState extends State<AssignmentPage> {
   final controller = TextEditingController();
   bool hasScanned = false;
 

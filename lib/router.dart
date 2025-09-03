@@ -4,15 +4,15 @@ import 'package:firebase_ui_oauth_google/firebase_ui_oauth_google.dart';
 import 'package:go_router/go_router.dart';
 import 'package:tv_oberwil/components/app.dart';
 import 'package:tv_oberwil/screens/admin/home.dart';
-import 'package:tv_oberwil/screens/admin/member_details.dart';
-import 'package:tv_oberwil/screens/admin/members.dart';
-import 'package:tv_oberwil/screens/admin/team_details.dart';
-import 'package:tv_oberwil/screens/admin/team_member_details.dart';
-import 'package:tv_oberwil/screens/admin/teams.dart';
-import 'package:tv_oberwil/screens/coach/team_members.dart';
-import 'package:tv_oberwil/screens/coach/simple_event_details_edit.dart';
-import 'package:tv_oberwil/screens/player/event_details.dart';
-import 'package:tv_oberwil/screens/player/events.dart';
+import 'package:tv_oberwil/screens/admin/member_details_page.dart';
+import 'package:tv_oberwil/screens/admin/members_page.dart';
+import 'package:tv_oberwil/screens/admin/team_details_page.dart';
+import 'package:tv_oberwil/screens/admin/team_member_details_page.dart';
+import 'package:tv_oberwil/screens/admin/teams_page.dart';
+import 'package:tv_oberwil/screens/coach/team_members_page.dart';
+import 'package:tv_oberwil/screens/coach/simple_event_details_edit_page.dart';
+import 'package:tv_oberwil/screens/player/event_details_page.dart';
+import 'package:tv_oberwil/screens/player/events_page.dart';
 
 final router = GoRouter(
   routes: [
@@ -26,7 +26,7 @@ final router = GoRouter(
           routes: [],
           path: '/admin/members',
           builder: (context, state) {
-            return MembersScreen(
+            return MembersPage(
               /*refresh: (state.uri.queryParameters["r"] ?? "false") == "true",*/
             );
           },
@@ -34,7 +34,7 @@ final router = GoRouter(
         GoRoute(
           path: '/admin/teams',
           builder: (context, state) {
-            return TeamsScreen(
+            return TeamsPage(
               refresh: (state.uri.queryParameters["r"] ?? "false") == "true",
             );
           },
@@ -43,7 +43,7 @@ final router = GoRouter(
           path: '/admin/member/:uid',
           builder: (context, state) {
             final userId = state.pathParameters['uid']!;
-            return MemberDetailsScreen(
+            return MemberDetailsPage(
               uid: userId,
               created:
                   (state.uri.queryParameters["create"] ?? "false") == "true",
@@ -54,14 +54,14 @@ final router = GoRouter(
           path: '/admin/team/:uid',
           builder: (context, state) {
             final teamId = state.pathParameters['uid']!;
-            return TeamDetailsScreen(teamId: teamId);
+            return TeamDetailsPage(teamId: teamId);
           },
         ),
         GoRoute(
           path: '/admin/team/:uid/create',
           builder: (context, state) {
             final teamId = state.pathParameters['uid']!;
-            return TeamDetailsScreen(teamId: teamId, created: true);
+            return TeamDetailsPage(teamId: teamId, created: true);
           },
         ),
         GoRoute(
@@ -69,7 +69,7 @@ final router = GoRouter(
           builder: (context, state) {
             final teamId = state.pathParameters['teamId']!;
             final teamMemberId = state.pathParameters['teamMemberId']!;
-            return TeamMemberDetails(
+            return TeamMemberDetailsPage(
               teamId: teamId,
               teamMemberId: teamMemberId,
             );
@@ -80,7 +80,7 @@ final router = GoRouter(
           builder: (context, state) {
             final teamId = state.pathParameters['teamId']!;
             final teamMemberId = state.pathParameters['teamMemberId']!;
-            return TeamMemberDetails(
+            return TeamMemberDetailsPage(
               teamId: teamId,
               teamMemberId: teamMemberId,
             );
@@ -91,7 +91,7 @@ final router = GoRouter(
           builder: (context, state) {
             final teamId = state.pathParameters['teamId']!;
             final teamMemberId = state.pathParameters['teamMemberId']!;
-            return TeamMemberDetails(
+            return TeamMemberDetailsPage(
               teamId: teamId,
               teamMemberId: teamMemberId,
               created: true,
@@ -101,7 +101,7 @@ final router = GoRouter(
         GoRoute(
           path: '/player/team/:team/events',
           builder: (context, state) {
-            return PlayerEvents(teamId: state.pathParameters["team"] ?? "");
+            return PlayerEventsPage(teamId: state.pathParameters["team"] ?? "");
           },
         ),
         GoRoute(
@@ -109,13 +109,13 @@ final router = GoRouter(
           builder: (context, state) {
             final eventId = state.pathParameters['event']!;
             final teamId = state.pathParameters['team']!;
-            return PlayerEventDetails(eventId: eventId, teamId: teamId);
+            return PlayerEventDetailsPage(eventId: eventId, teamId: teamId);
           },
         ),
         GoRoute(
           path: '/coach/team/:team/events',
           builder: (context, state) {
-            return PlayerEvents(
+            return PlayerEventsPage(
               teamId: state.pathParameters["team"] ?? "",
               isCoach: true,
             );
@@ -126,7 +126,7 @@ final router = GoRouter(
           builder: (context, state) {
             final eventId = state.pathParameters['event']!;
             final teamId = state.pathParameters['team']!;
-            return PlayerEventDetails(
+            return PlayerEventDetailsPage(
               eventId: eventId,
               teamId: teamId,
               isCoach: true,
@@ -138,7 +138,7 @@ final router = GoRouter(
           builder: (context, state) {
             final eventId = state.pathParameters['event']!;
             final teamId = state.pathParameters['team']!;
-            return SimpleEventDetailsEdit(eventId: eventId, teamId: teamId);
+            return SimpleEventDetailsEditPage(eventId: eventId, teamId: teamId);
           },
         ),
         GoRoute(
@@ -146,7 +146,7 @@ final router = GoRouter(
           builder: (context, state) {
             final eventId = state.pathParameters['event']!;
             final teamId = state.pathParameters['team']!;
-            return SimpleEventDetailsEdit(
+            return SimpleEventDetailsEditPage(
               eventId: eventId,
               teamId: teamId,
               created: true,
@@ -157,7 +157,7 @@ final router = GoRouter(
           path: '/coach/team/:team',
           builder: (context, state) {
             final teamId = state.pathParameters['team']!;
-            return CoachTeamMembers(teamId: teamId);
+            return CoachTeamMembersPage(teamId: teamId);
           },
         ),
       ],

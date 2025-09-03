@@ -208,7 +208,7 @@ class _DetailsEditPageState extends ConsumerState<DetailsEditPage> {
 
     final data = teamData.value?.data() ?? {};
 
-    if (!teamData.isLoading && teamData.value != null && !_inputsInitialized) {
+    if (teamData.value != null && !_inputsInitialized) {
       resetInputs(data);
       _inputsInitialized = true;
     }

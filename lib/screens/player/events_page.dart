@@ -4,22 +4,26 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:tv_oberwil/components/app.dart';
 import 'package:tv_oberwil/components/misc.dart';
-import 'package:tv_oberwil/components/paginated_list.dart';
+import 'package:tv_oberwil/components/collection_list_widget.dart';
 
 import '../../firestore_providers/paginated_list_proivder.dart';
 import '../../utils.dart';
 
-class PlayerEvents extends ConsumerStatefulWidget {
+class PlayerEventsPage extends ConsumerStatefulWidget {
   final String teamId;
   final bool isCoach;
 
-  const PlayerEvents({super.key, required this.teamId, this.isCoach = false});
+  const PlayerEventsPage({
+    super.key,
+    required this.teamId,
+    this.isCoach = false,
+  });
 
   @override
-  ConsumerState<PlayerEvents> createState() => _PlayerEventsState();
+  ConsumerState<PlayerEventsPage> createState() => _PlayerEventsPageState();
 }
 
-class _PlayerEventsState extends ConsumerState<PlayerEvents> {
+class _PlayerEventsPageState extends ConsumerState<PlayerEventsPage> {
   @override
   Widget build(BuildContext context) {
     final isScreenWide = MediaQuery.of(context).size.aspectRatio > 1;
@@ -776,7 +780,7 @@ class _PlayerEventsState extends ConsumerState<PlayerEvents> {
             padding: EdgeInsets.only(top: 10),
             child: TabBarView(
               children: [
-                PaginatedList(
+                CollectionListWidget(
                   builder: builder,
                   query: FirebaseFirestore.instance
                       .collection("teams")
@@ -826,7 +830,7 @@ class _PlayerEventsState extends ConsumerState<PlayerEvents> {
                       });
                   },
                 ),
-                PaginatedList(
+                CollectionListWidget(
                   builder: builder,
                   query: FirebaseFirestore.instance
                       .collection("teams")

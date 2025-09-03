@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:tv_oberwil/components/input_boxes.dart';
 import 'package:tv_oberwil/components/misc.dart';
-import 'package:tv_oberwil/components/paginated_list.dart';
+import 'package:tv_oberwil/components/collection_list_widget.dart';
 import 'package:tv_oberwil/firestore_providers/firestore_tools.dart';
 import 'package:tv_oberwil/utils.dart';
 
@@ -55,7 +55,7 @@ class OrderData {
   OrderData(this.filterField, this.direction);
 }
 
-class PaginatedListPage extends ConsumerStatefulWidget {
+class CollectionListPage extends ConsumerStatefulWidget {
   final Widget Function(DocumentSnapshot<Object?>)? builder;
   final Query<Map<String, dynamic>> query;
   final String collectionKey;
@@ -68,7 +68,7 @@ class PaginatedListPage extends ConsumerStatefulWidget {
   final bool actionsInSearchBar;
   final OrderData defaultOrderData;
 
-  const PaginatedListPage({
+  const CollectionListPage({
     super.key,
     this.builder,
     required this.query,
@@ -84,10 +84,10 @@ class PaginatedListPage extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<PaginatedListPage> createState() => _PaginatedListPageState();
+  ConsumerState<CollectionListPage> createState() => _CollectionListPageState();
 }
 
-class _PaginatedListPageState extends ConsumerState<PaginatedListPage> {
+class _CollectionListPageState extends ConsumerState<CollectionListPage> {
   String? searchText;
   final TextEditingController searchController = TextEditingController();
   FilterProperty? activeFilter;

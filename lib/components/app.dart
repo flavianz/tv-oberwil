@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:tv_oberwil/screens/norole/assignment.dart';
+import 'package:tv_oberwil/screens/norole/assignment_page.dart';
 
 final userProvider = StreamProvider<User?>(
   (ref) => FirebaseAuth.instance.authStateChanges(),
@@ -66,7 +66,7 @@ class _AppState extends ConsumerState<App> {
       return Center(child: Text("An error occurred loading your data."));
     }
     if (memberData.value?["assign"] == true) {
-      return Assignment();
+      return AssignmentPage();
     }
     final Map<String, dynamic> roles = Map<String, dynamic>.from(
       memberData.value?["roles"] ?? {},

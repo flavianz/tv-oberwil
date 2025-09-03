@@ -168,7 +168,7 @@ class MultiSelectDataField extends DataField {
   });
 }
 
-class PaginatedList extends ConsumerStatefulWidget {
+class CollectionListWidget extends ConsumerStatefulWidget {
   final Widget Function(DocumentSnapshot<Object?>) builder;
   final Query<Map<String, dynamic>> query;
   final String collectionKey;
@@ -178,7 +178,7 @@ class PaginatedList extends ConsumerStatefulWidget {
   filter;
   final bool removeModel;
 
-  const PaginatedList({
+  const CollectionListWidget({
     super.key,
     required this.builder,
     required this.query,
@@ -188,10 +188,11 @@ class PaginatedList extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<PaginatedList> createState() => _PaginatedListState();
+  ConsumerState<CollectionListWidget> createState() =>
+      _CollectionWidgetListState();
 }
 
-class _PaginatedListState extends ConsumerState<PaginatedList> {
+class _CollectionWidgetListState extends ConsumerState<CollectionListWidget> {
   @override
   Widget build(BuildContext context) {
     final docs = ref.watch(

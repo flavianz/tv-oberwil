@@ -2,12 +2,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:tv_oberwil/components/details_edit_page.dart';
 
-class SimpleEventDetailsEdit extends StatelessWidget {
+class SimpleEventDetailsEditPage extends StatelessWidget {
   final String teamId;
   final String eventId;
   final bool created;
 
-  const SimpleEventDetailsEdit({
+  const SimpleEventDetailsEditPage({
     super.key,
     required this.teamId,
     required this.eventId,

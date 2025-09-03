@@ -2,22 +2,15 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:tv_oberwil/components/details_edit_page.dart';
-import 'package:tv_oberwil/components/paginated_list.dart';
-import 'package:tv_oberwil/components/paginated_list_page.dart';
 import 'package:tv_oberwil/firestore_providers/basic_providers.dart';
 
-class MemberDetailsScreen extends StatelessWidget {
+class MemberDetailsPage extends StatelessWidget {
   final String uid;
   final bool created;
 
-  const MemberDetailsScreen({
-    super.key,
-    required this.uid,
-    this.created = false,
-  });
+  const MemberDetailsPage({super.key, required this.uid, this.created = false});
 
   @override
   Widget build(BuildContext context) {
