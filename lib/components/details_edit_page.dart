@@ -199,14 +199,22 @@ class _DetailsEditPageState extends ConsumerState<DetailsEditPage> {
 
     final isTablet = MediaQuery.of(context).size.aspectRatio > 1;
     final teamData = ref.watch(realtimeDocProvider(widget.doc));
-    final docModel = ;
-    if (collectionProviders.containsKey(widget.doc))
-      if (teamData.isLoading) {
-        return const Center(child: CircularProgressIndicator());
-      }
-    if (teamData.hasError) {
+    final docModel = ref.watch(
+      docFromLiveCollectionProvider((
+        widget.doc.parent.path,
+        widget.doc.parent.doc("model"),
+      )),
+    );
+
+    if (teamData.hasError || docModel.hasError) {
       return const Center(child: Text("An error occurred loading your data"));
     }
+
+    if (teamData.isLoading || docModel.isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    print("doc model: ${docModel.value!.id}");
 
     final data = teamData.value?.data() ?? {};
 

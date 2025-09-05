@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:tv_oberwil/firestore_providers/basic_providers.dart';
 
 CollectionProvider paginatedListProvider(
   Query<Map<String, dynamic>> query,
@@ -132,30 +131,29 @@ CollectionProvider getCollectionProvider(
   }
 }
 
-StreamProvider<DocumentSnapshot<Object?>?> getDocFromLiveCollection(
-  String collectionKey,
-  DocumentReference<Map<String, dynamic>> doc,
-) {
+final docFromLiveCollectionProvider = StreamProvider.family<
+  DocumentSnapshot?,
+  (String collectionKey, DocumentReference<Map<String, dynamic>> doc)
+>((ref, args) {
+  final (collectionKey, doc) = args;
+
   if (collectionProviders.containsKey(collectionKey)) {
-    return StreamProvider((ref) {
-      return ref
-          .watch(collectionProviders[collectionKey]!.notifier)
-          .stream
-          .map(
-            (value) => value.whenOrNull(
-              data: (data) {
-                final modelIndex = data.indexWhere(
-                  (entry) => entry.id == doc.id,
-                );
-                if (modelIndex == -1) {
-                  return null;
-                }
-                return data[modelIndex];
-              },
-            ),
-          );
-    });
+    final collectionState = ref.watch(collectionProviders[collectionKey]!);
+
+    return collectionState.when(
+      data: (docs) async* {
+        final index = docs.indexWhere((entry) => entry.id == doc.id);
+        yield index == -1 ? null : docs[index];
+      },
+      error: (e, st) async* {
+        throw e;
+      },
+      loading: () async* {
+        // Emit nothing while loading
+        yield null;
+      },
+    );
   } else {
-    return realtimeDocProvider(doc);
+    return doc.snapshots();
   }
-}
+});
