@@ -27,11 +27,13 @@ sealed class DataField {
   final String key;
   final int? tableColumnWidth;
   final int? order;
+  final int row;
 
   const DataField(
     this.key,
     this.name,
-    this.required, {
+    this.required,
+    this.row, {
     this.tableColumnWidth,
     this.order,
   });
@@ -42,12 +44,14 @@ sealed class DataField {
     final String key = map["key"] ?? "key";
     final int? tableColumnWidth = map["table_column_width"];
     final int? order = map["order"];
+    final int row = map["row"] ?? 0;
     switch ((map["type"] ?? "") as String) {
       case "text":
         return TextDataField(
           key,
           name,
           required,
+          row,
           map["searchable"] ?? false,
           tableColumnWidth: tableColumnWidth,
           order: order,
@@ -57,6 +61,7 @@ sealed class DataField {
           key,
           name,
           required,
+          row,
           tableColumnWidth: tableColumnWidth,
           order: order,
         );
@@ -65,8 +70,18 @@ sealed class DataField {
           key,
           name,
           required,
+          row,
           ((map["min_date"] ?? Timestamp.now()) as Timestamp).toDate(),
           ((map["max_date"] ?? Timestamp.now()) as Timestamp).toDate(),
+          tableColumnWidth: tableColumnWidth,
+          order: order,
+        );
+      case "time":
+        return TimeDataField(
+          key,
+          name,
+          required,
+          row,
           tableColumnWidth: tableColumnWidth,
           order: order,
         );
@@ -75,6 +90,7 @@ sealed class DataField {
           key,
           name,
           required,
+          row,
           map["options"] ?? {},
           tableColumnWidth: tableColumnWidth,
           order: order,
@@ -84,6 +100,7 @@ sealed class DataField {
           key,
           name,
           required,
+          row,
           map["options"] ?? {},
           tableColumnWidth: tableColumnWidth,
           order: order,
@@ -110,6 +127,7 @@ class TextDataField extends DataField {
   TextDataField(
     super.key,
     super.name,
+    super.row,
     super.required,
     this.isSearchable, {
     super.tableColumnWidth,
@@ -121,6 +139,7 @@ class BoolDataField extends DataField {
   const BoolDataField(
     super.key,
     super.name,
+    super.row,
     super.required, {
     super.tableColumnWidth,
     super.order,
@@ -134,9 +153,21 @@ class DateDataField extends DataField {
   const DateDataField(
     super.key,
     super.name,
+    super.row,
     super.required,
     this.minDate,
     this.maxDate, {
+    super.tableColumnWidth,
+    super.order,
+  });
+}
+
+class TimeDataField extends DataField {
+  const TimeDataField(
+    super.key,
+    super.name,
+    super.row,
+    super.required, {
     super.tableColumnWidth,
     super.order,
   });
@@ -148,6 +179,7 @@ class SelectionDataField extends DataField {
   SelectionDataField(
     super.key,
     super.name,
+    super.row,
     super.required,
     this.options, {
     super.tableColumnWidth,
@@ -162,6 +194,7 @@ class MultiSelectDataField extends DataField {
     super.key,
     super.name,
     super.required,
+    super.row,
     this.options, {
     super.tableColumnWidth,
     super.order,
