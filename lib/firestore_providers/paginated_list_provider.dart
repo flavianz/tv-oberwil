@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:tv_oberwil/firestore_providers/basic_providers.dart';
 
 CollectionProvider paginatedListProvider(
   Query<Map<String, dynamic>> query,
@@ -131,18 +132,30 @@ CollectionProvider getCollectionProvider(
   }
 }
 
-getDocFromLiveCollection(String collectionKey, String docId) async {
+StreamProvider<DocumentSnapshot<Object?>?> getDocFromLiveCollection(
+  String collectionKey,
+  DocumentReference<Map<String, dynamic>> doc,
+) {
   if (collectionProviders.containsKey(collectionKey)) {
     return StreamProvider((ref) {
       return ref
           .watch(collectionProviders[collectionKey]!.notifier)
           .stream
           .map(
-            (value) => value.whenData((data) {
-              final modelIndex = data.indexWhere((doc) => doc.id == docId);
-              if (modelIndex == -1) {}
-            }),
+            (value) => value.whenOrNull(
+              data: (data) {
+                final modelIndex = data.indexWhere(
+                  (entry) => entry.id == doc.id,
+                );
+                if (modelIndex == -1) {
+                  return null;
+                }
+                return data[modelIndex];
+              },
+            ),
           );
     });
+  } else {
+    return realtimeDocProvider(doc);
   }
 }

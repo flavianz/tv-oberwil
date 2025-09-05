@@ -8,7 +8,7 @@ import 'package:tv_oberwil/components/collection_list_widget.dart';
 import 'package:tv_oberwil/firestore_providers/firestore_tools.dart';
 import 'package:tv_oberwil/utils.dart';
 
-import '../firestore_providers/paginated_list_proivder.dart';
+import '../firestore_providers/paginated_list_provider.dart';
 
 class TableOptions {
   final Function(DocumentSnapshot<Object?>) rowOnTap;

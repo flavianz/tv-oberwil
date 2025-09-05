@@ -8,7 +8,7 @@ import 'package:tv_oberwil/firestore_providers/firestore_tools.dart';
 
 import '../../components/input_boxes.dart';
 import '../../firestore_providers/basic_providers.dart';
-import '../firestore_providers/paginated_list_proivder.dart';
+import '../firestore_providers/paginated_list_provider.dart';
 
 sealed class PropertyType {
   const PropertyType();
@@ -199,7 +199,7 @@ class _DetailsEditPageState extends ConsumerState<DetailsEditPage> {
 
     final isTablet = MediaQuery.of(context).size.aspectRatio > 1;
     final teamData = ref.watch(realtimeDocProvider(widget.doc));
-    final docModel;
+    final docModel = ;
     if (collectionProviders.containsKey(widget.doc))
       if (teamData.isLoading) {
         return const Center(child: CircularProgressIndicator());

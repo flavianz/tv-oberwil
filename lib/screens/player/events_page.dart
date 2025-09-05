@@ -6,7 +6,7 @@ import 'package:tv_oberwil/components/app.dart';
 import 'package:tv_oberwil/components/misc.dart';
 import 'package:tv_oberwil/components/collection_list_widget.dart';
 
-import '../../firestore_providers/paginated_list_proivder.dart';
+import '../../firestore_providers/paginated_list_provider.dart';
 import '../../utils.dart';
 
 class PlayerEventsPage extends ConsumerStatefulWidget {
