@@ -29,7 +29,7 @@ class MembersPage extends StatelessWidget {
         ),
       ],
       defaultOrderData: OrderData(
-        TextDataField("search_last", "Nachname", true, false),
+        TextDataField("search_last", "Nachname", true, 0, false),
         false,
       ),
     );

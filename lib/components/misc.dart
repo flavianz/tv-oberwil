@@ -15,6 +15,14 @@ Widget getPill(String s, Color c, bool lightText) {
   );
 }
 
+void printServer(String text) {
+  print('\x1B[31mFrom Server: $text\x1B[0m');
+}
+
+void printCache(String text) {
+  print('\x1B[32mFrom Cache: $text\x1B[0m');
+}
+
 Widget getPositionPill(position) {
   switch (position) {
     case "forward":

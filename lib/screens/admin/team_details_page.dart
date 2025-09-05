@@ -25,7 +25,7 @@ class TeamDetailsPage extends StatelessWidget {
       created: created,
       tabs: [
         DetailsTabType(Tab(text: "Infos", icon: Icon(Icons.info_outline)), [
-          [
+          /*[
             DetailsEditProperty(
               "name",
               "Name",
@@ -68,7 +68,7 @@ class TeamDetailsPage extends StatelessWidget {
                 "null": "Keine Angabe",
               }),
             ),
-          ],
+          ],*/
         ]),
         CustomTabType(
           Tab(text: "Mitglieder", icon: Icon(Icons.diversity_3)),
@@ -146,7 +146,7 @@ class TeamDetailsPage extends StatelessWidget {
               ),
             ],
             defaultOrderData: OrderData(
-              TextDataField("search_last", "Nachname", true, false),
+              TextDataField("search_last", "Nachname", true, 0, false),
               false,
             ),
           ),
@@ -188,7 +188,7 @@ class _MembersSelectorState extends State<MembersSelector> {
                 query: FirebaseFirestore.instance.collection("members"),
                 collectionKey: "members",
                 defaultOrderData: OrderData(
-                  TextDataField("search_last", "Nachname", false, false),
+                  TextDataField("search_last", "Nachname", false, 0, false),
                   false,
                 ),
                 builder: (doc) {

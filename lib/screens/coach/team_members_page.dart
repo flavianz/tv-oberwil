@@ -24,7 +24,7 @@ class CoachTeamMembersPage extends StatelessWidget {
         context.push("./team_member/${doc.id}");
       }),
       defaultOrderData: OrderData(
-        TextDataField("search_last", "Nachname", true, false),
+        TextDataField("search_last", "Nachname", true, 0, false),
         false,
       ),
     );

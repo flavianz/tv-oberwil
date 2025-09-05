@@ -24,7 +24,7 @@ class SimpleEventDetailsEditPage extends StatelessWidget {
           .doc(eventId),
       tabs: [
         DetailsTabType(null, [
-          [
+          /*[
             DetailsEditProperty(
               "name",
               "Name",
@@ -58,7 +58,7 @@ class SimpleEventDetailsEditPage extends StatelessWidget {
               TimePropertyType(DateTime.now()),
             ),
           ],
-          [DetailsEditProperty("notes", "Notizen", TextPropertyType())],
+          [DetailsEditProperty("notes", "Notizen", TextPropertyType())],*/
         ]),
       ],
       titleKey: "name",

@@ -5,10 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:tv_oberwil/firestore_providers/firestore_tools.dart';
+import 'package:tv_oberwil/utils.dart';
 
 import '../../components/input_boxes.dart';
-import '../../firestore_providers/basic_providers.dart';
 import '../firestore_providers/paginated_list_provider.dart';
+import 'collection_list_widget.dart';
 
 sealed class PropertyType {
   const PropertyType();
@@ -75,9 +76,9 @@ sealed class TabType {
 }
 
 class DetailsTabType extends TabType {
-  final List<List<DetailsEditProperty>> properties;
+  final List<List<DataField>> customFields;
 
-  DetailsTabType(super.tab, this.properties);
+  DetailsTabType(super.tab, this.customFields);
 }
 
 class CustomTabType extends TabType {
@@ -90,20 +91,6 @@ class CustomDetailsTabType extends TabType {
   final Widget Function(DocumentSnapshot<Object?>) builder;
 
   CustomDetailsTabType(super.tab, this.builder);
-}
-
-class DetailsEditProperty {
-  final String key;
-  final String name;
-  final PropertyType type;
-  final bool readOnly;
-
-  const DetailsEditProperty(
-    this.key,
-    this.name,
-    this.type, {
-    this.readOnly = false,
-  });
 }
 
 class DetailsEditPage extends ConsumerStatefulWidget {
@@ -128,18 +115,18 @@ class DetailsEditPage extends ConsumerStatefulWidget {
 
 class _DetailsEditPageState extends ConsumerState<DetailsEditPage> {
   Map<String, dynamic> values = {};
-  List<DetailsEditProperty> expandedProperties = [];
 
   bool isEditMode = false;
   bool _inputsInitialized = false;
   bool _isSaving = false;
   bool isFirstRender = true;
-  List<List<DetailsEditProperty>>? properties;
+  List<List<DataField>>? fields;
+  DocModel? docModel;
 
   @override
   void dispose() {
-    for (var property in expandedProperties) {
-      if (property.type is TextPropertyType) {
+    for (var property in docModel == null ? [] : docModel!.fields.values) {
+      if (property is TextDataField) {
         (values[property.key] as TextEditingController).dispose();
       }
     }
@@ -147,45 +134,34 @@ class _DetailsEditPageState extends ConsumerState<DetailsEditPage> {
   }
 
   void resetInputs(Map<String, dynamic> data) {
-    properties =
-        widget.tabs
-            .whereType<DetailsTabType>()
-            .map((tab) => tab.properties)
-            .expand((list) => list)
-            .cast<List<DetailsEditProperty>>()
-            .toList();
-    expandedProperties = properties!.expand((element) => element).toList();
-    for (var property in expandedProperties) {
-      switch (property.type) {
-        case TextPropertyType():
+    assert(docModel != null, "no doc model when resetting inputs");
+    fields = [];
+    for (final field in docModel!.fields.values) {
+      while (fields!.length < field.row + 1) {
+        fields!.add([]);
+      }
+      fields![field.row].add(field);
+    }
+    for (var field in docModel!.fields.values) {
+      switch (field) {
+        case TextDataField():
           {
-            values[property.key] = TextEditingController();
-            values[property.key]?.text =
-                data[property.key] ??
-                (property.type as TextPropertyType).defaultValue;
+            values[field.key] = TextEditingController();
+            values[field.key]?.text = data[field.key] ?? "";
           }
-        case DatePropertyType():
-          values[property.key] =
-              data[property.key] ??
-              Timestamp.fromDate(
-                (property.type as DatePropertyType).defaultValue,
-              );
-        case TimePropertyType():
-          values[property.key] =
-              data[property.key] ??
-              Timestamp.fromDate(
-                (property.type as TimePropertyType).defaultValue,
-              );
-        case SelectionPropertyType():
-          values[property.key] = data[property.key];
-        case MultiSelectPropertyType():
-          values[property.key] = data[property.key] ?? [];
-        case BoolPropertyType():
-          values[property.key] =
-              data[property.key] ??
-              (property.type as BoolPropertyType).defaultValue;
+        case DateDataField():
+          values[field.key] = data[field.key] ?? field.minDate;
+        case TimeDataField():
+          values[field.key] =
+              data[field.key] ?? Timestamp.fromDate(DateTime(2000));
+        case SelectionDataField():
+          values[field.key] = data[field.key];
+        case MultiSelectDataField():
+          values[field.key] = data[field.key] ?? [];
+        case BoolDataField():
+          values[field.key] = data[field.key] ?? false;
         case DialogPropertyType():
-          values[property.key] = data[property.key];
+          values[field.key] = data[field.key];
       }
     }
   }
@@ -198,25 +174,26 @@ class _DetailsEditPageState extends ConsumerState<DetailsEditPage> {
     }
 
     final isTablet = MediaQuery.of(context).size.aspectRatio > 1;
-    final teamData = ref.watch(realtimeDocProvider(widget.doc));
-    final docModel = ref.watch(
+    final teamData = ref.watch(
+      docFromLiveCollectionProvider((widget.doc.parent.path, widget.doc)),
+    );
+    final docModelData = ref.watch(
       docFromLiveCollectionProvider((
         widget.doc.parent.path,
         widget.doc.parent.doc("model"),
       )),
     );
 
-    if (teamData.hasError || docModel.hasError) {
+    if (teamData.hasError || docModelData.hasError) {
       return const Center(child: Text("An error occurred loading your data"));
     }
 
-    if (teamData.isLoading || docModel.isLoading) {
+    if (teamData.isLoading || docModelData.isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
 
-    print("doc model: ${docModel.value!.id}");
-
     final data = teamData.value?.data() ?? {};
+    docModel = DocModel.fromMap(castMap(docModelData.value!.data()));
 
     if (teamData.value != null && !_inputsInitialized) {
       resetInputs(data);
@@ -265,29 +242,38 @@ class _DetailsEditPageState extends ConsumerState<DetailsEditPage> {
                           Map<String, dynamic> changedData = {};
                           final Map<String, dynamic> inputs = {};
 
-                          for (var property in expandedProperties) {
-                            switch (property.type) {
-                              case TextPropertyType():
-                                inputs[property.key] =
-                                    values[property.key]?.text;
-                                if ((property.type as TextPropertyType)
-                                    .isSearchable) {
-                                  inputs["search_${property.key}"] = searchify(
-                                    values[property.key]?.text ?? "",
+                          for (var filter
+                              in (docModel == null
+                                  ? []
+                                  : docModel!.fields.values)) {
+                            switch (filter) {
+                              case TextDataField():
+                                inputs[filter.key] = values[filter.key]?.text;
+                                print(inputs[filter.key]);
+                                if (filter.isSearchable) {
+                                  inputs["search_${filter.key}"] = searchify(
+                                    values[filter.key]?.text ?? "",
                                   );
                                 }
-                              case DatePropertyType():
-                              case TimePropertyType():
-                                inputs[property.key] =
+                              case TimeDataField():
+                                inputs[filter.key] =
                                     Timestamp.fromMillisecondsSinceEpoch(
-                                      values[property.key]
-                                          .millisecondsSinceEpoch,
+                                      values[filter.key].millisecondsSinceEpoch,
                                     );
-                              case SelectionPropertyType():
-                              case BoolPropertyType():
+                              case DateDataField():
+                                inputs[filter.key] =
+                                    Timestamp.fromMillisecondsSinceEpoch(
+                                      values[filter.key].millisecondsSinceEpoch,
+                                    );
+                              case SelectionDataField():
+                                inputs[filter.key] = values[filter.key];
+                              case BoolDataField():
+                                inputs[filter.key] = values[filter.key];
                               case DialogPropertyType():
-                              case MultiSelectPropertyType():
-                                inputs[property.key] = values[property.key];
+                                //TODO: implement
+                                throw UnimplementedError();
+                              case MultiSelectDataField():
+                                inputs[filter.key] = values[filter.key];
                             }
                           }
 
@@ -420,26 +406,25 @@ class _DetailsEditPageState extends ConsumerState<DetailsEditPage> {
                     switch (tab) {
                       case DetailsTabType():
                         {
-                          final personalInfoBoxes = tab.properties.map((list) {
-                            return list.map((property) {
-                              switch (property.type) {
-                                case TextPropertyType():
+                          final personalInfoBoxes = fields!.map((list) {
+                            return list.map((field) {
+                              switch (field) {
+                                case TextDataField():
                                   return TextInputBox(
                                     controller:
-                                        values[property.key] ??
+                                        values[field.key] ??
                                         TextEditingController(),
-                                    title: property.name,
-                                    isEditMode:
-                                        property.readOnly ? false : isEditMode,
+                                    title: field.name,
+                                    isEditMode: isEditMode,
                                   );
-                                case DatePropertyType():
+                                case DateDataField():
                                   return DateInputBox(
-                                    title: property.name,
+                                    title: field.name,
                                     onDateSelected: (s) {
                                       setState(() {
                                         values = {
                                           ...values,
-                                          property.key:
+                                          field.key:
                                               Timestamp.fromMillisecondsSinceEpoch(
                                                 s.millisecondsSinceEpoch,
                                               ),
@@ -448,20 +433,19 @@ class _DetailsEditPageState extends ConsumerState<DetailsEditPage> {
                                     },
                                     defaultDate:
                                         DateTime.fromMillisecondsSinceEpoch(
-                                          values[property.key]
+                                          values[field.key]
                                               .millisecondsSinceEpoch,
                                         ),
-                                    isEditMode:
-                                        property.readOnly ? false : isEditMode,
+                                    isEditMode: isEditMode,
                                   );
-                                case TimePropertyType():
+                                case TimeDataField():
                                   return TimeInputBox(
-                                    title: property.name,
+                                    title: field.name,
                                     onTimeSelected: (s) {
                                       setState(() {
                                         values = {
                                           ...values,
-                                          property.key:
+                                          field.key:
                                               Timestamp.fromMillisecondsSinceEpoch(
                                                 s.millisecondsSinceEpoch,
                                               ),
@@ -470,45 +454,39 @@ class _DetailsEditPageState extends ConsumerState<DetailsEditPage> {
                                     },
                                     defaultTime:
                                         DateTime.fromMillisecondsSinceEpoch(
-                                          values[property.key]
+                                          values[field.key]
                                               .millisecondsSinceEpoch,
                                         ),
-                                    isEditMode:
-                                        property.readOnly ? false : isEditMode,
+                                    isEditMode: isEditMode,
                                   );
-                                case SelectionPropertyType():
+                                case SelectionDataField():
                                   return SelectionInputBox(
-                                    title: property.name,
-                                    isEditMode:
-                                        property.readOnly ? false : isEditMode,
-                                    options:
-                                        (property.type as SelectionPropertyType)
-                                            .options,
-                                    selected: values[property.key],
+                                    title: field.name,
+                                    isEditMode: isEditMode,
+                                    options: field.options,
+                                    selected: values[field.key],
                                     defaultKey: "none",
                                     onSelected: (s) {
                                       setState(() {
-                                        values = {...values, property.key: s};
+                                        values = {...values, field.key: s};
                                       });
                                     },
                                   );
-                                case BoolPropertyType():
-                                  return SelectionInputBox(
-                                    title: property.name,
-                                    isEditMode:
-                                        property.readOnly ? false : isEditMode,
-                                    options: {true: "Ja", false: "Nein"},
-                                    selected: values[property.key],
-                                    defaultKey: false,
+                                case BoolDataField():
+                                  return BoolInputBox(
+                                    title: field.name,
+                                    isEditMode: isEditMode,
+                                    selected: values[field.key],
+                                    defaultValue: false,
                                     onSelected: (s) {
                                       setState(() {
-                                        values = {...values, property.key: s};
+                                        values = {...values, field.key: s};
                                       });
                                     },
                                   );
                                 case DialogPropertyType():
                                   DialogPropertyType dialogInputBoxData =
-                                      property.type as DialogPropertyType;
+                                      field as DialogPropertyType;
                                   return DialogInputBox(
                                     dialogBuilder:
                                         dialogInputBoxData.dialogBuilder,
@@ -519,16 +497,16 @@ class _DetailsEditPageState extends ConsumerState<DetailsEditPage> {
                                       ),
                                       child: Text(
                                         dialogInputBoxData.boxTextBuilder(
-                                          values[property.key],
+                                          values[field.key],
                                         ),
                                       ),
                                     ),
-                                    title: property.name,
+                                    title: field.name,
                                     onUpdate: (newValue) {
                                       setState(() {
                                         values = {
                                           ...values,
-                                          property.key: newValue,
+                                          field.key: newValue,
                                         };
                                       });
                                     },
@@ -536,23 +514,20 @@ class _DetailsEditPageState extends ConsumerState<DetailsEditPage> {
                                         dialogInputBoxData
                                             .openDialogInNonEditMode,
                                   );
-                                case MultiSelectPropertyType():
-                                  MultiSelectPropertyType data =
-                                      property.type as MultiSelectPropertyType;
+                                case MultiSelectDataField():
                                   return MultiSelectInputBox(
-                                    title: property.name,
+                                    title: field.name,
                                     isEditMode: isEditMode,
-                                    options: data.options,
-                                    selected: values[property.key],
+                                    options: field.options,
+                                    selected: values[field.key],
                                     onSelected: (newValue) {
                                       setState(() {
                                         values = {
                                           ...values,
-                                          property.key: newValue,
+                                          field.key: newValue,
                                         };
                                       });
                                     },
-                                    optionBuilder: data.optionBuilder,
                                   );
                               }
                             });

@@ -2,8 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:tv_oberwil/components/details_edit_page.dart';
 
-import '../../components/misc.dart';
-
 class TeamMemberDetailsPage extends StatelessWidget {
   final String teamId;
   final String teamMemberId;
@@ -27,7 +25,7 @@ class TeamMemberDetailsPage extends StatelessWidget {
       created: created,
       tabs: [
         DetailsTabType(null, [
-          [
+          /*[
             DetailsEditProperty(
               "first",
               "Vorname",
@@ -60,7 +58,7 @@ class TeamMemberDetailsPage extends StatelessWidget {
                 "none": "Keine",
               }),
             ),
-          ],
+          ],*/
         ]),
       ],
       titleKey: "first",

@@ -152,13 +152,13 @@ class TextInputBox extends StatelessWidget {
   }
 }
 
-class SelectionInputBox<T> extends StatelessWidget {
+class SelectionInputBox extends StatelessWidget {
   final String title;
   final bool isEditMode;
-  final Map<T, String> options;
-  final T selected;
-  final Function(T) onSelected;
-  final T defaultKey;
+  final Map<String, dynamic> options;
+  final String selected;
+  final Function(String) onSelected;
+  final String defaultKey;
 
   const SelectionInputBox({
     super.key,
@@ -186,13 +186,57 @@ class SelectionInputBox<T> extends StatelessWidget {
             }).toList(),
         onChanged:
             isEditMode
-                ? (T? s) {
+                ? (String? s) {
                   onSelected(s ?? selected);
                 }
                 : null,
         value: isEditMode ? selected : null,
         hint: Text(
           options[selected] ?? "Keine Angabe",
+          style: TextStyle(color: Colors.black),
+        ),
+      ),
+      title: title,
+    );
+  }
+}
+
+class BoolInputBox extends StatelessWidget {
+  final String title;
+  final bool isEditMode;
+  final bool selected;
+  final Function(bool) onSelected;
+  final bool defaultValue;
+
+  const BoolInputBox({
+    super.key,
+    required this.title,
+    required this.isEditMode,
+    required this.selected,
+    required this.onSelected,
+    required this.defaultValue,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InputBox(
+      inputWidget: DropdownButtonFormField(
+        decoration: InputDecoration(
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+        items: [
+          DropdownMenuItem(value: true, child: Text("Ja")),
+          DropdownMenuItem(value: false, child: Text("Nein")),
+        ],
+        onChanged:
+            isEditMode
+                ? (bool? s) {
+                  onSelected(s ?? selected);
+                }
+                : null,
+        value: isEditMode ? selected : null,
+        hint: Text(
+          selected ? "Ja" : "Nein",
           style: TextStyle(color: Colors.black),
         ),
       ),
@@ -311,10 +355,9 @@ typedef CustomInputBoxData =
 class MultiSelectInputBox extends StatelessWidget {
   final String title;
   final bool isEditMode;
-  final Map<String, String> options;
-  final List<dynamic> selected;
+  final Map<String, dynamic> options;
+  final List<String> selected;
   final Function(List<dynamic>) onSelected;
-  final Widget Function(String) optionBuilder;
 
   const MultiSelectInputBox({
     super.key,
@@ -323,7 +366,6 @@ class MultiSelectInputBox extends StatelessWidget {
     required this.options,
     required this.selected,
     required this.onSelected,
-    required this.optionBuilder,
   });
 
   @override
@@ -334,14 +376,13 @@ class MultiSelectInputBox extends StatelessWidget {
           child: MultiSelectInputDialog(
             selected: selected,
             options: options,
-            optionBuilder: optionBuilder,
             onSelected: this.onSelected,
           ),
         );
       },
       isEditMode: isEditMode,
       boxContent: Row(
-        children: selected.map((option) => optionBuilder(option)).toList(),
+        children: selected.map((option) => Text(options[option])).toList(),
       ),
       title: title,
       onUpdate: (selected) => onSelected(selected),
@@ -350,16 +391,14 @@ class MultiSelectInputBox extends StatelessWidget {
 }
 
 class MultiSelectInputDialog extends StatefulWidget {
-  final List<dynamic> selected;
-  final Map<String, String> options;
-  final Widget Function(String) optionBuilder;
-  final Function(List<dynamic>) onSelected;
+  final List<String> selected;
+  final Map<String, dynamic> options;
+  final Function(List<String>) onSelected;
 
   const MultiSelectInputDialog({
     super.key,
     required this.selected,
     required this.options,
-    required this.optionBuilder,
     required this.onSelected,
   });
 
@@ -368,13 +407,13 @@ class MultiSelectInputDialog extends StatefulWidget {
 }
 
 class _MultiSelectInputDialogState extends State<MultiSelectInputDialog> {
-  late List<dynamic> selected;
+  late List<String> selected;
 
   @override
   void initState() {
     super.initState();
     // initialize local state from widget prop
-    selected = List<dynamic>.from(widget.selected);
+    selected = widget.selected;
   }
 
   @override
@@ -409,7 +448,7 @@ class _MultiSelectInputDialogState extends State<MultiSelectInputDialog> {
                             });
                           },
                         ),
-                        widget.optionBuilder(key),
+                        widget.options[key],
                       ],
                     );
                   }).toList(),

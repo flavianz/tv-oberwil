@@ -30,7 +30,7 @@ class TeamsPage extends StatelessWidget {
         ),
       ],
       defaultOrderData: OrderData(
-        TextDataField("search_name", "Nachname", true, false),
+        TextDataField("search_name", "Nachname", true, 0, false),
         false,
       ),
     );

@@ -18,6 +18,7 @@ class MemberDetailsPage extends StatelessWidget {
       doc: FirebaseFirestore.instance.collection("members").doc(uid),
       tabs: [
         DetailsTabType(null, [
+          /*
           [
             DetailsEditProperty(
               "first",
@@ -50,7 +51,7 @@ class MemberDetailsPage extends StatelessWidget {
                 openDialogInNonEditMode: true,
               ),
             ),
-          ],
+          ],*/
         ]),
       ],
       created: created,

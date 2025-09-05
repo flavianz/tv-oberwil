@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../components/misc.dart';
+
 CollectionProvider paginatedListProvider(
   Query<Map<String, dynamic>> query,
   String collectionKey,
@@ -14,7 +16,10 @@ CollectionProvider paginatedListProvider(
 }
 
 class RealtimeCollectionProvider
-    extends StateNotifier<AsyncValue<List<DocumentSnapshot>>> {
+    extends
+        StateNotifier<
+          AsyncValue<List<DocumentSnapshot<Map<String, dynamic>>>>
+        > {
   final Query<Map<String, dynamic>> query;
   final String collectionKey;
   bool isLoading = true;
@@ -28,13 +33,12 @@ class RealtimeCollectionProvider
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     int? lastFetched = prefs.getInt(collectionKey);
     if (lastFetched == null) {
-      print("loading collection $collectionKey from server");
       await query
           .get()
           .then((fetchedCollection) {
             state = AsyncData(fetchedCollection.docs);
-            print(
-              "loaded ${fetchedCollection.docs.length} docs in $collectionKey from server",
+            printServer(
+              "${fetchedCollection.docs.length} docs in $collectionKey",
             );
             prefs.setInt(collectionKey, DateTime.now().millisecondsSinceEpoch);
             lastFetched = DateTime.now().millisecondsSinceEpoch;
@@ -43,16 +47,13 @@ class RealtimeCollectionProvider
             state = AsyncError(error ?? {}, stackTrace);
           });
     } else {
-      print(
-        "last fetched $collectionKey at ${DateTime.fromMillisecondsSinceEpoch(lastFetched).toString()}",
-      );
-      print("loading collection $collectionKey from cache");
       await query
           .get(GetOptions(source: Source.cache))
           .then((fetchedCollection) {
-            print(
-              "loaded ${fetchedCollection.docs.length} docs in $collectionKey from cache",
+            printCache(
+              "${fetchedCollection.docs.length} docs in $collectionKey",
             );
+
             state = AsyncData(fetchedCollection.docs);
           })
           .onError((error, stackTrace) {
@@ -70,8 +71,8 @@ class RealtimeCollectionProvider
         .listen(
           (fetchedCollection) {
             if (!state.hasValue) {
-              print(
-                "received ${fetchedCollection.docChanges.length} new docs in $collectionKey from server but local data did not exist",
+              printServer(
+                "${fetchedCollection.docChanges.length} new docs in $collectionKey, but local data did not exist",
               );
               return;
             }
@@ -82,10 +83,9 @@ class RealtimeCollectionProvider
                 ..removeWhere((doc) => doc.id == addedDoc.doc.id)
                 ..add(addedDoc.doc);
             }
-
             state = AsyncData(mergedList);
-            print(
-              "received ${fetchedCollection.docChanges.length} new docs in $collectionKey from server via snapshot listener",
+            printServer(
+              "${fetchedCollection.docChanges.length} new docs in $collectionKey",
             );
             if (fetchedCollection.docChanges.isNotEmpty) {
               prefs.setInt(
@@ -111,7 +111,7 @@ class RealtimeCollectionProvider
 typedef CollectionProvider =
     StateNotifierProvider<
       RealtimeCollectionProvider,
-      AsyncValue<List<DocumentSnapshot>>
+      AsyncValue<List<DocumentSnapshot<Map<String, dynamic>>>>
     >;
 
 final Map<String, CollectionProvider> collectionProviders = {};
@@ -132,7 +132,7 @@ CollectionProvider getCollectionProvider(
 }
 
 final docFromLiveCollectionProvider = StreamProvider.family<
-  DocumentSnapshot?,
+  DocumentSnapshot<Map<String, dynamic>>?,
   (String collectionKey, DocumentReference<Map<String, dynamic>> doc)
 >((ref, args) {
   final (collectionKey, doc) = args;
@@ -143,6 +143,7 @@ final docFromLiveCollectionProvider = StreamProvider.family<
     return collectionState.when(
       data: (docs) async* {
         final index = docs.indexWhere((entry) => entry.id == doc.id);
+        printCache("doc ${doc.path}");
         yield index == -1 ? null : docs[index];
       },
       error: (e, st) async* {
@@ -154,6 +155,7 @@ final docFromLiveCollectionProvider = StreamProvider.family<
       },
     );
   } else {
+    printServer("doc ${doc.path}");
     return doc.snapshots();
   }
 });

@@ -48,6 +48,13 @@ class DateFilterProperty extends FilterProperty {
   DateFilterProperty(super.key, this.startDate, this.endDate);
 }
 
+class TimeFilterProperty extends FilterProperty {
+  DateTime startTime;
+  DateTime endTime;
+
+  TimeFilterProperty(super.key, this.startTime, this.endTime);
+}
+
 class OrderData {
   DataField filterField;
   bool direction; // true = descending, false = ascending
@@ -154,9 +161,6 @@ class _CollectionListPageState extends ConsumerState<CollectionListPage> {
                   : data[filterProperty.key] == filterProperty.value;
             case ChipFilterProperty():
               if (filterProperty.isList) {
-                print(
-                  "sele ${filterProperty.selectedKeys}, ${(data[filterProperty.key] as List).length}",
-                );
                 return filterProperty.selectedKeys.length ==
                         filterProperty.possibleKeys.length
                     ? true
@@ -184,6 +188,39 @@ class _CollectionListPageState extends ConsumerState<CollectionListPage> {
                     (data[filterProperty.key] as Timestamp).toDate(),
                     filterProperty.endDate,
                   );
+            case TimeFilterProperty():
+              return (TimeOfDay.fromDateTime(filterProperty.startTime).isBefore(
+                        TimeOfDay.fromDateTime(
+                          (data[filterProperty.key] as Timestamp).toDate(),
+                        ),
+                      ) &&
+                      TimeOfDay.fromDateTime(filterProperty.endTime).isAfter(
+                        TimeOfDay.fromDateTime(
+                          (data[filterProperty.key] as Timestamp).toDate(),
+                        ),
+                      )) ||
+                  (TimeOfDay.fromDateTime(
+                            (data[filterProperty.key] as Timestamp).toDate(),
+                          ).hour ==
+                          TimeOfDay.fromDateTime(
+                            filterProperty.startTime,
+                          ).hour &&
+                      TimeOfDay.fromDateTime(
+                            (data[filterProperty.key] as Timestamp).toDate(),
+                          ).minute ==
+                          TimeOfDay.fromDateTime(
+                            filterProperty.startTime,
+                          ).minute) ||
+                  (TimeOfDay.fromDateTime(
+                            (data[filterProperty.key] as Timestamp).toDate(),
+                          ).hour ==
+                          TimeOfDay.fromDateTime(filterProperty.endTime).hour &&
+                      TimeOfDay.fromDateTime(
+                            (data[filterProperty.key] as Timestamp).toDate(),
+                          ).minute ==
+                          TimeOfDay.fromDateTime(
+                            filterProperty.endTime,
+                          ).minute);
           }
         });
       }
@@ -266,6 +303,18 @@ class _CollectionListPageState extends ConsumerState<CollectionListPage> {
                                               "${date.day}. ${date.month}. ${date.year}",
                                             );
                                           }(),
+                                          TimeDataField() => () {
+                                            final date =
+                                                DateTime.fromMillisecondsSinceEpoch(
+                                                  ((data[field.key] ??
+                                                              Timestamp.now())
+                                                          as Timestamp)
+                                                      .millisecondsSinceEpoch,
+                                                );
+                                            return Text(
+                                              "${date.hour}:${date.minute}",
+                                            );
+                                          }(),
                                           SelectionDataField() => Text(
                                             field.options[data[field.key]] ??
                                                 "",
@@ -335,6 +384,11 @@ class _CollectionListPageState extends ConsumerState<CollectionListPage> {
                   filter.minDate,
                   filter.maxDate,
                 ),
+                TimeDataField() => TimeFilterProperty(
+                  filter.key,
+                  DateTime(1900),
+                  DateTime(1900),
+                ),
                 TextDataField() => throw UnimplementedError(),
               });
             }),
@@ -386,6 +440,25 @@ class _CollectionListPageState extends ConsumerState<CollectionListPage> {
                                 Timestamp.now())
                             as Timestamp,
                       );
+                  return orderData.direction ? -1 * value : value;
+                },
+                TimeDataField() => (
+                  DocumentSnapshot<Object?> a,
+                  DocumentSnapshot<Object?> b,
+                ) {
+                  final value = TimeOfDay.fromDateTime(
+                    ((castMap(a.data())[orderData.filterField.key] ??
+                                Timestamp.now())
+                            as Timestamp)
+                        .toDate(),
+                  ).compareTo(
+                    TimeOfDay.fromDateTime(
+                      ((castMap(b.data())[orderData.filterField.key] ??
+                                  Timestamp.now())
+                              as Timestamp)
+                          .toDate(),
+                    ),
+                  );
                   return orderData.direction ? -1 * value : value;
                 },
                 MultiSelectDataField() => (
@@ -774,6 +847,57 @@ class FilterDialogState extends State<FilterDialog> {
                                                   .endDate = date;
                                             }),
                                         defaultDate:
+                                            (widget.filterProperties[filter.key]
+                                                    as DateFilterProperty)
+                                                .endDate,
+                                        isEditMode: true,
+                                      ),
+                                    ];
+                                    return isScreenWide
+                                        ? Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceEvenly,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
+                                          spacing: 15,
+                                          children: children,
+                                        )
+                                        : Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.stretch,
+                                          spacing: 10,
+                                          children: children,
+                                        );
+                                  }(),
+                                  TimeDataField() => () {
+                                    final children = [
+                                      TimeInputBox(
+                                        title: "Von",
+                                        onTimeSelected:
+                                            (date) => setState(() {
+                                              (widget.filterProperties[filter
+                                                          .key]
+                                                      as DateFilterProperty)
+                                                  .startDate = date;
+                                            }),
+                                        defaultTime:
+                                            (widget.filterProperties[filter.key]
+                                                    as DateFilterProperty)
+                                                .startDate,
+                                        isEditMode: true,
+                                      ),
+                                      TimeInputBox(
+                                        title: "Bis",
+                                        onTimeSelected:
+                                            (date) => setState(() {
+                                              (widget.filterProperties[filter
+                                                          .key]
+                                                      as DateFilterProperty)
+                                                  .endDate = date;
+                                            }),
+                                        defaultTime:
                                             (widget.filterProperties[filter.key]
                                                     as DateFilterProperty)
                                                 .endDate,
