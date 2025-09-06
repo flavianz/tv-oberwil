@@ -115,7 +115,7 @@ class _AppState extends ConsumerState<App> {
         },
         {
           "icon": Icon(Icons.settings),
-          "label": "Vereinseinstellungen",
+          "label": "Einstellungen",
           "url": "/admin/settings",
         },
       ]);
@@ -136,12 +136,12 @@ class _AppState extends ConsumerState<App> {
         },
         {
           "icon": Icon(Icons.diversity_3),
-          "label": "Teammitglieder",
+          "label": "Team",
           "url": "/coach/team/${roles["player"][0] ?? ""}",
         },
         {
           "icon": Icon(Icons.timelapse_outlined),
-          "label": "Anwesenheiten",
+          "label": "Präsenz",
           "url": "/coach/presence/${roles["player"][0] ?? ""}",
         },
       ]);
