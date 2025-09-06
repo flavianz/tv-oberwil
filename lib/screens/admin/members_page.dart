@@ -20,6 +20,13 @@ class MembersPage extends StatelessWidget {
         context.push("/admin/member/${doc.id}");
       }),
       actions: [
+        IconButton(
+          onPressed: () {
+            context.push("/admin/members/settings");
+          },
+          icon: Icon(Icons.settings),
+        ),
+        SizedBox(width: 5),
         FilledButton.icon(
           onPressed: () {
             context.push("/admin/member/${generateFirestoreKey()}?create=true");
