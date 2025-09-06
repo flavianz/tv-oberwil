@@ -327,6 +327,7 @@ class DialogInputBox<T> extends StatelessWidget {
                   ? SystemMouseCursors.click
                   : SystemMouseCursors.basic,
           child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 10),
             alignment: Alignment.centerLeft,
             constraints: BoxConstraints(
               minHeight: 48,
@@ -356,7 +357,7 @@ class MultiSelectInputBox extends StatelessWidget {
   final String title;
   final bool isEditMode;
   final Map<String, dynamic> options;
-  final List<String> selected;
+  final List<dynamic> selected;
   final Function(List<dynamic>) onSelected;
 
   const MultiSelectInputBox({
@@ -381,9 +382,7 @@ class MultiSelectInputBox extends StatelessWidget {
         );
       },
       isEditMode: isEditMode,
-      boxContent: Row(
-        children: selected.map((option) => Text(options[option])).toList(),
-      ),
+      boxContent: Text(selected.map((option) => options[option]).join(", ")),
       title: title,
       onUpdate: (selected) => onSelected(selected),
     );
@@ -391,9 +390,9 @@ class MultiSelectInputBox extends StatelessWidget {
 }
 
 class MultiSelectInputDialog extends StatefulWidget {
-  final List<String> selected;
+  final List<dynamic> selected;
   final Map<String, dynamic> options;
-  final Function(List<String>) onSelected;
+  final Function(List<dynamic>) onSelected;
 
   const MultiSelectInputDialog({
     super.key,
@@ -407,7 +406,7 @@ class MultiSelectInputDialog extends StatefulWidget {
 }
 
 class _MultiSelectInputDialogState extends State<MultiSelectInputDialog> {
-  late List<String> selected;
+  late List<dynamic> selected;
 
   @override
   void initState() {
@@ -448,7 +447,7 @@ class _MultiSelectInputDialogState extends State<MultiSelectInputDialog> {
                             });
                           },
                         ),
-                        widget.options[key],
+                        Text(widget.options[key]),
                       ],
                     );
                   }).toList(),
