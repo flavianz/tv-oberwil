@@ -139,6 +139,11 @@ class _AppState extends ConsumerState<App> {
           "label": "Teammitglieder",
           "url": "/coach/team/${roles["player"][0] ?? ""}",
         },
+        {
+          "icon": Icon(Icons.timelapse_outlined),
+          "label": "Anwesenheiten",
+          "url": "/coach/presence/${roles["player"][0] ?? ""}",
+        },
       ]);
     }
 
