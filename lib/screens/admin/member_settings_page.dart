@@ -42,7 +42,7 @@ class _MemberSettingsPageState extends ConsumerState<MemberSettingsPage> {
         vertical: 15,
       ),
       child: Scaffold(
-        appBar: AppBar(title: Text("Mitglieder-Einstellung")),
+        appBar: AppBar(title: Text("Mitglieder-Einstellungen")),
         body: ListView(
           children:
               docModel.fields.values
@@ -60,15 +60,6 @@ class _MemberSettingsPageState extends ConsumerState<MemberSettingsPage> {
                                     text: field.name,
                                   ),
                                   title: "Titel",
-                                  isEditMode: true,
-                                ),
-                              ),
-                              Expanded(
-                                child: TextInputBox(
-                                  controller: TextEditingController(
-                                    text: field.key,
-                                  ),
-                                  title: "Schlüssel",
                                   isEditMode: true,
                                 ),
                               ),

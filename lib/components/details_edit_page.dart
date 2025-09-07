@@ -223,7 +223,6 @@ class _DetailsEditPageState extends ConsumerState<DetailsEditPage> {
                           setState(() {
                             resetInputs(data);
                             isEditMode = false;
-                            _inputsInitialized = true;
                             if (widget.created) {
                               context.pop();
                             }
