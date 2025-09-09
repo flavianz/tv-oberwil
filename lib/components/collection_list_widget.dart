@@ -29,6 +29,17 @@ sealed class DataField {
   final int? order;
   final int row;
 
+  String type() {
+    return switch (this) {
+      TextDataField() => "text",
+      BoolDataField() => "bool",
+      DateDataField() => "date",
+      TimeDataField() => "time",
+      SelectionDataField() => "time",
+      MultiSelectDataField() => "multi",
+    };
+  }
+
   const DataField(
     this.key,
     this.name,
