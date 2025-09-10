@@ -184,7 +184,7 @@ final router = GoRouter(
       ],
     ),
     GoRoute(
-      path: "/sign-in",
+      path: "/auth",
       builder: (context, state) {
         return SignInScreen(
           providers: [

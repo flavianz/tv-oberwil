@@ -62,7 +62,7 @@ class _MyAppState extends State<MyApp> {
 
     _authSub = FirebaseAuth.instance.authStateChanges().listen((User? user) {
       if (user == null) {
-        activeRouter.go("/sign-in");
+        activeRouter.go("/auth");
       }
     });
 
